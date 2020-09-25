@@ -1,0 +1,12 @@
+
+{
+    "comment" : "This file is used to help set default values when using the dotnet CLI extension Amazon.ElasticBeanstalk.Tools. For more information run \"dotnet eb --help\" from the project root.",
+    "profile" : "idafit2fitter",
+    "region"  : "ap-southeast-2",
+    "application" : "Fit2FitterApp",
+    "environment" : "Fit2fitterapp-env",
+    "solution-stack" : "64bit Windows Server 2019 v2.5.8 running IIS 10.0",
+    "iis-website"    : "Default Web Site",
+    "app-path"       : "/",
+    "enable-xray"    : false
+}
