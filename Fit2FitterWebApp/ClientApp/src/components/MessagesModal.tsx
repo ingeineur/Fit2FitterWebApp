@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Header, Label, Input, Icon, Image, List, Flag } from 'semantic-ui-react'
+import { Button, Comment, Grid, Header, Label, Form, Icon, Image, List, Flag, Container, Message, Checkbox } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -26,6 +26,9 @@ interface IState {
     dateChanged: boolean;
     clients: IClient[];
     clientDtos: IClientDto[];
+    messageDtos: IMessageDto[];
+    messages: IMessage[];
+    typedMessage: string
 }
 
 interface IClient {
@@ -73,6 +76,45 @@ interface IActivityDto {
     clientId: number;
 }
 
+interface IMessage {
+    id: number,
+    measurementRef: string;
+    mealsRef: string;
+    activitiesRef: string;
+    message: string;
+    readStatus: boolean;
+    updated: string;
+    created: string;
+    fromId: number;
+    clientId: number;
+}
+
+interface IMessageDto {
+    id: number,
+    measurementRef: string;
+    mealsRef: string;
+    activitiesRef: string;
+    message: string;
+    readStatus: boolean;
+    updated: string;
+    created: string;
+    fromId: number;
+    clientId: number;
+}
+
+const divHeaderStyle = {
+    color: '#FE019A'
+};
+
+const divLabelStyle = {
+    color: 'black'
+};
+
+const divMessageStyle = {
+    color: 'blue',
+    verticalAlign:'middle'
+};
+
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -80,7 +122,7 @@ type LoginProps =
     & typeof LoginStore.actionCreators // ... plus action creators we've requested
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
 
-class Dashboard extends React.Component<LoginProps, IState> {
+class MessagesModal extends React.Component<LoginProps, IState> {
     public componentDidMount() {
         this.props.getLogin();
         var date = new Date();
@@ -95,11 +137,10 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     clientDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            //get all activities
-            fetch('api/tracker/activity?date=' + date.toISOString())
-                .then(response => response.json() as Promise<IActivityDto[]>)
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/comments?date=' + date.toISOString())
+                .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    activityDtos: data, apiUpdate: true
+                    messageDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
         }
     }
@@ -133,7 +174,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
             this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
         });
 
-        this.setState({ clients: this.state.clients });
+        this.setState({ clients: this.state.clients});
     }
 
     constructor(props: LoginProps) {
@@ -151,57 +192,21 @@ class Dashboard extends React.Component<LoginProps, IState> {
             activityDtos: [],
             dateChanged: false,
             clientDtos: [],
-            clients:[]
+            clients: [],
+            messageDtos: [],
+            messages: [],
+            typedMessage: ''
         };
     }
 
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
 
-    getFlag = (country: string) => {
-        if (country === 'au') {
-            return (<Flag name='au' />)
-        }
-
-        if (country === 'jp') {
-            return (<Flag name='jp' />)
-        }
-
-        if (country === 'my') {
-            return (<Flag name='my' />)
-        }
-
-        if (country === 'us') {
-            return (<Flag name='us' />)
-        }
-
-        if (country === 'ie') {
-            return (<Flag name='ie' />)
-        }
-    }
-
-    getRows = (type: string) => {
-        var sorted = this.state.activities.sort((a, b) => (a.steps > b.steps ? -1 : 1));
-        if (type === 'TCB') {
-            sorted = this.state.activities.sort((a, b) => (a.calories > b.calories ? -1 : 1));
-        }
-        return (
-            sorted.map((item, index) =>
-                <List.Item key={index}>
-                    <Image key={index} avatar src='https://react.semantic-ui.com/images/avatar/small/rachel.png' />
-                    <List.Content key={index + 1}>
-                        <List.Header key={index} as='a'>{item.name} {this.getFlag(item.ActivityDesc)}</List.Header>
-                        <List.Description key={index + 1}>
-                            Steps: {item.steps} Calories: {item.calories}
-                        </List.Description>
-                    </List.Content>
-                </List.Item>
-            ));
+    updateMessage = (event: any) => {
+        this.setState({ typedMessage: event.target.value });
     }
 
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
-        //console.log('1 --' + Math.abs((this.state.selectedDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
-        //console.log('2 --' + Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
@@ -229,7 +234,6 @@ class Dashboard extends React.Component<LoginProps, IState> {
                 this.setState({
                     activityDtos: data, apiUpdate: true
                 });
-                //this.intervalID = setTimeout(this.getActivities.bind(this), 10000);
             }).catch(error => console.log(error));
     }
 
@@ -243,50 +247,166 @@ class Dashboard extends React.Component<LoginProps, IState> {
         });
     }
 
+    setMessages = () => {
+        if (this.state.messageDtos.length > 0) {
+
+            if (this.state.messages.length === this.state.messageDtos.length) {
+                return;
+            }
+
+            this.state.messageDtos.forEach(msg => {
+                this.state.messages.push({
+                    id: msg.id, measurementRef: msg.measurementRef, mealsRef: msg.mealsRef,
+                    activitiesRef: msg.activitiesRef, message: msg.message, fromId: msg.fromId,
+                    clientId: msg.clientId, updated: msg.updated, created: msg.updated, readStatus: msg.readStatus
+                });
+            })
+
+            this.setState({ messages: this.state.messages });
+        }
+    }
+
+    getComments = () => {
+        if (this.state.clients.length < 1) {
+            return;
+        }
+
+        return (
+            this.state.messages.map((item, index) =>
+                <Comment key={index}>
+                    <Comment.Content key={index}>
+                        <Comment.Author key={index}>{this.state.clients[this.state.clients.findIndex(x => x.id === item.fromId)].name}</Comment.Author>
+                        <Comment.Metadata>
+                            <div>{new Date(item.updated).toLocaleDateString()}</div>
+                        </Comment.Metadata>
+                        <Comment.Text key={index + 1}>{item.message}</Comment.Text>
+                    </Comment.Content>
+                </Comment>
+            ));
+    }
+
+    getCommentStyle = () => {
+        return (<Comment.Group>
+            {this.getComments()}
+        </Comment.Group>);
+    }
+
+    getMessagesNew = () => {
+        if (this.state.clients.length < 1) {
+            return;
+        }
+
+        return (
+            this.state.messages.map((item, index) =>
+                <div>
+                    <Message key={index} color='grey'>
+                        <Message.Header key={index}>
+                            <div style={divHeaderStyle}>
+                                Received: {new Date(item.created).toLocaleDateString()}
+                            </div>
+                            <div style={divHeaderStyle}>
+                                From: {this.state.clients[this.state.clients.findIndex(x => x.id === item.fromId)].name}
+                            </div>
+                        </Message.Header>
+                        <Message.Content key={index + 1}>
+                            <div style={divLabelStyle}>
+                                Message: {item.message}
+                            </div>
+                            <div style={divMessageStyle}>
+                                <Checkbox as='a' key={index} checked={item.readStatus} />
+                                <a> Read </a>
+                            </div>
+                        </Message.Content>
+                    </Message>
+                    <div/>
+                </div>
+            ));
+    }
+
+    getMessages = () => {
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/comments?date=' + this.state.selectedDate.toISOString())
+            .then(response => response.json() as Promise<IMessageDto[]>)
+            .then(data => this.setState({
+                messageDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+    }
+
+    resetMessages = () => {
+        while (this.state.messages.length > 0) {
+            this.state.messages.pop();
+        }
+
+        this.setState({
+            messages: this.state.messages
+        });
+    }
+
+    AddComment = (event: any, message: any) => {
+        var fetchStr = 'api/tracker/comment?date=' + this.state.selectedDate.toISOString();
+        fetch(fetchStr, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: 0,
+                measurementRef: 0,
+                mealsRef: 0,
+                activitiesRef: 0,
+                readStatus: false,
+                message: this.state.typedMessage,
+                updated: new Date(),
+                created: this.state.selectedDate.toISOString(),
+                fromId: this.props.logins[0].clientId,
+                clientId: this.props.logins[0].clientId,
+            })
+        }).then(response => response.json()).then(data => this.setState({ updated: !this.state.updated})).catch(error => console.log('put macros ---------->' + error));
+
+        // add rows
+        setTimeout(() => {
+            this.getMessages();
+        }, 500);
+
+        this.setState({ typedMessage: '' });
+    }
+
     render() {
         if (this.props.logins.length > 0) {
             if (this.state.dateChanged === true) {
                 this.setState({ dateChanged: false });
-                this.resetActivities();
-                this.getActivities();
+                this.resetMessages();
+                this.getMessages();
             }
 
             if (this.state.apiUpdate === true) {
+                this.resetMessages();
                 this.setValuesFromDto();
-                this.setActivities();
-                this.setState({ activities: this.state.activities, apiUpdate: false, updated: !this.state.updated });
+                this.setMessages();
+                this.setState({ messages: this.state.messages, apiUpdate: false });
             }
         return (
             <div>
                 <Grid centered>
                     <Grid.Row columns={2}>
                         <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Daily Leaderboards</Label>
+                            <Label size='large' as='a' color='pink' basic circular>Messages</Label>
                         </Grid.Column>
                         <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
                             <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={2}>
+                    <Grid.Row>
                         <Grid.Column>
-                            <Segment inverted attached='top'>
-                                <h5>Steps Leaderboard</h5>
-                            </Segment>
-                            <Segment attached='bottom'>
-                                <List>
-                                    {this.getRows('TS')}
-                                </List>
-                            </Segment>
+                            <Form reply>
+                                <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
+                                <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                            </Form>
                         </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row>
                         <Grid.Column>
-                            <Segment inverted attached='top'>
-                                <h5>TCB Leaderboard</h5>
-                            </Segment>
-                            <Segment attached='bottom'>
-                                <List>
-                                    {this.getRows('TCB')}
-                                </List>
-                            </Segment>
+                            {this.getMessagesNew()}
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
@@ -308,4 +428,4 @@ class Dashboard extends React.Component<LoginProps, IState> {
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props
-)(Dashboard as any);
+)(MessagesModal as any);

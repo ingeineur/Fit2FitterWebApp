@@ -16,6 +16,7 @@ import Personal from './components/Personal';
 import EBook from './components/EBook';
 import Admin from './components/Admin';
 import Master from './components/Master';
+import Messages from './components/Messages';
 
 import './custom.css'
 
@@ -35,6 +36,7 @@ export default () => (
         <Route path='/ebook' component={EBook} />
         <Route path='/admin' component={Admin} />
         <Route path='/master' component={Master} />
+        <Route path='/messages' component={Messages} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>
 );

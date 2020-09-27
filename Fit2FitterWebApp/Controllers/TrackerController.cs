@@ -39,6 +39,21 @@ namespace Fit2FitterWebApp.Controllers
             return this.Ok(result);
         }
 
+        [HttpPut("comment")]
+        public async Task<IActionResult> Put([FromBody, Required]CommentDto comment, [FromQuery, Required] string date)
+        {
+            comment.Created = DateTime.Parse(date);
+            var result = await this.trackerService.AddComment(comment).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpPut("{commentId}/comment/update")]
+        public async Task<IActionResult> Put(int commentId, [FromQuery, Required] bool read)
+        {
+            var result = await this.trackerService.UpdateComment(commentId, read).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
         [HttpPut("macrosguide")]
         public async Task<IActionResult> Put([FromQuery, Required]MacrosGuideDto guide)
         {
@@ -67,6 +82,27 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/all/comments")]
+        public async Task<IEnumerable<CommentDto>> GetAllComments(int clientId, [FromQuery, Required] bool sent)
+        {
+            var data = await this.trackerService.GetAllComments(clientId, sent).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{clientId}/status/comments")]
+        public async Task<IEnumerable<CommentDto>> GetComments(int clientId, [FromQuery, Required] bool readStatus)
+        {
+            var data = await this.trackerService.GetComments(clientId, readStatus).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{clientId}/comments")]
+        public async Task<IEnumerable<CommentDto>> GetComments(int clientId, [FromQuery, Required] string date)
+        {
+            var data = await this.trackerService.GetComments(clientId, DateTime.Parse(date)).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("{clientId}/macrosguide")]
         public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, [FromQuery, Required] DateTime date)
         {
@@ -85,6 +121,13 @@ namespace Fit2FitterWebApp.Controllers
         public async Task<IActionResult> deleteActivities(int clientId, [FromQuery, Required] string date)
         {
             var result = await this.trackerService.DeleteActivities(clientId, DateTime.Parse(date)).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpDelete("{commentId}/comment/delete")]
+        public async Task<IActionResult> deleteComment(int commentId)
+        {
+            var result = await this.trackerService.DeleteComment(commentId).ConfigureAwait(false);
             return this.Ok(result);
         }
     }

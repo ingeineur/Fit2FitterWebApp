@@ -50,6 +50,31 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Meal>> FindMeals(int clientId, DateTime date);
 
         /// <summary>
+        /// Finds all comments.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent);
+
+        /// <summary>
+        /// Finds the comments by read status.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, bool readStatus);
+
+        /// <summary>
+        /// Finds the comments by read status and receive date.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">Received Date.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, DateTime date);
+
+        /// <summary>
         /// Finds client measurement.
         /// </summary>
         /// <param name="clientId">The user id.</param>
@@ -100,6 +125,13 @@ namespace Fit2Fitter.Database.Contracts
         Task AddMacroGuide(MacrosGuide macrosGuide);
 
         /// <summary>
+        /// Add a new comment for a client.
+        /// </summary>
+        /// <param name="macrosGuide"></param>
+        /// <returns></returns>
+        Task AddComment(Comment comment);
+
+        /// <summary>
         /// Add a new activity measurement.
         /// </summary>
         /// <param name="activity"></param>
@@ -135,5 +167,21 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="date"></param>
         /// <returns></returns>
         Task DeleteActivities(int clientId, DateTime date);
+
+        /// <summary>
+        /// Delete a comment
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        Task DeleteComment(int commentId);
+
+        /// <summary>
+        /// Update comment's read status
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="read"></param>
+        /// <returns></returns>
+        Task UpdateComment(int commentId, bool read);
     }
 }

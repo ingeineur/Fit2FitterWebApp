@@ -242,6 +242,8 @@ class Master extends React.Component<LoginProps, IState> {
         this.state.clientDtos.forEach(client => {
             this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
         });
+
+        this.setState({ clients: this.state.clients });
         
         //if (this.state.macrosPlans.length > 0) {
         //    const plan = this.state.macrosPlans[0];

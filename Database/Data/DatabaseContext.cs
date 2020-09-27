@@ -57,6 +57,11 @@ namespace Fit2Fitter.Database.Data
         /// </summary>
         public virtual DbSet<Models.Meal> Meals { get; set; }
 
+        /// <summary>
+        /// Gets or sets the comments.
+        /// </summary>
+        public virtual DbSet<Models.Comment> Comments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Models.Client>(entity =>
@@ -339,6 +344,47 @@ namespace Fit2Fitter.Database.Data
                     .HasMaxLength(8);
 
                 entity.Property(e => e.ClientId)
+                    .IsRequired()
+                    .HasMaxLength(4);
+            });
+
+            modelBuilder.Entity<Models.Comment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.MeasurementRef)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.MealsRef)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.ActivitiesRef)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.ReadStatus)
+                    .IsRequired()
+                    .HasMaxLength(1);
+
+                entity.Property(e => e.Message)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Updated)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Created)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.ClientId)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.FromId)
                     .IsRequired()
                     .HasMaxLength(4);
             });

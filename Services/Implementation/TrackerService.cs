@@ -66,7 +66,33 @@ namespace Fit2Fitter.Services.Implementation
                 return false;
             }
         }
-        
+
+        public async Task<bool> AddComment(CommentDto comment)
+        {
+            try
+            {
+                await this.trackerRepository.AddComment(new Comment
+                {
+                    Id = comment.Id,
+                    MeasurementRef = comment.MeasurementRef,
+                    MealsRef = comment.MealsRef,
+                    ActivitiesRef = comment.ActivitiesRef,
+                    Message = comment.Message,
+                    ReadStatus = comment.ReadStatus,
+                    Updated = DateTime.Now,
+                    Created = comment.Created,
+                    FromId = comment.FromId,
+                    ClientId = comment.ClientId
+                }).ConfigureAwait(false);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> AddMacrosGuide(MacrosGuideDto macrosGuide)
         {
             try
@@ -148,6 +174,60 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<CommentDto>> GetAllComments(int clientId, bool sent)
+        {
+            var comments = await this.trackerRepository.FindAllComments(clientId, sent).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
+        public async Task<IEnumerable<CommentDto>> GetComments(int clientId, bool readStatus)
+        {
+            var comments = await this.trackerRepository.FindComment(clientId, readStatus).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
+        public async Task<IEnumerable<CommentDto>> GetComments(int clientId, DateTime date)
+        {
+            var comments = await this.trackerRepository.FindComment(clientId, date).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
         public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, DateTime date)
         {
             var macrosGuides = await this.trackerRepository.FindMacroGuides(clientId, date).ConfigureAwait(false);
@@ -182,6 +262,32 @@ namespace Fit2Fitter.Services.Implementation
             try
             {
                 await this.trackerRepository.DeleteActivities(clientId, date).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteComment(int commentId)
+        {
+            try
+            {
+                await this.trackerRepository.DeleteComment(commentId).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateComment(int commentId, bool read)
+        {
+            try
+            {
+                await this.trackerRepository.UpdateComment(commentId, read).ConfigureAwait(false);
                 return true;
             }
             catch (Exception e)

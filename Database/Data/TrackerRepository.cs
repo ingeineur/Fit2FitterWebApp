@@ -62,6 +62,32 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent)
+        {
+            if(sent == true)
+            {
+                return await this.databaseContext.Comments.Where(x =>
+                x.FromId == clientId).ToArrayAsync().ConfigureAwait(false);
+            }
+
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, bool readStatus)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId && x.ReadStatus == readStatus).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime date)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
@@ -143,6 +169,15 @@ namespace Fit2Fitter.Database.Data
             }
         }
 
+        public async Task AddComment(Comment comment)
+        {
+            if (await this.clientRepository.FindClientById(comment.ClientId).ConfigureAwait(false) != null)
+            {
+                await this.databaseContext.Comments.AddAsync(comment).ConfigureAwait(false);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
         public async Task AddMacroGuide(MacrosGuide macrosGuide)
         {
             if (await this.clientRepository.FindClientById(macrosGuide.ClientId).ConfigureAwait(false) != null)
@@ -215,6 +250,30 @@ namespace Fit2Fitter.Database.Data
             if (result != null)
             {
                 this.databaseContext.Activities.RemoveRange(result);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task DeleteComment(int commentId)
+        {
+            var result = await this.databaseContext.Comments.Where(x =>
+                x.Id == commentId).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                this.databaseContext.Comments.RemoveRange(result);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task UpdateComment(int commentId, bool read)
+        {
+            var result = await this.databaseContext.Comments.Where(x =>
+                x.Id == commentId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                result.ReadStatus = read;
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }

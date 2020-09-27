@@ -15,6 +15,21 @@ interface IState {
     activeItem: string;
     error: string;
     login: string;
+    checkMail: boolean;
+    messageDtos: IMessageDto[];
+}
+
+interface IMessageDto {
+    id: number,
+    measurementRef: string;
+    mealsRef: string;
+    activitiesRef: string;
+    message: string;
+    readStatus: boolean;
+    updated: string;
+    created: string;
+    fromId: number;
+    clientId: number;
 }
 
 // At runtime, Redux will merge together...
@@ -25,7 +40,19 @@ type LoginProps =
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
     
 class Home extends React.Component<LoginProps, IState > {
-    
+
+    public componentDidMount() {
+        this.props.getLogin();
+
+        if (this.props.logins.length > 0) {
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageDtos: data
+                })).catch(error => console.log(error));
+        }
+    }
+
     onSubmit = () => {
         this.setState({ username: '', password:'' });
     }
@@ -41,7 +68,7 @@ class Home extends React.Component<LoginProps, IState > {
     constructor(props: LoginProps) {
         super(props);
         this.state = {
-            username: '', password: '', activeItem: '', error: '', login:''
+            username: '', password: '', activeItem: '', error: '', login: '', messageDtos: [], checkMail:false
         };
     }
 
@@ -81,6 +108,16 @@ class Home extends React.Component<LoginProps, IState > {
                 this.setState({ error: 'Login is Successfull' });
             }
 
+            if (this.state.checkMail === false) {
+                if (this.props.logins.length > 0) {
+                    fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
+                        .then(response => response.json() as Promise<IMessageDto[]>)
+                        .then(data => this.setState({
+                            messageDtos: data, checkMail: true
+                        })).catch(error => console.log(error));
+                }
+            }
+
             if (this.state.activeItem === 'Master') {
                 return (<Redirect to="/master" />);
             }
@@ -111,6 +148,10 @@ class Home extends React.Component<LoginProps, IState > {
 
             if (this.state.activeItem === 'Admin') {
                 return (<Redirect to="/admin" />);
+            }
+
+            if (this.state.activeItem === 'Messages') {
+                return (<Redirect to="/messages" />);
             }
         //if (true) {
             return (
@@ -173,6 +214,20 @@ class Home extends React.Component<LoginProps, IState > {
                                             Logout
                                     </Menu.Item>
                                 </Menu>
+                            </Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row columns={2}>
+                            <Grid.Column width={8}>
+                                <Menu fluid vertical icon='labeled'>
+                                    <Menu.Item
+                                        name='Messages'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='blue' name='mail' />
+                                        Messages ({this.state.messageDtos.length})
+                                    </Menu.Item>
+                                </Menu>
+                            </Grid.Column>
+                            <Grid.Column width={8}>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
