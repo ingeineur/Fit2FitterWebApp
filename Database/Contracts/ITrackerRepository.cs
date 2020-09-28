@@ -16,6 +16,8 @@ namespace Fit2Fitter.Database.Contracts
         /// <returns>The user that has the requirement user name.</returns>
         System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurement(int clientId, DateTime date);
 
+        System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId);
+
         System.Threading.Tasks.Task<Models.Measurement> FindMeasurementClosest(int clientId, DateTime date);
 
         /// <summary>

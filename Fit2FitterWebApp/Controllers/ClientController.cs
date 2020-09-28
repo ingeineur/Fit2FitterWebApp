@@ -104,6 +104,13 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/all/measurements")]
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId)
+        {
+            var data = await this.clientService.GetMeasurements(clientId).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("{clientId}/measurements/closest")]
         public async Task<IEnumerable<MeasurementDto>> GetMeasurementClosest(int clientId, [FromQuery, Required] string date)
         {

@@ -9,6 +9,7 @@ import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MeasurementsTable from './MeasurementsTable'
 import MeasurementsHeader from './MeasurementsHeader';
+import ChartistGraph from 'react-chartist';
 
 interface IProps {
 }
@@ -22,6 +23,10 @@ interface IState {
     macroGuides: IMacroGuides;
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
+    allMeasurementDtos: IMeasurementDto[];
+    graphs: IGraphMeasurements;
+    graphsData: [IMeta[]];
+    weightLabel: string[];
     clients: IClient[];
     macrosPlans: IMacrosPlan[];
     targetWeight: number;
@@ -40,14 +45,29 @@ interface IMacroGuides {
     bodyFat: number;
 }
 
+interface IMeta {
+    meta: string,
+    value: number
+}
+
 interface IMeasurements {
     neck: number;
-    upperArm: number
+    upperArm: number;
     waist: number;
     hips: number;
     thigh: number;
     chest: number;
     weight: number;
+}
+
+interface IGraphMeasurements {
+    neck: number[];
+    upperArm: number[];
+    waist: number[];
+    hips: number[];
+    thigh: number[];
+    chest: number[];
+    weight: number[];
 }
 
 interface IMeasurementDto {
@@ -120,6 +140,12 @@ class Measurements extends React.Component<LoginProps, IState> {
                     measurementDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
+            fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements')
+                .then(response => response.json() as Promise<IMeasurementDto[]>)
+                .then(data => this.setState({
+                    allMeasurementDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+
             fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
                 .then(response => response.json() as Promise<IMacrosPlan[]>)
                 .then(data => this.setState({
@@ -162,6 +188,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
             measurements: { neck: 0.0, upperArm:0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
+            allMeasurementDtos: [],
             clients: [],
             macrosPlans: [],
             updated: false,
@@ -170,6 +197,17 @@ class Measurements extends React.Component<LoginProps, IState> {
             dateChanged: false,
             age: 0,
             targetWeight: 0,
+            graphs: {
+                neck: [],
+                upperArm: [],
+                waist: [],
+                hips: [],
+                thigh: [],
+                chest: [],
+                weight: []
+            },
+            graphsData: [[]],
+            weightLabel:[]
         };
     }
 
@@ -184,6 +222,56 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.setState({ prevDate: this.state.selectedDate });
             this.setState({ selectedDate: new Date(field['value']), measurementDtos: [], dateChanged: true })
         }
+    }
+
+    setGraphValues = () => {
+        while (this.state.graphsData.length > 0) {
+            this.state.graphsData.pop()
+        }
+
+        while (this.state.weightLabel.length > 0) {
+            this.state.weightLabel.pop()
+        }
+        
+        this.state.graphs.chest = [];
+        this.state.graphs.neck = [];
+        this.state.graphs.upperArm = [];
+        this.state.graphs.waist = [];
+        this.state.graphs.hips = [];
+        this.state.graphs.thigh = [];
+        this.state.graphs.weight = [];
+
+        var index: number = 0;
+        this.state.allMeasurementDtos.forEach(m => {
+            var values: IMeta[] = [];
+            if (index === 0) {
+                this.state.weightLabel.push('Start');
+            }
+            else {
+                this.state.weightLabel.push('Measure ' + index);
+            }
+
+            this.state.graphs.chest.push(m.chest);
+            values.push({ 'meta': 'chest', 'value': m.chest});
+            this.state.graphs.neck.push(m.neck);
+            values.push({ 'meta': 'chest', 'value': m.chest });
+            this.state.graphs.upperArm.push(m.upperArm);
+            values.push({ 'meta': 'upperArm', 'value': m.upperArm });
+            this.state.graphs.waist.push(m.waist);
+            values.push({ 'meta': 'waist', 'value': m.waist });
+            this.state.graphs.hips.push(m.hips);
+            values.push({ 'meta': 'hips', 'value': m.hips });
+            this.state.graphs.thigh.push(m.thigh);
+            values.push({ 'meta': 'thigh', 'value': m.thigh });
+            this.state.graphs.weight.push(m.weight);
+            this.state.graphsData.push(values);
+            index++;
+        });
+
+        this.state.weightLabel.pop();
+        this.state.weightLabel.push('Now');
+
+        this.setState({ graphs: this.state.graphs, graphsData: this.state.graphsData, weightLabel: this.state.weightLabel });
     }
 
     setValuesFromDto = () => {
@@ -224,6 +312,8 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.setState({ measurements: this.state.measurements });
             this.setState({ apiUpdate: false, updated: !this.state.updated });
         }
+
+        this.setGraphValues();
     }
 
     onCancel = () => {
@@ -286,6 +376,20 @@ class Measurements extends React.Component<LoginProps, IState> {
     }
 
     render() {
+        var data = {
+            labels: ['chest', 'neck', 'upperArm', 'waist', 'hips', 'thigh'],
+            series: this.state.graphsData
+        };
+
+        var type = 'Bar'
+
+        var data2 = {
+            labels: this.state.weightLabel,
+            series: [this.state.graphs.weight]
+        };
+
+        var type2 = 'Line'
+
         var divLabelStyle = {
             color: '#fffafa',
             backgroundColor: this.getColour()
@@ -327,7 +431,20 @@ class Measurements extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
+                        <Grid.Column>
+                            <div>
+                                <a>All Measurements Progress</a>
+                                <ChartistGraph data={data} type={type} />
+                            </div>
+                            <div>
+                                <a>Weight Progress: : {(this.state.graphs.weight[0] - this.state.measurements.weight).toFixed(2)}kg from start weight</a>
+                                <ChartistGraph data={data2} type={type2} />
+                            </div>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row>
                         <Grid.Column width={16}>
+                            <div><a>Current Measurements</a></div>
                             <Menu attached='top' tabular compact>
                                 <Menu.Item
                                     name='Body'

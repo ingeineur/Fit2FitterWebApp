@@ -244,6 +244,26 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId)
+        {
+            var measurements = await this.trackerRepository.FindMeasurements(clientId).ConfigureAwait(false);
+            return measurements.Select(measurement => new MeasurementDto
+            {
+                Id = measurement.Id,
+                Neck = measurement.Neck,
+                UpperArm = measurement.UpperArm,
+                Waist = measurement.Waist,
+                Hips = measurement.Hips,
+                Thigh = measurement.Thigh,
+                Chest = measurement.Chest,
+                Weight = measurement.Weight,
+                BodyFat = measurement.BodyFat,
+                Updated = measurement.Updated,
+                Created = measurement.Created,
+                ClientId = measurement.ClientId
+            });
+        }
+
         public async Task<IEnumerable<MeasurementDto>> GetMeasurementsClosest(int clientId, DateTime date)
         {
             var measurement = await this.trackerRepository.FindMeasurementClosest(clientId, date).ConfigureAwait(false);

@@ -225,7 +225,7 @@ class MeasurementsHeader extends React.Component<IProps, IState> {
                 <Grid.Row divided columns={3} textAlign='center'>
                     <Grid.Column color={this.getColour(level)} textAlign='center'>
                         <div><a>Body Fat %:</a></div>
-                        <div style={divLabelStyle1}><a>{bodyFatPercent}</a></div>
+                        <div style={divLabelStyle1}><a>{bodyFatPercent.toFixed(3)}</a></div>
                     </Grid.Column>
                     <Grid.Column color={this.getColour(level)} textAlign='center'>
                         <div><a>Body Fat:</a></div>
