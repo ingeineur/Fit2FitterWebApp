@@ -422,6 +422,13 @@ class Meals extends React.Component<LoginProps, IState> {
         }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saving in progress' })).catch(error => console.log('delete meals---------->' + error));
     }
 
+    onCancel = () => {
+        this.resetMeals();
+        this.setMacroGuides();
+        this.setMeals();
+        this.setState({ updated: !this.state.updated });
+    }
+
     onSave = () => {
         // delete rows
         this.deleteMeals();
@@ -551,7 +558,7 @@ class Meals extends React.Component<LoginProps, IState> {
                         </Grid.Row>
                         <Grid.Row columns={3}>
                             <Grid.Column width={4} textAlign='left' floated='left'>
-                                <Button floated='left' size='tiny' secondary>Cancel</Button>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                             </Grid.Column>
                             <Grid.Column width={4} textAlign='left' floated='left'>
                                 <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>

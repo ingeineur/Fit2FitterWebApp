@@ -99,7 +99,7 @@ namespace Fit2Fitter.Database.Data
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.MacrosGuides.Where(x =>
-                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) < 1).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async Task AddMeasurement(Measurement measurement)
@@ -224,13 +224,16 @@ namespace Fit2Fitter.Database.Data
 
         public async Task UpdateMacroGuide(MacrosGuide macrosGuide)
         {
-            var result = await this.databaseContext.Measurements.SingleOrDefaultAsync(x =>
-                x.ClientId == macrosGuide.ClientId).ConfigureAwait(false);
+            var result = await this.databaseContext.MacrosGuides.SingleOrDefaultAsync(x =>
+                x.ClientId == macrosGuide.ClientId && x.Id == macrosGuide.Id).ConfigureAwait(false);
 
             if (result != null)
             {
-                macrosGuide.Id = result.Id;
-                this.databaseContext.MacrosGuides.Update(macrosGuide);
+                macrosGuide.Carb = result.Carb;
+                macrosGuide.Protein = result.Protein;
+                macrosGuide.Fat = result.Fat;
+                macrosGuide.FV = result.FV;
+                macrosGuide.Updated = result.Updated;
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -244,6 +247,19 @@ namespace Fit2Fitter.Database.Data
             if (result != null)
             {
                 this.databaseContext.Meals.RemoveRange(result);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task DeleteMacroGuides(int clientId, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            var result = await this.databaseContext.MacrosGuides.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                this.databaseContext.MacrosGuides.RemoveRange(result);
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }

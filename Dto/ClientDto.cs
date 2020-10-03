@@ -10,6 +10,7 @@ namespace Fit2Fitter.Dto
         public string Address { get; set; }
         public string City { get; set; }
         public int Age { get; set; }
+        public string Grp { get; set; }
         public DateTime Created { get; set; }
     }
 }

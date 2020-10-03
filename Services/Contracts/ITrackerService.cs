@@ -38,5 +38,7 @@ namespace Fit2Fitter.Services.Contracts
         Task<bool> DeleteComment(int commentId);
 
         Task<bool> UpdateComment(int commentId, bool read);
+
+        Task<bool> UpdateMacroGuides(IEnumerable<MacrosGuideDto> macroGuides, DateTime created);
     }
 }

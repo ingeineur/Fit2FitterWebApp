@@ -32,6 +32,7 @@ namespace Fit2Fitter.Services.Implementation
                 Address = client.Address,
                 City = client.City,
                 Age = client.Age,
+                Grp = client.Grp,
                 Created = client.Created
             });
         }
@@ -47,6 +48,7 @@ namespace Fit2Fitter.Services.Implementation
                 Address = client.Address,
                 City = client.City,
                 Age = client.Age,
+                Grp = client.Grp,
                 Created = client.Created
             });
         }
@@ -62,6 +64,7 @@ namespace Fit2Fitter.Services.Implementation
                 Address = client.Address,
                 City = client.City,
                 Age = client.Age,
+                Grp = client.Grp,
                 Created = client.Created
             });
         }
@@ -78,6 +81,7 @@ namespace Fit2Fitter.Services.Implementation
                     Address = client.Address,
                     City = client.City,
                     Age = client.Age,
+                    Grp = client.Grp,
                     Created = DateTime.Now
                 }).ConfigureAwait(false);
 

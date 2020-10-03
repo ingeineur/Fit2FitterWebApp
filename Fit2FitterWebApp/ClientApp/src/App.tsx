@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import Activities from './components/Activities';
 import Meals from './components/Meals';
 import Macro from './components/Macro';
+import MacroGuide from './components/MacroGuide';
 import MacroHeader from './components/MacroHeader';
 import ActivivtyHeader from './components/ActivityHeader';
 import ActivivtyTable from './components/ActivityTable';
@@ -37,6 +38,7 @@ export default () => (
         <Route path='/admin' component={Admin} />
         <Route path='/master' component={Master} />
         <Route path='/messages' component={Messages} />
+        <Route path='/macroguide' component={MacroGuide} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>
 );

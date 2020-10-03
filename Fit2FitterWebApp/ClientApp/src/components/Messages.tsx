@@ -186,7 +186,8 @@ class Messages extends React.Component<LoginProps, IState> {
             this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
         });
 
-        this.setState({ clients: this.state.clients});
+        this.setState({ clients: this.state.clients });
+        console.log(this.state.clients);
     }
 
     constructor(props: LoginProps) {
@@ -232,7 +233,9 @@ class Messages extends React.Component<LoginProps, IState> {
 
                 this.setState({ messages: this.state.messages });
             }
+        }
 
+        if (this.state.sentMessageDtos.length > 0) {
             if (this.state.sentMessages.length !== this.state.sentMessageDtos.length) {
                 this.state.sentMessageDtos.forEach(msg => {
                     this.state.sentMessages.push({
@@ -245,6 +248,7 @@ class Messages extends React.Component<LoginProps, IState> {
                 this.setState({ sentMessages: this.state.sentMessages });
             }
         }
+        
     }
 
     getComments = () => {
@@ -292,6 +296,11 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getMessagesNew = () => {
         if (this.state.clients.length < 1) {
+            console.log('-------------------------------> no clients');
+            return;
+        }
+
+        if (this.state.clients.length < 1) {
             return;
         }
 
@@ -324,6 +333,7 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getSentMessagesNew = () => {
         if (this.state.clients.length < 1) {
+            console.log('-------------------------------> no clients');
             return;
         }
 
@@ -474,6 +484,21 @@ class Messages extends React.Component<LoginProps, IState> {
 
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
 
+    getReplyOption = () => {
+        if (this.props.logins[0].clientId == 2) {
+            return (<Form reply>
+                <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} selection options={this.state.clientList} onChange={this.setToClient} />
+                <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
+                <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+            </Form>);
+        }
+
+        return (<Form reply>
+            <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
+            <Button content='Drop Your Comment to Ida' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+        </Form>);
+    }
+
     render() {
         if (this.props.logins.length > 0) {
             if (this.state.apiUpdate === true) {
@@ -498,11 +523,7 @@ class Messages extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Form reply>
-                                <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} selection options={this.state.clientList} onChange={this.setToClient} />
-                                <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
-                                <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
-                            </Form>
+                            {this.getReplyOption()}
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { Button, Form, Input, Grid, Segment, Menu } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Segment, Menu, Dropdown } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { RouteComponentProps } from 'react-router';
@@ -11,6 +11,7 @@ interface IProps {
 
 interface IState {
     activeItem: string;
+    recipeText: string
     username: string;
     password: string;
 }
@@ -22,6 +23,13 @@ type LoginProps =
     & typeof LoginStore.actionCreators // ... plus action creators we've requested
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
 
+const options = [
+    { key: 'StarterPack Recipes', value: 'StarterPack Recipes', text: 'StarterPack Recipes' },
+    { key: 'September Recipes', value: 'September Recipes', text: 'September Recipes' },
+    { key: 'October Recipes', value: 'October Recipes', text: 'October Recipes' }
+]
+
+
 class EBook extends React.Component<LoginProps, IState> {
     public componentDidMount() {
         this.props.getLogin();
@@ -30,11 +38,16 @@ class EBook extends React.Component<LoginProps, IState> {
     constructor(props: LoginProps) {
         super(props);
         this.state = {
-            username: '', password: '', activeItem: 'BTPGuide',
+            username: '', password: '', activeItem: 'BTPGuide', recipeText:'StarterPack Recipes'
         };
     }
 
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
+
+    onSelectionChanged = (e: any, value: any) => {
+        console.log(value['value']);
+        this.setState({ activeItem: value['value'], recipeText: value['value'] })
+    }
 
     getPdf = () => {
         var divPdf = {
@@ -46,13 +59,19 @@ class EBook extends React.Component<LoginProps, IState> {
             return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true" style={divPdf}/>);
         }
 
-        if (this.state.activeItem === 'BTPGuide') {
-            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP36WeekGuide.pdf&amp;embedded=true" style={divPdf}/>);
+        if (this.state.activeItem === 'StarterPack Recipes') {
+            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true" style={divPdf} />);
         }
 
-        return (<div>
-            <iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true" style={divPdf}/>
-        </div>)
+        if (this.state.activeItem === 'September Recipes') {
+            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true" style={divPdf} />);
+        }
+
+        if (this.state.activeItem === 'October Recipes') {
+            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true" style={divPdf} />);
+        }
+
+        return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP36WeekGuide.pdf&amp;embedded=true" style={divPdf} />);
     }
 
     render() {
@@ -64,6 +83,7 @@ class EBook extends React.Component<LoginProps, IState> {
         if (this.props.logins.length > 0) {
             return (
                 <div>
+                    
                     <Menu attached='top' pointing secondary color='pink' compact>
                         <Menu.Item
                             name='BTPGuide'
@@ -71,15 +91,13 @@ class EBook extends React.Component<LoginProps, IState> {
                             onClick={this.handleItemClick}
                         />
                         <Menu.Item
-                            name='BTPRecipe'
-                            active={this.state.activeItem === 'BTPRecipe'}
-                            onClick={this.handleItemClick}
-                        />
-                        <Menu.Item
                             name='Workout'
                             active={this.state.activeItem === 'Workout'}
                             onClick={this.handleItemClick}
                         />
+                        <Menu.Menu position='right'>
+                            <Dropdown item text={this.state.recipeText} selection options={options} onChange={this.onSelectionChanged} />        
+                        </Menu.Menu>
                     </Menu>
 
                     <div style={divPdf}>

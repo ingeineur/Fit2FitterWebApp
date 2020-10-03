@@ -26,6 +26,7 @@ interface IState {
     dateChanged: boolean;
     clients: IClient[];
     clientDtos: IClientDto[];
+    group: string;
 }
 
 interface IClient {
@@ -33,6 +34,7 @@ interface IClient {
     name: string;
     age: number;
     city: string;
+    grp: string;
 }
 
 interface IActivityGuides {
@@ -59,6 +61,7 @@ interface IClientDto {
     address: string;
     city: string;
     age: number;
+    grp: string;
     created: string;
 }
 
@@ -130,10 +133,15 @@ class Dashboard extends React.Component<LoginProps, IState> {
         }
 
         this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
+            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city, grp: client.grp });
         });
 
-        this.setState({ clients: this.state.clients });
+
+        var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)]
+        if (client !== undefined) {
+            this.setState({ group: client.grp })
+            this.setState({ clients: this.state.clients });
+        }
     }
 
     constructor(props: LoginProps) {
@@ -151,7 +159,8 @@ class Dashboard extends React.Component<LoginProps, IState> {
             activityDtos: [],
             dateChanged: false,
             clientDtos: [],
-            clients:[]
+            clients: [],
+            group: ''
         };
     }
 
@@ -212,12 +221,15 @@ class Dashboard extends React.Component<LoginProps, IState> {
     setActivities = () => {
         if (this.state.activityDtos.length > 0 && this.state.clients.length > 0) {
 
-            if (this.state.activities.length === this.state.activityDtos.length) {
+            if (this.state.activities.length > 0) {
                 return;
             }
 
             this.state.activityDtos.forEach(activity => {
-                this.state.activities.push({ name: this.state.clients[this.state.clients.findIndex(x => x.id === activity.clientId)].name, ActivityDesc: this.state.clients[this.state.clients.findIndex(x => x.id === activity.clientId)].city, calories: activity.calories, steps: activity.steps });
+                var clientActivity = this.state.clients[this.state.clients.findIndex(x => x.id === activity.clientId)];
+                if (clientActivity !== null && this.state.group === clientActivity.grp) {
+                    this.state.activities.push({ name: clientActivity.name, ActivityDesc: clientActivity.city, calories: activity.calories, steps: activity.steps });
+                }
             })
         }
     }

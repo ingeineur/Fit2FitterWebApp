@@ -16,7 +16,9 @@ interface IState {
     error: string;
     login: string;
     checkMail: boolean;
+    unReadMessage: number;
     messageDtos: IMessageDto[];
+    apiUpdate: boolean;
 }
 
 interface IMessageDto {
@@ -48,7 +50,7 @@ class Home extends React.Component<LoginProps, IState > {
             fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    messageDtos: data
+                    messageDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
         }
     }
@@ -68,7 +70,8 @@ class Home extends React.Component<LoginProps, IState > {
     constructor(props: LoginProps) {
         super(props);
         this.state = {
-            username: '', password: '', activeItem: '', error: '', login: '', messageDtos: [], checkMail:false
+            username: '', password: '', activeItem: '', error: '', login: '',
+            messageDtos: [], checkMail: false, unReadMessage: 0, apiUpdate: false
         };
     }
 
@@ -113,9 +116,13 @@ class Home extends React.Component<LoginProps, IState > {
                     fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
                         .then(response => response.json() as Promise<IMessageDto[]>)
                         .then(data => this.setState({
-                            messageDtos: data, checkMail: true
+                            messageDtos: data, checkMail: true, apiUpdate: true
                         })).catch(error => console.log(error));
                 }
+            }
+
+            if (this.state.apiUpdate === true) {
+                this.setState({ unReadMessage: this.state.messageDtos.length, apiUpdate: false });
             }
 
             if (this.state.activeItem === 'Master') {
@@ -132,6 +139,10 @@ class Home extends React.Component<LoginProps, IState > {
 
             if (this.state.activeItem === 'Meal') {
                 return (<Redirect to="/meals" />);
+            }
+
+            if (this.state.activeItem === 'New Meal') {
+                return (<Redirect to="/macroguide" />);
             }
 
             if (this.state.activeItem === 'Activity') {
@@ -173,7 +184,7 @@ class Home extends React.Component<LoginProps, IState > {
                                             <Icon color='blue' name='calculator' />
                                             Body Assessments
                                     </Menu.Item>
-                                        <Menu.Item
+                                    <Menu.Item
                                             name='Meal'
                                             onClick={this.handleItemClick}>
                                             <Icon color='green' name='food' />
@@ -223,7 +234,7 @@ class Home extends React.Component<LoginProps, IState > {
                                         name='Messages'
                                         onClick={this.handleItemClick}>
                                         <Icon color='blue' name='mail' />
-                                        Messages ({this.state.messageDtos.length})
+                                        Messages ({this.state.unReadMessage})
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
@@ -267,6 +278,7 @@ class Home extends React.Component<LoginProps, IState > {
         this.setState({ login: 'logging' });
         this.props.requestLogout(this.state.username, this.state.password);
         this.props.requestLogins(this.state.username, this.state.password);
+        this.setState({ checkMail: false });
     }
 
     private clearCredentials = () => {

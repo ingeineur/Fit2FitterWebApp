@@ -295,5 +295,31 @@ namespace Fit2Fitter.Services.Implementation
                 return false;
             }
         }
+
+        public async Task<bool> UpdateMacroGuides(IEnumerable<MacrosGuideDto> macroGuides, DateTime created)
+        {
+            try
+            {
+                foreach (var guide in macroGuides)
+                {
+                    await this.trackerRepository.UpdateMacroGuide(new MacrosGuide
+                    {
+                        Id = guide.Id,
+                        Carb = guide.Carb,
+                        Protein = guide.Protein,
+                        Fat = guide.Fat,
+                        FV = guide.FV,
+                        Updated = DateTime.Now,
+                        Created = created,
+                        ClientId = guide.ClientId
+                    }).ConfigureAwait(false);
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
     }
 }

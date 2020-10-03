@@ -183,6 +183,12 @@ class Activities extends React.Component<LoginProps, IState> {
         });
     }
 
+    onCancel = () => {
+        this.resetActivities();
+        this.setActivities();
+        this.setState({ activities: this.state.activities, updated: !this.state.updated });
+    }
+
     onSave = () => {
         // delete rows
         this.deleteActivities();
@@ -236,8 +242,6 @@ class Activities extends React.Component<LoginProps, IState> {
                 this.setState({ dateChanged: false });
                 this.resetActivities();
                 this.getActivities();
-                //console.log('--> activities' + this.state.activities);
-                //console.log('--> activitiesDto' + this.state.activityDtos);
             }
 
             if (this.state.apiUpdate === true) {
@@ -303,7 +307,7 @@ class Activities extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row columns={3}>
                         <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' secondary>Cancel</Button>
+                            <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                         </Grid.Column>
                         <Grid.Column width={4} textAlign='left' floated='left'>
                             <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>

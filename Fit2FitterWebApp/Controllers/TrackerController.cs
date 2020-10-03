@@ -55,9 +55,31 @@ namespace Fit2FitterWebApp.Controllers
         }
 
         [HttpPut("macrosguide")]
-        public async Task<IActionResult> Put([FromQuery, Required]MacrosGuideDto guide)
+        public async Task<IActionResult> Put([FromBody, Required]MacrosGuideDto guide, [FromQuery, Required] string date)
         {
+            guide.Created = DateTime.Parse(date);
             var result = await this.trackerService.AddMacrosGuide(guide).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpPut("macrosguides")]
+        public async Task<IActionResult> Put([FromBody, Required]IEnumerable<MacrosGuideDto> guides, [FromQuery, Required] string dateString)
+        {
+            var date = DateTime.Parse(dateString);
+            foreach (var guide in guides)
+            {
+                guide.Created = date;
+                await this.trackerService.AddMacrosGuide(guide).ConfigureAwait(false);
+            }
+            
+            return this.Ok(true);
+        }
+
+        [HttpPut("macrosguides/update")]
+        public async Task<IActionResult> Update([FromBody, Required]IEnumerable<MacrosGuideDto> guides, [FromQuery, Required] string dateString)
+        {
+            var date = DateTime.Parse(dateString);
+            var result = await this.trackerService.UpdateMacroGuides(guides, date).ConfigureAwait(false);
             return this.Ok(result);
         }
 

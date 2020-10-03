@@ -88,6 +88,9 @@ namespace Fit2Fitter.Database.Data
                     .IsRequired()
                     .HasMaxLength(4);
 
+                entity.Property(e => e.Grp)
+                    .HasMaxLength(50);
+
                 entity.Property(e => e.Created)
                     .IsRequired()
                     .HasMaxLength(8);
