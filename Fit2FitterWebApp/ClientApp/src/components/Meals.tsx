@@ -10,6 +10,7 @@ import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MacroNew from './MacroNew'
 import MacroHeader from './MacroHeader'
 import MacroModal from './MacroModal'
+import ChartistGraph from 'react-chartist';
 
 interface IProps {
 }
@@ -487,6 +488,83 @@ class Meals extends React.Component<LoginProps, IState> {
             backgroundColor: this.getColour()
         };
 
+        var divCarb = {
+            color: 'white',
+            backgroundColor:'red'
+        };
+
+        var divPro = {
+            color: '#fffafa',
+            backgroundColor: 'orange'
+        };
+
+        var divFat = {
+            color: 'black',
+            backgroundColor: 'yellow'
+        };
+
+        var divVeg = {
+            color: '#fffafa',
+            backgroundColor: 'brown'
+        };
+
+        var carbMacros: number[] = [];
+        var proMacros: number[] = [];
+        var fatMacros: number[] = [];
+        var vegMacros: number[] = [];
+
+        for (var i = 0; i < 3; i++) {
+            if (i === 0) {
+                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                carbMacros.push(totalCarb);
+                proMacros.push(totalPro);
+                fatMacros.push(totalFat);
+                vegMacros.push(totalVeg);
+            }
+            else if (i === 1) {
+                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                carbMacros.push(totalCarb);
+                proMacros.push(totalPro);
+                fatMacros.push(totalFat);
+                vegMacros.push(totalVeg);
+            }
+            else if (i === 2) {
+                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                carbMacros.push(totalCarb);
+                proMacros.push(totalPro);
+                fatMacros.push(totalFat);
+                vegMacros.push(totalVeg);
+            }
+            else {
+                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                carbMacros.push(totalCarb);
+                proMacros.push(totalPro);
+                fatMacros.push(totalFat);
+                vegMacros.push(totalVeg);
+            }
+        }
+
+        var data = {
+            labels: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
+            series: [
+                carbMacros, proMacros, fatMacros, vegMacros
+            ]
+        };
+
+        var type = 'Bar'
+
         const activeItem = this.state.activeItem;
         console.log(this.state.meals);
         if (this.props.logins.length > 0) {
@@ -517,6 +595,17 @@ class Meals extends React.Component<LoginProps, IState> {
                                 <Segment textAlign='center' attached='bottom'>
                                     <MacroHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                                 </Segment>
+                            </Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <Grid.Column>
+                                <div>
+                                    <a>Total Macros Consumptions by Meal Types</a>
+                                </div>
+                                <div>
+                                    <a>Legend: </a><a style={divCarb}>Carb </a><a style={divPro}>Protein </a><a style={divFat}> Fat</a><a style={divVeg}> Fruits/Veg</a>
+                                    <ChartistGraph data={data} type={type} />
+                                </div>
                             </Grid.Column>
                         </Grid.Row>
                         <Grid.Row>

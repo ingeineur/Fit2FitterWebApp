@@ -67,19 +67,19 @@ class MacroHeader extends React.Component<IProps, IState> {
         var divLabelStyle1 = {
             color: '#fffafa',
             fontFamily: 'Comic Sans MS',
-            backgroundColor: 'Green'
+            backgroundColor: 'red'
         };
 
         var divLabelStyle2 = {
-            color: '#0a0212',
+            color: '#fffafa',
             fontFamily: 'Comic Sans MS',
-            backgroundColor: 'Yellow'
+            backgroundColor: 'orange'
         };
 
         var divLabelStyle3 = {
-            color: '#fffafa',
+            color: '#0a0212',
             fontFamily: 'Comic Sans MS',
-            backgroundColor: 'Red'
+            backgroundColor: 'yellow'
         };
 
         var divLabelStyle4 = {
@@ -89,9 +89,9 @@ class MacroHeader extends React.Component<IProps, IState> {
         };
 
         var divLabelStyle5 = {
-            color: '#0a0212',
+            color: '#fffafa',
             fontFamily: 'Comic Sans MS',
-            backgroundColor: 'White'
+            backgroundColor: 'Brown'
         };
 
         if (this.state.updated !== this.props.update)

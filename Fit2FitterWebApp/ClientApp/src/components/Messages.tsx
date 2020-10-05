@@ -32,6 +32,8 @@ interface IState {
     filterUnread: boolean;
     clientList: IOption[],
     toClientId: number;
+    numChar: number;
+    status: string;
 }
 
 interface IOption {
@@ -211,12 +213,22 @@ class Messages extends React.Component<LoginProps, IState> {
             clientList: [],
             toClientId: 2,
             sentMessageDtos: [],
-            sentMessages: [] 
+            sentMessages: [],
+            numChar: 0,
+            status:'Ready'
         };
     }
 
     updateMessage = (event: any) => {
-        this.setState({ typedMessage: event.target.value });
+        if (event.target.value.length > 255) {
+            this.setState({ status: 'Reached Characters Limit (255)' });
+            return;
+        }
+
+        this.setState({ typedMessage: event.target.value, status: 'Ready to send', numChar: event.target.value.length });
+        if (event.target.value.length < 1) {
+            this.setState({ status: 'Ready' });
+        }
     }
 
     setMessages = () => {
@@ -296,13 +308,14 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getMessagesNew = () => {
         if (this.state.clients.length < 1) {
-            console.log('-------------------------------> no clients');
             return;
         }
 
         if (this.state.clients.length < 1) {
             return;
         }
+
+        this.state.messages.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
 
         return (
             this.state.messages.map((item, index) =>
@@ -333,7 +346,6 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getSentMessagesNew = () => {
         if (this.state.clients.length < 1) {
-            console.log('-------------------------------> no clients');
             return;
         }
 
@@ -346,6 +358,8 @@ class Messages extends React.Component<LoginProps, IState> {
         //        filtered.push(msg);
         //    }
         //});
+
+        this.state.sentMessages.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
 
         return (
             this.state.sentMessages.map((item, index) =>
@@ -454,7 +468,7 @@ class Messages extends React.Component<LoginProps, IState> {
                 fromId: this.props.logins[0].clientId,
                 clientId: parseInt(this.state.toClientId.toString()),
             })
-        }).then(response => response.json()).then(data => this.setState({ updated: !this.state.updated})).catch(error => console.log('put macros ---------->' + error));
+        }).then(response => response.json()).then(data => this.setState({ updated: !this.state.updated, status:'Successfully Sent' })).catch(error => console.log('put macros ---------->' + error));
 
         // add rows
         setTimeout(() => {
@@ -489,13 +503,25 @@ class Messages extends React.Component<LoginProps, IState> {
             return (<Form reply>
                 <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} selection options={this.state.clientList} onChange={this.setToClient} />
                 <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
-                <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                <div>
+                    <a>{this.state.numChar} characters (max: 255)</a>
+                </div>
+                <div>
+                    <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                    <a>{this.state.status}</a>
+                </div>
             </Form>);
         }
 
         return (<Form reply>
             <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
-            <Button content='Drop Your Comment to Ida' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+            <div>
+                <a>{this.state.numChar} characters (max: 255)</a>
+            </div>
+            <div>
+                <Button content='Drop Your Comment to Ida' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                <a>{this.state.status}</a>
+            </div>
         </Form>);
     }
 
@@ -521,10 +547,11 @@ class Messages extends React.Component<LoginProps, IState> {
                             <Label size='large' as='a' color='pink' basic circular>Messages</Label>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column>
+                    <Grid.Row columns={2} textAlign='left'>
+                        <Grid.Column width={10} textAlign='left' floated='left'>
                             {this.getReplyOption()}
                         </Grid.Column>
+                        <Grid.Column/>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
