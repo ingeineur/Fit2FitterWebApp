@@ -489,23 +489,28 @@ class Meals extends React.Component<LoginProps, IState> {
         };
 
         var divCarb = {
-            color: 'white',
+            color: 'red',
             backgroundColor:'red'
         };
 
         var divPro = {
-            color: '#fffafa',
-            backgroundColor: 'orange'
+            color: '#FF5E13',
+            backgroundColor: '#FF5E13'
         };
 
         var divFat = {
-            color: 'black',
+            color: 'yellow',
             backgroundColor: 'yellow'
         };
 
         var divVeg = {
+            color: '#CE8B54',
+            backgroundColor: '#CE8B54'
+        };
+
+        var divLegends = {
             color: '#fffafa',
-            backgroundColor: 'brown'
+            backgroundColor: 'black'
         };
 
         var carbMacros: number[] = [];
@@ -513,46 +518,51 @@ class Meals extends React.Component<LoginProps, IState> {
         var fatMacros: number[] = [];
         var vegMacros: number[] = [];
 
-        for (var i = 0; i < 3; i++) {
+        const totalC = (this.state.meals.reduce(function (a, b) { return a + b.carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0); }, 0));
+        const totalP = (this.state.meals.reduce(function (a, b) { return a + b.protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0); }, 0));
+        const totalF = (this.state.meals.reduce(function (a, b) { return a + b.fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0); }, 0));
+        const totalV = (this.state.meals.reduce(function (a, b) { return a + b.fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0); }, 0));
+
+        for (var i = 0; i < 4; i++) {
             if (i === 0) {
                 var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                carbMacros.push(totalCarb);
-                proMacros.push(totalPro);
-                fatMacros.push(totalFat);
-                vegMacros.push(totalVeg);
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalPro / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 1) {
                 var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                carbMacros.push(totalCarb);
-                proMacros.push(totalPro);
-                fatMacros.push(totalFat);
-                vegMacros.push(totalVeg);
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalPro / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 2) {
                 var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                carbMacros.push(totalCarb);
-                proMacros.push(totalPro);
-                fatMacros.push(totalFat);
-                vegMacros.push(totalVeg);
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalPro / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else {
                 var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                carbMacros.push(totalCarb);
-                proMacros.push(totalPro);
-                fatMacros.push(totalFat);
-                vegMacros.push(totalVeg);
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalPro / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
             }
         }
 
@@ -600,11 +610,11 @@ class Meals extends React.Component<LoginProps, IState> {
                         <Grid.Row>
                             <Grid.Column>
                                 <div>
-                                    <a>Total Macros Consumptions by Meal Types</a>
+                                    <a>Breakdown (%) of Macros Consumptions</a>
                                 </div>
                                 <div>
-                                    <a>Legend: </a><a style={divCarb}>Carb </a><a style={divPro}>Protein </a><a style={divFat}> Fat</a><a style={divVeg}> Fruits/Veg</a>
                                     <ChartistGraph data={data} type={type} />
+                                    <a style={divCarb}>color</a><a>Carb% </a><a style={divPro}>color</a><a>Protein%</a><a style={divFat}>color</a><a> Fat% </a><a style={divVeg}>color</a><a> Fruits/Veg%</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>

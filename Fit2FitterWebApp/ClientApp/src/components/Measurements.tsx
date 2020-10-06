@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Input, Icon } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Input, Icon, Dropdown } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -35,6 +35,7 @@ interface IState {
     apiUpdate: boolean;
     savingStatus: string;
     dateChanged: boolean; 
+    measureType: string;
 }
 
 interface IMacroGuides {
@@ -109,6 +110,39 @@ interface IClient {
     age: number;
     created: string;
 }
+
+const measureType = [
+    {
+        key: 'Neck',
+        text: 'Neck',
+        value: 'Neck'
+    },
+    {
+        key: 'UpperArm',
+        text: 'UpperArm',
+        value: 'UpperArm'
+    },
+    {
+        key: 'Waist',
+        text: 'Waist',
+        value: 'Waist'
+    },
+    {
+        key: 'Hips',
+        text: 'Hips',
+        value: 'Hips'
+    },
+    {
+        key: 'Thigh',
+        text: 'Thigh',
+        value: 'Thigh'
+    },
+    {
+        key: 'Chest',
+        text: 'Chest',
+        value: 'Chest'
+    }
+];
 
 // At runtime, Redux will merge together...
 type LoginProps =
@@ -207,7 +241,8 @@ class Measurements extends React.Component<LoginProps, IState> {
                 weight: []
             },
             graphsData: [[]],
-            weightLabel:[]
+            weightLabel: [],
+            measureType:'Neck'
         };
     }
 
@@ -244,13 +279,7 @@ class Measurements extends React.Component<LoginProps, IState> {
         var index: number = 0;
         this.state.allMeasurementDtos.forEach(m => {
             var values: IMeta[] = [];
-            if (index === 0) {
-                this.state.weightLabel.push('Start');
-            }
-            else {
-                this.state.weightLabel.push('Measure ' + index);
-            }
-
+            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString());
             this.state.graphs.chest.push(m.chest);
             values.push({ 'meta': 'chest', 'value': m.chest});
             this.state.graphs.neck.push(m.neck);
@@ -267,9 +296,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.state.graphsData.push(values);
             index++;
         });
-
-        this.state.weightLabel.pop();
-        this.state.weightLabel.push('Now');
 
         this.setState({ graphs: this.state.graphs, graphsData: this.state.graphsData, weightLabel: this.state.weightLabel });
     }
@@ -375,13 +401,43 @@ class Measurements extends React.Component<LoginProps, IState> {
         return 'green';
     }
 
+    setMeasureType = (event: any, data: any) => {
+        this.setState({ updated: true, measureType: data['value'] });
+    }
+
+    getGraphData = () => {
+        if (this.state.measureType === 'Neck') {
+            return this.state.graphs.neck;
+        }
+
+        if (this.state.measureType === 'UpperArm') {
+            return this.state.graphs.upperArm;
+        }
+
+        if (this.state.measureType === 'Waist') {
+            return this.state.graphs.waist;
+        }
+
+        if (this.state.measureType === 'Thigh') {
+            return this.state.graphs.thigh;
+        }
+
+        if (this.state.measureType === 'Hips') {
+            return this.state.graphs.hips;
+        }
+
+        if (this.state.measureType === 'Chest') {
+            return this.state.graphs.chest;
+        }
+    }
+
     render() {
         var data = {
-            labels: ['chest', 'neck', 'upperArm', 'waist', 'hips', 'thigh'],
-            series: this.state.graphsData
+            labels: this.state.weightLabel,
+            series: [this.getGraphData()]
         };
 
-        var type = 'Bar'
+        var type = 'Line'
 
         var data2 = {
             labels: this.state.weightLabel,
@@ -433,7 +489,8 @@ class Measurements extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column>
                             <div>
-                                <a>All Measurements Progress</a>
+                                <a>All Measurements Progress: </a>
+                                <Dropdown basic id='plans' value={this.state.measureType} selection options={measureType} onChange={this.setMeasureType} />
                                 <ChartistGraph data={data} type={type} />
                             </div>
                             <div>
