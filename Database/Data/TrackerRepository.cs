@@ -229,11 +229,14 @@ namespace Fit2Fitter.Database.Data
 
             if (result != null)
             {
-                macrosGuide.Carb = result.Carb;
-                macrosGuide.Protein = result.Protein;
-                macrosGuide.Fat = result.Fat;
-                macrosGuide.FV = result.FV;
-                macrosGuide.Updated = result.Updated;
+                result.Food = macrosGuide.Food;
+                result.MealType = macrosGuide.MealType;
+                result.Carb = macrosGuide.Carb;
+                result.Protein = macrosGuide.Protein;
+                result.Fat = macrosGuide.Fat;
+                result.FV = macrosGuide.FV;
+                result.Updated = macrosGuide.Updated;
+                result.Created = macrosGuide.Created;
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -256,6 +259,18 @@ namespace Fit2Fitter.Database.Data
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             var result = await this.databaseContext.MacrosGuides.Where(x =>
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                this.databaseContext.MacrosGuides.RemoveRange(result);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task DeleteMacroGuide(int macroGuideId)
+        {
+            var result = await this.databaseContext.MacrosGuides.Where(x =>
+                x.Id == macroGuideId).ToListAsync().ConfigureAwait(false);
 
             if (result != null)
             {

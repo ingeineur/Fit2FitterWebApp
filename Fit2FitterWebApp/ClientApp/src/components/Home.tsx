@@ -191,15 +191,21 @@ class Home extends React.Component<LoginProps, IState > {
                                             Meals Tracker
                                     </Menu.Item>
                                     <Menu.Item
-                                            name='Activity'
-                                            onClick={this.handleItemClick}>
-                                            <Icon color='orange' name='child' />
-                                            Activities Tracker
+                                        name='New Meal'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='violet' name='food' />
+                                        Meals Tracker (New Version)
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
+                                    <Menu.Item
+                                        name='Activity'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='orange' name='child' />
+                                        Activities Tracker
+                                    </Menu.Item>
                                     <Menu.Item
                                         name='Dashboard'
                                         onClick={this.handleItemClick}>

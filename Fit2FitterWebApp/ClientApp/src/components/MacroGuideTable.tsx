@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Label, Icon, Segment, Checkbox, Modal } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Label, Icon, Segment, Checkbox, Modal, Radio } from 'semantic-ui-react'
 import MacroGuideModal from './MacroGuideModal'
 import MacroGuideModifyModal from './MacroGuideModifyModal'
 
@@ -21,6 +21,7 @@ interface IMealDetails {
     fat: number;
     fv: number;
     check: boolean;
+    remove: boolean;
 }
 
 interface IState {
@@ -33,6 +34,12 @@ interface IState {
     openAddMeal: boolean;
     updateMeal: boolean;
     dirty: boolean;
+    updateDetails: IUpdateMeal;
+}
+
+interface IUpdateMeal {
+    meal: IMealDetails;
+    index: number;
 }
 
 class MacroGuideTable extends React.Component<IProps, IState> {
@@ -45,12 +52,18 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         this.setState({ addedMeals: this.state.addedMeals });
     }
 
+    updateMeal = (index: number, meal: IMealDetails) => {
+        this.setState({ updateDetails: { index: index, meal: meal } });
+    }
+
     constructor(props: IProps) {
         super(props);
         this.addMeal = this.addMeal.bind(this);
+        this.updateMeal = this.updateMeal.bind(this);
         this.state = {
             username: '', password: '', updated: false, mealType: 1, meals: [],
-            dirty: false, openAddMeal: false, updateMeal: false, addedMeals:[]
+            dirty: false, openAddMeal: false, updateMeal: false, addedMeals: [],
+            updateDetails: { index: -1, meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false } }
         };
     }
 
@@ -66,16 +79,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     }
 
     handleMacroChange = (field: any, value: any) => {
-        //if (parseFloat(value['value']) === 0 || isNaN(parseFloat(value['value']))) {
-        //    this.state.meals[parseInt(value['className'])]['macro'] = 0.0;
-        //}
-        //else {
-        //    const re = /^[-+,0-9,\.]+$/;
-        //    if (value['value'] === '' || re.test(value['value'])) {
-        //        this.state.meals[parseInt(value['className'])]['macro'] = value['value'];
-        //    }
-        //}
-
         const re = /^[-+,0-9,\.]+$/;
         if (value['value'] === '' || re.test(value['value'])) {
             this.state.meals[parseInt(value['className'])]['carb'] = value['value'];
@@ -84,44 +87,49 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     }
 
     handleCheckChange = (field: any, value: any) => {
-        console.log(value['checked']);
-        this.state.meals[parseInt(value['className'])]['check'] = value['value'];
+        this.state.meals.forEach(x => x.check = false);
+        this.state.meals[parseInt(value['className'])]['check'] = value['checked'];
         this.setState({ meals: this.state.meals, updated: true });
     }
 
     getRows = () => {
+        var arr = this.state.meals.filter(x => x.remove !== true);
         return (
-            this.state.meals.map((item, index) =>
+            arr.map((item, index) =>
                 <Grid.Row className={'row'} key={index} columns={3} stretched>
                     <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
-                        <Checkbox className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
+                        <Radio className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
                     <Grid.Column className={'col_food'} key={index + 1} width={6}>
-                        <a>{item.food}</a>
+                        <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a>{item.carb}</a>
+                        <a key={index + 2}>{item.carb}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a>{item.protein}</a>
+                        <a key={index + 3}>{item.protein}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a>{item.fat}</a>
+                        <a key={index + 4}>{item.fat}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fv'} key={index + 5} width={2}>
-                        <a>{item.fv}</a>
+                        <a key={index + 5}>{item.fv}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));
     }
 
-    addActivity = (event: any) => {
-        this.state.meals.push({ id: 0, food: 'empty', carb: 0, protein: 0, fat:0, fv:0, check: false });
-        this.setState({ updated: true });
-    }
-
     removeActivities = (event: any) => {
-        var arr = this.state.meals.filter(obj => obj.check === false);
+        var arr: IMealDetails[] = [];
+        this.state.meals.forEach(obj => {
+            if (obj.check === true && obj.id != -1) {
+                obj.remove = true;
+                arr.push(obj);
+            }
+            else if (obj.check === false) {
+                arr.push(obj);
+            }
+        });
         this.setState({ updated: true, meals: arr });
     }
 
@@ -137,7 +145,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         while (this.state.addedMeals.length > 0) {
             this.state.addedMeals.pop();
         }
-        this.setState({ openAddMeal: open, addedMeals: this.state.addedMeals, meals: this.state.meals });
+        this.setState({ updated: true, openAddMeal: open, addedMeals: this.state.addedMeals, meals: this.state.meals });
     }
 
     handleCancelAdd = (open: boolean) => {
@@ -146,6 +154,17 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         }
 
         this.setState({ openAddMeal: open, addedMeals: this.state.addedMeals });
+    }
+
+    handleUpdate = (open: boolean) => {
+        if (this.state.updateDetails.index > -1 && this.state.updateDetails.index < this.state.meals.length) {
+            console.log(this.state.updateDetails.meal);
+            this.state.meals[this.state.updateDetails.index] = this.state.updateDetails.meal;
+            this.state.updateDetails.index = -1;
+            this.setState({ updated: true, meals: this.state.meals, updateDetails: this.state.updateDetails });
+        }
+
+        this.setState({ updateMeal: open });
     }
 
     handleUpdateOpen = (open: boolean) => {
@@ -220,14 +239,14 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         <Modal.Header>Update Your Meal</Modal.Header>
                                         <Modal.Content scrolling>
                                             <Modal.Description>
-                                                <MacroGuideModifyModal update={this.state.updated} meals={this.state.meals} />
+                                                <MacroGuideModifyModal updateMeal={this.updateMeal} update={this.state.updated} meals={this.state.meals} />
                                             </Modal.Description>
                                         </Modal.Content>
                                         <Modal.Actions>
                                             <Button size='tiny' onClick={() => this.handleUpdateOpen(false)} secondary>
                                                 Cancel <Icon name='chevron right' />
                                             </Button>
-                                            <Button size='tiny' onClick={() => this.handleUpdateOpen(false)} primary>
+                                            <Button size='tiny' onClick={() => this.handleUpdate(false)} primary>
                                                 Ok <Icon name='chevron right' />
                                             </Button>
                                         </Modal.Actions>

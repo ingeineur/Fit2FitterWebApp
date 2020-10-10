@@ -243,6 +243,14 @@ namespace Fit2Fitter.Database.Data
             modelBuilder.Entity<Models.MacrosGuide>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                
+                entity.Property(e => e.Food)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.MealType)
+                    .IsRequired()
+                    .HasMaxLength(10);
 
                 entity.Property(e => e.Carb)
                     .IsRequired()

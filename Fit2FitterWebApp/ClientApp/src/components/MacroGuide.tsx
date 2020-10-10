@@ -8,8 +8,8 @@ import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MacroNew from './MacroNew'
-import MacroHeader from './MacroHeader'
-import MacroModal from './MacroModal'
+import MacroGuideHeader from './MacroGuideHeader'
+import MacroGuideReviewModal from './MacroGuideReviewModal'
 import MacroGuideTable from './MacroGuideTable'
 
 interface IProps {
@@ -31,6 +31,7 @@ interface IState {
     savingStatus: string;
     dateChanged: boolean;
     openReview: boolean;
+    savingDone: boolean;
 }
 
 interface IMacroGuides {
@@ -62,6 +63,7 @@ interface IMealDetails {
     fat: number;
     fv: number;
     check: boolean;
+    remove: boolean;
 }
 
 interface IClientDto {
@@ -77,9 +79,11 @@ interface IClientDto {
 interface IMealDto {
     id: number;
     mealType: string;
-    macroType: string;
-    mealDesc: string;
-    macroValue: number;
+    food: string;
+    carb: number;
+    protein: number;
+    fat: number;
+    fv: number;
     updated: string;
     created: string;
     clientId: number;
@@ -130,7 +134,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                 })).catch(error => console.log(error));
 
             //get all meals
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/meals?date=' + date.toISOString())
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + date.toISOString())
                 .then(response => response.json() as Promise<IMealDto[]>)
                 .then(data => this.setState({
                     mealDtos: data, apiUpdate: true
@@ -144,12 +148,10 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
     updateInput = (event: any) => {
         this.setState({ username: event.target.value });
-        console.log(event.target.value);
     }
 
     updateInput2 = (event: any) => {
         this.setState({ password: event.target.value });
-        console.log(event.target.value);
     }
 
     updateMeals = (mealType: number, meals: IMealDetails[]) => {
@@ -174,7 +176,8 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             apiUpdate: false,
             savingStatus: 'Saved',
             dateChanged: false,
-            openReview: false
+            openReview: false,
+            savingDone: false
         };
     }
 
@@ -268,34 +271,105 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     deleteMeals = () => {
-        this.setState({ savingStatus: 'Saving in progress' })
-        var fetchStr = 'api/tracker/' + this.props.logins[0].clientId + '/meal/delete?date=' + this.state.selectedDate.toISOString();
+        var removedMeals: IMealDetails[] = [];
+        for (let i = 0; i < 4; i++) {
+            var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove === true && x.id !== 0);
+            removedMeals.push(...meals);
+        }
+
+        removedMeals.forEach(meal => {
+            this.setState({ savingStatus: 'Saving in progress' })
+            var fetchStr = 'api/tracker/' + meal.id + '/macrosguide/delete';
+            fetch(fetchStr, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saving in progress' })).catch(error => console.log('delete meals---------->' + error));
+        });
+    }
+
+    saveMacrosGuide = () => {
+        var fetchStr = 'api/tracker/macrosguides?dateString=' + this.state.selectedDate.toISOString();
+        var newMealDtos: IMealDto[] = [];
+        for (let i = 0; i < 4; i++) {
+            var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove === false);
+            meals.forEach(x => {
+                newMealDtos.push({
+                    id: x.id,
+                    food: x.food,
+                    mealType: this.getMealTypeString(i),
+                    carb: parseFloat(x.carb.toString()),
+                    protein: parseFloat(x.protein.toString()),
+                    fat: parseFloat(x.fat.toString()),
+                    fv: parseFloat(x.fv.toString()),
+                    created: this.state.selectedDate.toISOString(),
+                    updated: (new Date()).toISOString(),
+                    clientId: this.props.logins[0].clientId
+                });
+            });
+        }
+
+        console.log(JSON.stringify(newMealDtos));
+
         fetch(fetchStr, {
-            method: 'DELETE',
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-            }
-        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saving in progress' })).catch(error => console.log('delete meals---------->' + error));
+            },
+            body: JSON.stringify(newMealDtos)
+        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved', savingDone: true })).catch(error => console.log('save  ---------->' + error));
+    }
+
+    updateMacrosGuide = () => {
+        this.setState({ savingStatus: 'Saving in progress' })
+        var fetchStr = 'api/tracker/macrosguides/update?dateString=' + this.state.selectedDate.toISOString();
+
+        var newMealDtos: IMealDto[] = [];
+        for (let i = 0; i < 4; i++) {
+            var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove === false && x.id !== -1);
+            meals.forEach(x => {
+                newMealDtos.push({
+                    id: x.id,
+                    food: x.food,
+                    mealType: this.getMealTypeString(i),
+                    carb: parseFloat(x.carb.toString()),
+                    protein: parseFloat(x.protein.toString()),
+                    fat: parseFloat(x.fat.toString()),
+                    fv: parseFloat(x.fv.toString()),
+                    created: this.state.selectedDate.toISOString(),
+                    updated: (new Date()).toISOString(),
+                    clientId: this.props.logins[0].clientId
+                });
+            });
+        }
+
+        fetch(fetchStr, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newMealDtos)
+        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
     }
 
     onSave = () => {
+        this.setState({ savingStatus: 'Saving in progress' })
+
         // delete rows
         this.deleteMeals();
 
         // add rows
-        //setTimeout(() => {
-        //    for (let i = 0; i < 4; i++) {
-        //        this.saveCarb(i);
-        //        this.saveProtein(i);
-        //        this.saveFat(i);
-        //        this.saveFruits(i);
-        //    }
-        //}, 2000);
+        setTimeout(() => {
+            this.saveMacrosGuide();
+        }, 2000);
     }
 
     getMeals = () => {
-        fetch('api/tracker/' + this.props.logins[0].clientId + '/meals?date=' + this.state.selectedDate.toISOString())
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IMealDto[]>)
             .then(data => this.setState({
                 mealDtos: data, apiUpdate: true
@@ -328,6 +402,32 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         return 'green';
     }
 
+    setMeals = () => {
+        if (this.state.mealDtos.length > 0) {
+
+            var totalMeals = 0;
+            for (let i = 0; i < 4; i++) {
+                totalMeals += this.state.meals[this.getMealTypeIndex(i)].length;
+            }
+
+            if (totalMeals === this.state.mealDtos.length) {
+                return;
+            }
+
+            this.state.mealDtos.forEach(meal => {
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, check: false, remove: false });
+            })
+
+            this.setState({ meals: this.state.meals });
+        }
+    }
+
+    onCancel = () => {
+        this.resetMeals();
+        this.getMeals();
+        this.setState({ savingStatus: 'Saved' });
+    }
+
     render() {
         var divLabelStyle = {
             color: '#fffafa',
@@ -335,20 +435,25 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         };
 
         const activeItem = this.state.activeItem;
-        console.log(this.state.meals);
-        if (true) {
-        //if (this.props.logins.length > 0) {
-            //if (this.state.dateChanged === true) {
-            //    this.setState({ dateChanged: false });
-            //    this.resetMeals();
-            //    this.getMeals();
-            //}
+        if (this.props.logins.length > 0) {
+            if (this.state.savingDone === true) {
+                this.setState({ savingDone: false });
+                this.resetMeals();
+                this.getMeals();
+            }
 
-            //if (this.state.apiUpdate === true) {
-            //    this.setState({ apiUpdate: false, updated: !this.state.updated });
-            //    this.setMacroGuides();
-            //    this.setMeals();
-            //}
+            if (this.state.dateChanged === true) {
+                this.setState({ dateChanged: false });
+                this.resetMeals();
+                this.getMeals();
+            }
+
+            if (this.state.apiUpdate === true) {
+                this.setState({ apiUpdate: false, updated: !this.state.updated });
+                this.setMacroGuides();
+                this.setMeals();
+            }
+
             return (
                 <div>
                     <Grid centered>
@@ -363,6 +468,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         <Grid.Row>
                             <Grid.Column>
                                 <Segment textAlign='center' attached='bottom'>
+                                    <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                                 </Segment>
                             </Grid.Column>
                         </Grid.Row>
@@ -407,7 +513,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         </Grid.Row>
                         <Grid.Row columns={3}>
                             <Grid.Column width={4} textAlign='left' floated='left'>
-                                <Button floated='left' size='tiny' secondary>Cancel</Button>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                             </Grid.Column>
                             <Grid.Column width={4} textAlign='left' floated='left'>
                                 <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
@@ -423,14 +529,12 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                     <Modal.Content scrolling>
                                         <Modal.Description>
+                                            <MacroGuideReviewModal guides={this.state.guides} meals={this.state.meals} update={this.state.updated} />
                                         </Modal.Description>
                                     </Modal.Content>
                                     <Modal.Actions>
                                         <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                            Cancel <Icon name='chevron right' />
-                                        </Button>
-                                        <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                            Ok <Icon name='chevron right' />
+                                            Close <Icon name='chevron right' />
                                         </Button>
                                     </Modal.Actions>
                                 </Modal>

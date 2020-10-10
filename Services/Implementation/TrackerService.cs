@@ -97,17 +97,38 @@ namespace Fit2Fitter.Services.Implementation
         {
             try
             {
-                await this.trackerRepository.AddMacroGuide(new MacrosGuide
+                if (macrosGuide.Id < 1)
                 {
-                    Carb = macrosGuide.Carb,
-                    Protein = macrosGuide.Protein,
-                    Fat = macrosGuide.Fat,
-                    FV = macrosGuide.FV,
-                    Updated = DateTime.Now,
-                    Created = DateTime.Now,
-                    ClientId = macrosGuide.ClientId
-                }).ConfigureAwait(false);
-
+                    await this.trackerRepository.AddMacroGuide(new MacrosGuide
+                    {
+                        Food = macrosGuide.Food,
+                        MealType = macrosGuide.MealType,
+                        Carb = macrosGuide.Carb,
+                        Protein = macrosGuide.Protein,
+                        Fat = macrosGuide.Fat,
+                        FV = macrosGuide.FV,
+                        Updated = DateTime.Now,
+                        Created = macrosGuide.Created,
+                        ClientId = macrosGuide.ClientId
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    await this.trackerRepository.UpdateMacroGuide(new MacrosGuide
+                    {
+                        Id = macrosGuide.Id,
+                        Food = macrosGuide.Food,
+                        MealType = macrosGuide.MealType,
+                        Carb = macrosGuide.Carb,
+                        Protein = macrosGuide.Protein,
+                        Fat = macrosGuide.Fat,
+                        FV = macrosGuide.FV,
+                        Updated = DateTime.Now,
+                        Created = macrosGuide.Created,
+                        ClientId = macrosGuide.ClientId
+                    }).ConfigureAwait(false);
+                }
+                
                 return true;
             }
             catch (Exception e)
@@ -234,6 +255,8 @@ namespace Fit2Fitter.Services.Implementation
             return macrosGuides.Select(guide => new MacrosGuideDto
             {
                 Id = guide.Id,
+                Food = guide.Food,
+                MealType = guide.MealType,
                 Carb = guide.Carb,
                 Protein = guide.Protein,
                 Fat = guide.Fat,
@@ -296,6 +319,19 @@ namespace Fit2Fitter.Services.Implementation
             }
         }
 
+        public async Task<bool> DeleteMacroGuide(int macroGuideId)
+        {
+            try
+            {
+                await this.trackerRepository.DeleteMacroGuide(macroGuideId).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> UpdateMacroGuides(IEnumerable<MacrosGuideDto> macroGuides, DateTime created)
         {
             try
@@ -305,6 +341,8 @@ namespace Fit2Fitter.Services.Implementation
                     await this.trackerRepository.UpdateMacroGuide(new MacrosGuide
                     {
                         Id = guide.Id,
+                        Food = guide.Food,
+                        MealType = guide.MealType,
                         Carb = guide.Carb,
                         Protein = guide.Protein,
                         Fat = guide.Fat,

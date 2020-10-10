@@ -18,6 +18,7 @@ interface IMealDetails {
     fat: number;
     fv: number;
     check: boolean;
+    remove: boolean;
 }
 
 interface IState {
@@ -25,6 +26,7 @@ interface IState {
     meals: IMealDetails[];
     dirty: boolean;
     updated: boolean;
+    status: string
 }
 
 class MacroGuideModal extends React.Component<IProps, IState> {
@@ -33,8 +35,8 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             dirty: false,
-            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false },
-            updated: false, meals:[]
+            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false },
+            updated: false, meals: [], status:''
         };
     }
 
@@ -79,8 +81,15 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     addMeal = () => {
-        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: 0, check: false });
+        if (this.state.meal.food.trim().length < 1) {
+            this.setState({ status: 'Error' });
+            return;
+        }
+
+        this.setState({ status: 'OK' });
+        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove });
         this.setState({ meals: this.state.meals, updated: true })
+        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false } });
     }
 
     removeLastAddedMeal = () => {
@@ -91,15 +100,34 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     getItems = () => {
+        if (this.state.meals.length < 1) {
+            return (<List.Item key={0}>
+                - EMPTY -
+                </List.Item>);
+        }
+
         return (
             this.state.meals.map((item, index) =>
-                <List.Item>
-                    {item.food} - carb: {item.carb}g protein: {item.protein}g fat: {item.fat}g fruits/vegs: {item.fat}
+                <List.Item key={index}>
+                    {item.food} - carb: {item.carb}g protein: {item.protein}g fat: {item.fat}g fruits/vegs: {item.fv} serving(s)
                 </List.Item>
             ));
     }
 
+    getColour = () => {
+        if (this.state.status === 'Error') {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
     render() {
+
+        var divLabelStyle = {
+            color: '#fffafa',
+            backgroundColor: this.getColour()
+        };
 
         var divLabelStyle1 = {
             color: '#fffafa',
@@ -153,28 +181,35 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Carb</h5>
+                        <h5>Carb (g)</h5>
                     </Grid.Column>
                     <Grid.Column width={10} textAlign='left'>
                         <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Protein</h5>
+                        <h5>Protein (g)</h5>
                     </Grid.Column>
                     <Grid.Column width={10} textAlign='left'>
                         <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Fat</h5>
+                        <h5>Fat (g)</h5>
                     </Grid.Column>
                     <Grid.Column width={10} textAlign='left'>
                         <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Fruits or Veggies</h5>
+                        <h5>Fruit/Veg (serv)</h5>
                     </Grid.Column>
                     <Grid.Column width={10} textAlign='left'>
                         <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row>
+                    <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
+                        <div style={divLabelStyle}>
+                            <a>{this.state.status}</a>
+                        </div>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row columns={3}>
@@ -189,6 +224,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
+                        <a>List of new items:</a>
                         <List>
                             {this.getItems()}
                         </List>

@@ -126,9 +126,9 @@ namespace Fit2FitterWebApp.Controllers
         }
 
         [HttpGet("{clientId}/macrosguide")]
-        public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, [FromQuery, Required] DateTime date)
+        public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, [FromQuery, Required] string date)
         {
-            var data = await this.trackerService.GetMacrosGuides(clientId, date).ConfigureAwait(false);
+            var data = await this.trackerService.GetMacrosGuides(clientId, DateTime.Parse(date)).ConfigureAwait(false);
             return data.ToArray();
         }
 
@@ -150,6 +150,13 @@ namespace Fit2FitterWebApp.Controllers
         public async Task<IActionResult> deleteComment(int commentId)
         {
             var result = await this.trackerService.DeleteComment(commentId).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpDelete("{macrosGuideId}/macrosguide/delete")]
+        public async Task<IActionResult> deleteMacrosGuide(int macrosGuideId)
+        {
+            var result = await this.trackerService.DeleteMacroGuide(macrosGuideId).ConfigureAwait(false);
             return this.Ok(result);
         }
     }

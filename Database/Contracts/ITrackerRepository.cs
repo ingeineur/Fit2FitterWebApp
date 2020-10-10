@@ -171,6 +171,13 @@ namespace Fit2Fitter.Database.Contracts
         Task DeleteMacroGuides(int clientId, DateTime date);
 
         /// <summary>
+        /// Delete MacroGuide by Id
+        /// </summary>
+        /// <param name="macroGuideId">id</param>
+        /// <returns></returns>
+        Task DeleteMacroGuide(int macroGuideId);
+
+        /// <summary>
         /// Delete client activities by date
         /// </summary>
         /// <param name="clientId"></param>

@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
     <None Remove="ClientApp\src\store\Client.ts" />
     <None Remove="ClientApp\src\store\MacroPlan.ts" />
   </ItemGroup>
