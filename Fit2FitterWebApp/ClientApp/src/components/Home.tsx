@@ -185,16 +185,16 @@ class Home extends React.Component<LoginProps, IState > {
                                             Body Assessments
                                     </Menu.Item>
                                     <Menu.Item
-                                            name='Meal'
-                                            onClick={this.handleItemClick}>
-                                            <Icon color='green' name='food' />
-                                            Meals Tracker
-                                    </Menu.Item>
-                                    <Menu.Item
                                         name='New Meal'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='violet' name='food' />
+                                        <Icon color='red' name='food' />
                                         Meals Tracker (New Version)
+                                    </Menu.Item>
+                                    <Menu.Item
+                                        name='Messages'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='blue' name='mail' />
+                                        Messages ({this.state.unReadMessage})
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
@@ -231,20 +231,6 @@ class Home extends React.Component<LoginProps, IState > {
                                             Logout
                                     </Menu.Item>
                                 </Menu>
-                            </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row columns={2}>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='Messages'
-                                        onClick={this.handleItemClick}>
-                                        <Icon color='blue' name='mail' />
-                                        Messages ({this.state.unReadMessage})
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                            <Grid.Column width={8}>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>

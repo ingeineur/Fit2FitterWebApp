@@ -85,7 +85,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
 
     getMeals = (meals: IMealDetails[]) => {
         const arr: any[] = [];
-        meals.forEach((item) => { arr.push(item.food + ' : ' + item.carb + 'g ' + item.protein + 'g ' + item.fat + 'g ' + item.fv + 'serv') });
+        meals.forEach((item) => { arr.push(item.food + ' : ' + item.carb.toFixed(2) + 'g ' + item.protein.toFixed(2) + 'g ' + item.fat.toFixed(2) + 'g ' + item.fv.toFixed(2) + 'serv') });
         return arr;
     }
 
@@ -98,13 +98,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{item.carb}</a>
+                        <a key={index + 2}>{item.carb.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{item.protein}</a>
+                        <a key={index + 3}>{item.protein.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{item.fat}</a>
+                        <a key={index + 4}>{item.fat.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fv'} key={index + 5} width={2}>
                         <a key={index + 5}>{item.fv}</a>
@@ -153,16 +153,16 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                                 <a key={mealType + 1}>Sub-Total Macros</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={mealType + 2} width={2}>
-                                <a key={mealType + 2}>{totalCarb}</a>
+                                <a key={mealType + 2}>{totalCarb.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_protein'} key={mealType + 3} width={2}>
-                                <a key={mealType + 3}>{totalProtein}</a>
+                                <a key={mealType + 3}>{totalProtein.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_fat'} key={mealType + 4} width={2}>
-                                <a key={mealType + 4}>{totalFat}</a>
+                                <a key={mealType + 4}>{totalFat.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_fv'} key={mealType + 5} width={2}>
-                                <a key={mealType + 5}>{totalFv}</a>
+                                <a key={mealType + 5}>{totalFv.toFixed(2)}</a>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -219,7 +219,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         <div>
                             <a>Total Macros Consumptions</a>
                             <ChartistGraph data={data} type={type} />
-                            <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalCarb}g] [Protein: {totalProtein}g] [Fat: {totalFat}g]</a></div>
+                            <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalCarb.toFixed(2)}g] [Protein: {totalProtein.toFixed(2)}g] [Fat: {totalFat.toFixed(2)}g]</a></div>
                         </div>
                     </Grid.Column>
                 </Grid.Row>

@@ -104,13 +104,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{item.carb}</a>
+                        <a key={index + 2}>{item.carb.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{item.protein}</a>
+                        <a key={index + 3}>{item.protein.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{item.fat}</a>
+                        <a key={index + 4}>{item.fat.toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fv'} key={index + 5} width={2}>
                         <a key={index + 5}>{item.fv}</a>
@@ -223,7 +223,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                                 Cancel <Icon name='chevron right' />
                                             </Button>
                                             <Button size='tiny' onClick={() => this.handleAdd(false)} primary>
-                                                Ok <Icon name='chevron right' />
+                                                Proceed <Icon name='chevron right' />
                                             </Button>
                                         </Modal.Actions>
                                     </Modal>
@@ -247,7 +247,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                                 Cancel <Icon name='chevron right' />
                                             </Button>
                                             <Button size='tiny' onClick={() => this.handleUpdate(false)} primary>
-                                                Ok <Icon name='chevron right' />
+                                                Proceed <Icon name='chevron right' />
                                             </Button>
                                         </Modal.Actions>
                                     </Modal>

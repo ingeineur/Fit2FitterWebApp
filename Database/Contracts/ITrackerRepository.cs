@@ -85,6 +85,21 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime date);
 
         /// <summary>
+        /// Find food by keyword
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <returns></returns>
+        Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword);
+
+        Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId);
+
+        Task<IEnumerable<Models.FoodNutrientConversionFactor>> FindNutrientConversionFactor(string fdcId);
+
+        Task<IEnumerable<Models.FoodCalorieConversionFactor>> FindCalorieConversionFactor(string conversionId);
+
+        Task<IEnumerable<Models.FoodNutrient>> FindFoodNutrients(string fdcId, string nutrientId);
+
+        /// <summary>
         /// Add a new client measurement.
         /// </summary>
         /// <param name="measurement"></param>

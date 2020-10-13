@@ -62,6 +62,12 @@ namespace Fit2Fitter.Database.Data
         /// </summary>
         public virtual DbSet<Models.Comment> Comments { get; set; }
 
+        public virtual DbSet<Models.FoodLegacyItem> FoodLegacy { get; set; }
+        public virtual DbSet<Models.FoodPortionLegacyItem> FoodPortionsLegacy { get; set; }
+        public virtual DbSet<Models.FoodNutrientConversionFactor> FoodNutrientConversionFactor { get; set; }
+        public virtual DbSet<Models.FoodCalorieConversionFactor> FoodCalorieConversionFactor { get; set; }
+        public virtual DbSet<Models.FoodNutrient> FoodNutrients { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Models.Client>(entity =>
@@ -398,6 +404,127 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.FromId)
                     .IsRequired()
                     .HasMaxLength(4);
+            });
+
+            modelBuilder.Entity<Models.FoodLegacyItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FdcId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.DataType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Category)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.PublicationDate)
+                    .IsRequired()
+                    .HasMaxLength(8);
+            });
+
+            modelBuilder.Entity<Models.FoodPortionLegacyItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FoodPortionId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.FdcId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.SeqNum)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.Amount)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.MeasureUnitId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.PortionDescription)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Modifier)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.GramWeight)
+                    .IsRequired()
+                    .HasMaxLength(8);
+            });
+
+            modelBuilder.Entity<Models.FoodNutrientConversionFactor>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FoodNutrientConversionFactorId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.FdcId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<Models.FoodCalorieConversionFactor>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FoodNutrientConversionFactorId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.ProteinValue)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.FatValue)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.CarbValue)
+                    .IsRequired()
+                    .HasMaxLength(8);
+            });
+
+            modelBuilder.Entity<Models.FoodNutrient>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FdcId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.NutrientId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.Amount)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.DataPoint)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.DerivationId)
+                    .IsRequired()
+                    .HasMaxLength(10);
             });
         }
     }

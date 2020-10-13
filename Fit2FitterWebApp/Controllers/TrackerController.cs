@@ -132,6 +132,20 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{keyword}/foods")]
+        public async Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword)
+        {
+            var data = await this.trackerService.GetFoods(keyword).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{fdcId}/food/portions")]
+        public async Task<IEnumerable<FoodPortionDto>> GetFoodPortions(string fdcId)
+        {
+            var data = await this.trackerService.GetFoodPortions(fdcId).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpDelete("{clientId}/meal/delete")]
         public async Task<IActionResult> deleteMeals(int clientId, [FromQuery, Required] string date)
         {

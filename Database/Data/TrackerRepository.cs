@@ -102,6 +102,38 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword)
+        {
+            //string[] categories = {"1", "4", "5", "6", "7", "8", "9", "11", "12", "13", "14", 
+            //    "15", "16", "17", "18", "20", "22", "25"};
+            return await this.databaseContext.FoodLegacy.Where(x =>
+                x.Description.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId)
+        {
+            return await this.databaseContext.FoodPortionsLegacy.Where(x =>
+                x.FdcId == fdcId).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<Models.FoodNutrientConversionFactor>> FindNutrientConversionFactor(string fdcId)
+        {
+            return await this.databaseContext.FoodNutrientConversionFactor.Where(x =>
+                x.FdcId == fdcId).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<Models.FoodCalorieConversionFactor>> FindCalorieConversionFactor(string conversionId)
+        {
+            return await this.databaseContext.FoodCalorieConversionFactor.Where(x =>
+                x.FoodNutrientConversionFactorId == conversionId).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<Models.FoodNutrient>> FindFoodNutrients(string fdcId, string nutrientId)
+        {
+            return await this.databaseContext.FoodNutrients.Where(x =>
+                x.FdcId == fdcId && x.NutrientId == nutrientId).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async Task AddMeasurement(Measurement measurement)
         {
             if (await this.clientRepository.FindClientById(measurement.ClientId).ConfigureAwait(false) != null)

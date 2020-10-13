@@ -267,6 +267,104 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        private double GetNutrientValue(IEnumerable<FoodNutrient> nutrients)
+        {
+            if (nutrients == null)
+            {
+                return 0.0;
+            }
+
+            if (nutrients.FirstOrDefault() == null)
+            {
+                return 0.0;
+            }
+
+            return nutrients.First().Amount;
+        }
+
+        public async Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword)
+        {
+            var results = await this.trackerRepository.FindFoods(keyword).ConfigureAwait(false);
+            //var res = results.ToList().OrderBy(y => y.Description.StartsWith(keyword, StringComparison.OrdinalIgnoreCase))
+            //  .ThenBy(x => x);
+
+            var results2 = results.Select(Value => new { Value, Index = Value.Description.IndexOf(keyword, StringComparison.InvariantCultureIgnoreCase) })
+                   .Where(pair => pair.Index >= 0)
+                   .OrderBy(pair => pair.Index)
+                   .Select(pair => pair.Value);
+
+            List<FoodLegacyItem> temp = new List<FoodLegacyItem>();
+            int i = 0;
+            foreach (var f in results2)
+            {
+                temp.Add(f);
+                if (i > 20)
+                { 
+                    break; 
+                }
+                i++;
+            }
+
+            return temp.Select( food => new FoodLegacyItemDto { 
+                FdcId = food.FdcId,
+                Description = food.Description
+            });
+        }
+
+        public async Task<IEnumerable<FoodPortionDto>> GetFoodPortions(string fdcId)
+        {
+            var portions = await this.trackerRepository.FindPortions(fdcId).ConfigureAwait(false);
+            List<FoodPortionDto> dtos = new List<FoodPortionDto>();
+            var carbs = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1005").ConfigureAwait(false));
+            var protein = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1003").ConfigureAwait(false));
+            var fat = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1004").ConfigureAwait(false));
+
+            if (carbs == 0.0 && 
+                protein == 0.0 && 
+                fat == 0.0)
+            {
+                return dtos;
+            }
+
+            foreach (var portion in portions)
+            {
+                dtos.Add(new FoodPortionDto
+                {
+                    FdcId = fdcId,
+                    Amount = string.IsNullOrEmpty(portion.Amount) == false ? double.Parse(portion.Amount) : 1.0,
+                    Modifier = portion.Modifier,
+                    GramWeight = portion.GramWeight,
+                    CarbValue = carbs/100,
+                    ProteinValue = protein/100,
+                    FatValue = fat/100
+                });
+            }
+
+            dtos.Add(new FoodPortionDto
+            {
+                FdcId = fdcId,
+                Amount = 1.0,
+                Modifier = "one gram",
+                GramWeight = 1.0,
+                CarbValue = carbs / 100,
+                ProteinValue = protein / 100,
+                FatValue = fat / 100
+            });
+
+            dtos.Add(new FoodPortionDto
+            {
+                FdcId = fdcId,
+                Amount = 1.0,
+                Modifier = "hundred gram",
+                GramWeight = 100.0,
+                CarbValue = carbs / 100,
+                ProteinValue = protein / 100,
+                FatValue = fat / 100
+            });
+
+            return dtos;
+        }
+
         public async Task<bool> DeleteMeals(int clientId, DateTime date)
         {
             try

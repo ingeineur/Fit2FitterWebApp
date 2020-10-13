@@ -31,6 +31,10 @@ namespace Fit2Fitter.Services.Contracts
 
         Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, DateTime date);
 
+        Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword);
+
+        Task<IEnumerable<FoodPortionDto>> GetFoodPortions(string fdcId);
+
         Task<bool> DeleteMeals(int clientId, DateTime date);
 
         Task<bool> DeleteActivities(int clientId, DateTime date);
