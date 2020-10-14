@@ -87,13 +87,16 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     }
 
     handleCheckChange = (field: any, value: any) => {
+        console.log(value);
         this.state.meals.forEach(x => x.check = false);
-        this.state.meals[parseInt(value['className'])]['check'] = value['checked'];
+        var arr = this.state.meals.filter(x => x.remove !== true);
+        arr[parseInt(value['className'])]['check'] = value['checked'];
         this.setState({ meals: this.state.meals, updated: true });
     }
 
     getRows = () => {
         var arr = this.state.meals.filter(x => x.remove !== true);
+        console.log(arr);
         return (
             arr.map((item, index) =>
                 <Grid.Row className={'row'} key={index} columns={3} stretched>
@@ -104,13 +107,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{item.carb.toFixed(2)}</a>
+                        <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{item.protein.toFixed(2)}</a>
+                        <a key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{item.fat.toFixed(2)}</a>
+                        <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fv'} key={index + 5} width={2}>
                         <a key={index + 5}>{item.fv}</a>
@@ -122,7 +125,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     removeActivities = (event: any) => {
         var arr: IMealDetails[] = [];
         this.state.meals.forEach(obj => {
-            if (obj.check === true && obj.id != -1) {
+            if (obj.check === true) {
                 obj.remove = true;
                 arr.push(obj);
             }
@@ -158,7 +161,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
 
     handleUpdate = (open: boolean) => {
         if (this.state.updateDetails.index > -1 && this.state.updateDetails.index < this.state.meals.length) {
-            console.log(this.state.updateDetails.meal);
             this.state.meals[this.state.updateDetails.index] = this.state.updateDetails.meal;
             this.state.updateDetails.index = -1;
             this.setState({ updated: true, meals: this.state.meals, updateDetails: this.state.updateDetails });
@@ -179,8 +181,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         }
         else if (this.props.update !== this.state.dirty) {
             this.setState({ meals: this.props.meals, mealType: this.props.mealType, dirty: this.props.update });
-            console.log(this.props.meals);
-            console.log(this.props.mealType);
         }
 
         if (this.state.updated === true) {

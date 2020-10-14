@@ -80,14 +80,12 @@ class Home extends React.Component<LoginProps, IState > {
     getAdmin = () => {
         if (this.props.logins[0].username === 'admin') {
             return (
-                <Menu fluid vertical icon='labeled'>
-                    <Menu.Item
-                        name='Master'
-                        onClick={this.handleItemClick}>
-                        <Icon color='olive' name='power' />
-                        Master View
-                    </Menu.Item>
-                </Menu>);
+                <Menu.Item
+                    name='Master'
+                    onClick={this.handleItemClick}>
+                    <Icon color='olive' name='power' />
+                    Master View
+                    </Menu.Item>);
         }
     }
 
@@ -171,18 +169,11 @@ class Home extends React.Component<LoginProps, IState > {
                         <Grid.Row columns={2}>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
-                                    {this.getAdmin()}
                                     <Menu.Item
-                                        name='Macro'
+                                        name='Messages'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='olive' name='balance scale' />
-                                        Macro Calculation
-                                    </Menu.Item>
-                                        <Menu.Item
-                                            name='Body'
-                                            onClick={this.handleItemClick}>
-                                            <Icon color='blue' name='calculator' />
-                                            Body Assessments
+                                        <Icon color='blue' name='mail' />
+                                        Messages ({this.state.unReadMessage})
                                     </Menu.Item>
                                     <Menu.Item
                                         name='New Meal'
@@ -190,16 +181,6 @@ class Home extends React.Component<LoginProps, IState > {
                                         <Icon color='red' name='food' />
                                         Meals Tracker (New Version)
                                     </Menu.Item>
-                                    <Menu.Item
-                                        name='Messages'
-                                        onClick={this.handleItemClick}>
-                                        <Icon color='blue' name='mail' />
-                                        Messages ({this.state.unReadMessage})
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
                                     <Menu.Item
                                         name='Activity'
                                         onClick={this.handleItemClick}>
@@ -211,6 +192,22 @@ class Home extends React.Component<LoginProps, IState > {
                                         onClick={this.handleItemClick}>
                                         <Icon color='pink' name='chart bar' />
                                         Leaderboards
+                                    </Menu.Item>
+                                </Menu>
+                            </Grid.Column>
+                            <Grid.Column width={8}>
+                                <Menu fluid vertical icon='labeled'>
+                                    <Menu.Item
+                                        name='Macro'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='olive' name='balance scale' />
+                                        Macro Calculation
+                                    </Menu.Item>
+                                    <Menu.Item
+                                        name='Body'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='blue' name='calculator' />
+                                        Body Assessments
                                     </Menu.Item>
                                     <Menu.Item
                                             name='EBook'
@@ -224,13 +221,22 @@ class Home extends React.Component<LoginProps, IState > {
                                         <Icon color='red' name='user' />
                                         Admin
                                     </Menu.Item>
+                                </Menu>
+                            </Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <Grid.Column width={8}>
+                                <Menu fluid vertical icon='labeled'>
+                                    {this.getAdmin()}
                                     <Menu.Item
-                                            name='Logout'
-                                            onClick={this.clearCredentials}>
-                                            <Icon color='black' name='power off' />
-                                            Logout
+                                        name='Logout'
+                                        onClick={this.clearCredentials}>
+                                        <Icon color='black' name='power off' />
+                                        Logout
                                     </Menu.Item>
                                 </Menu>
+                            </Grid.Column>
+                            <Grid.Column width={8}>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -240,7 +246,7 @@ class Home extends React.Component<LoginProps, IState > {
         return (
             <div>
                 <div style={divLabelStyle2}>
-                    <h1>My Fitness Tracker</h1>
+                    <h1>My Health & Fitness Tracker</h1>
                 </div>
                 
                 <Form size="small">

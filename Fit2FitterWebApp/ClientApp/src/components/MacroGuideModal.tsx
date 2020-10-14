@@ -68,7 +68,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         this.state = {
             dirty: false,
             meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false },
-            updated: false, meals: [], status: '', loading: false, searchResults: [], selectedValue: 'No Selection',
+            updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: ''
         };
@@ -79,14 +79,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
 
     updateFood = (event: any) => {
         this.state.meal.food = event.target.value;
-        this.setState({ meal: this.state.meal });
+        this.setState({ meal: this.state.meal, status: 'Pending to add' });
     }
 
     updateCarb = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.carb = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
         }
     }
 
@@ -94,7 +94,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.protein = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
         }
     }
 
@@ -102,7 +102,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.fat = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
         }
     }
 
@@ -110,7 +110,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.fv = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
         }
     }
 
@@ -147,10 +147,12 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 </List.Item>);
         }
 
+        console.log(this.state.meals);
+
         return (
             this.state.meals.map((item, index) =>
                 <List.Item key={index}>
-                    {item.food} - carb: {item.carb.toFixed(2)}g protein: {item.protein.toFixed(2)}g fat: {item.fat.toFixed(2)}g fruits/vegs: {item.fv} serving(s)
+                    {item.food} - carb: {item.carb}g protein: {item.protein}g fat: {item.fat}g fruits/vegs: {item.fv} serving(s)
                 </List.Item>
             ));
     }
@@ -158,6 +160,10 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     getColour = () => {
         if (this.state.status.includes('Error')) {
             return 'red';
+        }
+
+        if (this.state.status.includes('Pending')) {
+            return 'orange';
         }
 
         return 'green';
@@ -199,9 +205,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         if (this.state.portions.length > 0 && this.state.foodPortionDtos.length > 0) {
             this.state.foodPortionDtos.forEach(x => {
                 if (x.modifier === this.state.selectedPortion) {
-                    this.state.meal.carb = this.state.usdaQuantity * x.carbValue * x.gramWeight;
-                    this.state.meal.protein = this.state.usdaQuantity * x.proteinValue * x.gramWeight;
-                    this.state.meal.fat = this.state.usdaQuantity * x.fatValue * x.gramWeight;
+                    this.state.meal.carb = parseFloat((this.state.usdaQuantity * x.carbValue * x.gramWeight).toFixed(2));
+                    this.state.meal.protein = parseFloat((this.state.usdaQuantity * x.proteinValue * x.gramWeight).toFixed(2));
+                    this.state.meal.fat = parseFloat((this.state.usdaQuantity * x.fatValue * x.gramWeight).toFixed(2));
                 }
             });
         }
@@ -212,7 +218,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.fv = this.state.usdaQuantity;
         }
 
-        this.setState({ meal: this.state.meal });
+        this.setState({ meal: this.state.meal, status: 'Pending to add', updated: true });
     }
 
     render() {
@@ -220,6 +226,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         var divLabelStyle = {
             color: '#fffafa',
             backgroundColor: this.getColour()
+        };
+
+        var divLabelStyle2 = {
+            color: 'black'
+        };
+
+        var divLabelStyle3 = {
+            color: 'red'
         };
         
         if (this.state.dirty !== this.props.update) {
@@ -249,18 +263,21 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
 
         return (<div>
-            <Message color='blue'>
+            <Message color='teal'>
                 <Grid centered>
                     <Grid.Row stretched textAlign='left'>
                         <Grid.Column as='a' width={16} textAlign='left'>
-                            <h4 color='grey'>Food Database Search (USDA Food Data)</h4>
+                            <h3 color='grey'>Food Database Search (USDA Food Data)</h3>
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Search Keywords:</h5>
+                            <div style={divLabelStyle2}>
+                                <h5>Search Keywords:</h5>
+                            </div>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left' floated='left'>
                             <Search
                                 fluid
+                                size='small'
                                 loading={this.state.loading}
                                 onSearchChange={this.handleSearchChange}
                                 onResultSelect={this.handleSelectResult}
@@ -269,22 +286,32 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             />
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Selected Item:</h5>
+                            <div style={divLabelStyle2}>
+                                <h5>Selected Item:</h5>
+                            </div>
                         </Grid.Column>
                         <Grid.Column as='a' width={10} textAlign='left'>
-                            <a>{this.state.selectedValue}</a>
+                            <div style={divLabelStyle2}>
+                                <a>{this.state.selectedValue}</a>
+                            </div>
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Quantity:</h5>
+                            <div style={divLabelStyle2}>
+                                <h5>Quantity:</h5>
+                            </div>
                         </Grid.Column>
                         <Grid.Column width={5} textAlign='left'>
                             <input value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
                         </Grid.Column>
                         <Grid.Column width={5} textAlign='left'>
-                            <a> x  Portion</a>
+                            <div style={divLabelStyle2}>
+                                <a> x  Portion</a>
+                            </div>
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Portion:</h5>
+                            <div style={divLabelStyle2}>
+                                <h5>Portion Options:</h5>
+                            </div>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left' floated='left'>
                             <Dropdown basic id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
@@ -292,9 +319,17 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         <Grid.Column as='a' width={6} textAlign='left'>
                         </Grid.Column>
                         <Grid.Column as='a' width={10} textAlign='left'>
-                            <div/>
-                            <Button floated='left' size='tiny' primary onClick={this.addUsda}>Use</Button>
-                            <a href={linkUsda} target='_blank'>Data Source: USDA Data Food Central</a>
+                            <Button floated='left' size='tiny' primary onClick={this.addUsda}>Use in Meal</Button>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <div style={divLabelStyle2}>
+                                <h5>Link to nutrients page:</h5>
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={10} textAlign='left'>
+                            <div style={divLabelStyle3}>
+                                <a style={divLabelStyle3} href={linkUsda} target='_blank'>Data Source: USDA Data Food Central</a>
+                            </div>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
@@ -312,19 +347,19 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             <h5>Carb (g)</h5>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.carb.toFixed(2)} onChange={this.updateCarb} placeholder='Carb Macro' />
+                            <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
                             <h5>Protein (g)</h5>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.protein.toFixed(2)} onChange={this.updateProtein} placeholder='Protein Macro' />
+                            <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
                             <h5>Fat (g)</h5>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.fat.toFixed(2)} onChange={this.updateFat} placeholder='Fat Macro' />
+                            <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
                             <h5>Fruit/Veg (serv)</h5>

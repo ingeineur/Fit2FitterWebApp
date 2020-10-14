@@ -85,7 +85,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
 
     getMeals = (meals: IMealDetails[]) => {
         const arr: any[] = [];
-        meals.forEach((item) => { arr.push(item.food + ' : ' + item.carb.toFixed(2) + 'g ' + item.protein.toFixed(2) + 'g ' + item.fat.toFixed(2) + 'g ' + item.fv.toFixed(2) + 'serv') });
+        meals.forEach((item) => { arr.push(item.food + ' : ' + parseFloat((item.carb.toString())) + 'g ' + parseFloat(item.protein.toString()).toFixed(2) + 'g ' + parseFloat(item.fat.toString()).toFixed(2) + 'g ' + item.fv + 'serv') });
         return arr;
     }
 
@@ -98,13 +98,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{item.carb.toFixed(2)}</a>
+                        <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{item.protein.toFixed(2)}</a>
+                        <a key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{item.fat.toFixed(2)}</a>
+                        <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fv'} key={index + 5} width={2}>
                         <a key={index + 5}>{item.fv}</a>
