@@ -279,7 +279,7 @@ class Measurements extends React.Component<LoginProps, IState> {
         var index: number = 0;
         this.state.allMeasurementDtos.forEach(m => {
             var values: IMeta[] = [];
-            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString());
+            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0,5));
             this.state.graphs.chest.push(m.chest);
             values.push({ 'meta': 'chest', 'value': m.chest});
             this.state.graphs.neck.push(m.neck);

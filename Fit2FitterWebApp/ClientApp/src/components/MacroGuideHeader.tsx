@@ -32,6 +32,7 @@ interface IMealDetails {
     fat: number;
     fv: number;
     check: boolean;
+    remove: boolean;
 }
 
 interface IState {
@@ -50,19 +51,15 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
     }
 
     getColour = (total: number) => {
-        if (total > 50.0 && total < 100) {
-            return 'orange';
-        }
-
-        if (total === 100) {
+        if (total === 1.0) {
             return 'teal';
         }
 
-        if (total > 100.0) {
+        if (total > 1.0) {
             return 'red';
         }
 
-        return 'black';
+        return 'yellow';
     }
 
     getMealTypeIndex = (type: number) => {
@@ -82,21 +79,18 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
     render() {
 
         var divLabelStyle1 = {
-            color: '#fffafa',
-            fontFamily: 'Comic Sans MS',
-            backgroundColor: 'red'
+            color: 'black',
+            fontFamily: 'Comic Sans MS'
         };
 
         var divLabelStyle2 = {
-            color: '#0a0212',
-            fontFamily: 'Comic Sans MS',
-            backgroundColor: '#FF5E13'
+            color: 'black',
+            fontFamily: 'Comic Sans MS'
         };
 
         var divLabelStyle3 = {
-            color: '#0a0212',
-            fontFamily: 'Comic Sans MS',
-            backgroundColor: 'yellow'
+            color: 'black',
+            fontFamily: 'Comic Sans MS'
         };
 
         var divLabelStyle4 = {
@@ -105,9 +99,8 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         };
 
         var divLabelStyle5 = {
-            color: '#0a0212',
-            fontFamily: 'Comic Sans MS',
-            backgroundColor: '#CE8B54'
+            color: 'black',
+            fontFamily: 'Comic Sans MS'
         };
 
         if (this.state.updated !== this.props.update)
@@ -121,10 +114,11 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         var totalVeg: number = 0.0;
 
         for (let i = 0; i < 4; i++) {
-            totalCarb += (this.props.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
-            totalProtein += (this.props.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
-            totalFat += (this.props.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-            totalVeg += (this.props.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+            var meals = this.props.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+            totalCarb += (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+            totalProtein += (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+            totalFat += (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+            totalVeg += (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
         }
 
         const totalRemCarb = this.props.guides.carb - totalCarb;
@@ -137,20 +131,20 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
                 <Grid.Row columns={1} color='pink' textAlign='center'>
                     <div style={divLabelStyle4}>Total Remaining Macros</div>
                 </Grid.Row>
-                <Grid.Row columns={4} textAlign='center'>
-                    <Grid.Column color='black' textAlign='center'>
+                <Grid.Row divided columns={4} textAlign='center'>
+                    <Grid.Column color={this.getColour(totalCarb / this.props.guides.carb)} textAlign='center'>
                         <div><a>Carb(g)</a></div>
                         <div style={divLabelStyle1}><a>{totalRemCarb.toFixed(2)}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color={this.getColour(totalProtein / this.props.guides.protein)} textAlign='center'>
                         <div><a>Protein(g)</a></div>
                         <div style={divLabelStyle2}><a>{totalRemProtein.toFixed(2)}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color={this.getColour(totalFat / this.props.guides.fat)} textAlign='center'>
                         <div><a>Fat(g)</a></div>
                         <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color={this.getColour(totalVeg / this.props.guides.fruits)} textAlign='center'>
                         <div><a>Serv</a></div>
                         <div style={divLabelStyle5}><a>{totalRemVeg}</a></div>
                     </Grid.Column>

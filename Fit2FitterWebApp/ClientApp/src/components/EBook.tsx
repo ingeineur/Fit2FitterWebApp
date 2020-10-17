@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { Button, Form, Input, Grid, Segment, Menu, Dropdown } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Segment, Menu, Dropdown, Label } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { RouteComponentProps } from 'react-router';
@@ -56,25 +56,29 @@ class EBook extends React.Component<LoginProps, IState> {
         };
 
         if (this.state.activeItem === 'Workout') {
-            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true" style={divPdf}/>);
+            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true" style={divPdf} /></div>);
         }
 
         if (this.state.activeItem === 'StarterPack Recipes') {
-            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true" style={divPdf} />);
+            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/BTP3StarterRecipePack.pdf&amp;embedded=true" style={divPdf} /></div>);
         }
 
         if (this.state.activeItem === 'September Recipes') {
-            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true" style={divPdf} />);
+            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true" style={divPdf} /></div>);
         }
 
         if (this.state.activeItem === 'October Recipes') {
-            return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true" style={divPdf} />);
+            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/october-2020-recipe-pack1.pdf&amp;embedded=true" style={divPdf} /></div>);
         }
 
-        return (<iframe src="https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP36WeekGuide.pdf&amp;embedded=true" style={divPdf} />);
+        return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/BTP36WeekGuide.pdf&amp;embedded=true" style={divPdf} /></div>);
     }
 
     render() {
+        var divLabelStyle = {
+            color: 'red'
+        };
+
         var divPdf = {
             width: '100%',
             height: '700px'
@@ -83,26 +87,34 @@ class EBook extends React.Component<LoginProps, IState> {
         if (this.props.logins.length > 0) {
             return (
                 <div>
-                    
-                    <Menu attached='top' pointing secondary color='pink' compact>
-                        <Menu.Item
-                            name='BTPGuide'
-                            active={this.state.activeItem === 'BTPGuide'}
-                            onClick={this.handleItemClick}
-                        />
-                        <Menu.Item
-                            name='Workout'
-                            active={this.state.activeItem === 'Workout'}
-                            onClick={this.handleItemClick}
-                        />
-                        <Menu.Menu position='right'>
-                            <Dropdown item text={this.state.recipeText} selection options={options} onChange={this.onSelectionChanged} />        
-                        </Menu.Menu>
-                    </Menu>
-
-                    <div style={divPdf}>
-                        {this.getPdf()}
+                    <div>
+                        <Label size='large' as='a' color='pink' basic circular>E-Book</Label>
                     </div>
+                    <div>
+                    </div>
+                    <div style={divLabelStyle}>
+                        <h5 color='red'>Click on the link below to read from the e-book. **Please refresh the page if the pdf file is not loaded.</h5>
+                    </div>
+                    <div>
+                        <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP36WeekGuide.pdf&amp;embedded=true' target='_blank'>1. BTP Guide</a>
+                    </div>
+                    
+                    <div>
+                        <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>2. Home Workouts</a>
+                    </div>
+                    
+                    <div>
+                        <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>3. StarterPack Recipes</a>
+                    </div>
+                    
+                    <div>
+                        <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>4. September Recipes</a>
+                    </div>
+                    
+                    <div>
+                        <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>5. October Recipes</a>
+                    </div>
+                    
                 </div>);
         }
         return (<Redirect to="/" />);

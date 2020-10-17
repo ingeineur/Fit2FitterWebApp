@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Segment } from 'semantic-ui-react'
+import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider } from 'semantic-ui-react'
 import ChartistGraph from 'react-chartist';
 import MacroTable from './MacroTable'
 import Meals from './Meals';
@@ -58,7 +58,8 @@ interface IState {
     foodPortionDtos: IFoodPortionDto[],
     apiUpdated: boolean,
     usdaQuantity: number,
-    selectedFdcId: string
+    selectedFdcId: string,
+    usdaUpdated: boolean
 }
 
 class MacroGuideModal extends React.Component<IProps, IState> {
@@ -70,7 +71,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
-            searchText: '', selectedFdcId: ''
+            searchText: '', selectedFdcId: '', usdaUpdated: false
         };
     }
 
@@ -129,7 +130,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     updateUsdaQuantity = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
-            this.setState({ usdaQuantity: event.target.value });
+            this.setState({ usdaQuantity: event.target.value, usdaUpdated: true });
         }
     }
 
@@ -197,7 +198,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     handleSelectPortion = (event: any, data: any) => {
-        this.setState({ updated: true, selectedPortion: data['value'] });
+        this.setState({ usdaUpdated: true, selectedPortion: data['value'] });
     }
 
     addUsda = () => {
@@ -242,6 +243,11 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             }
         }
 
+        if (this.state.usdaUpdated === true) {
+            this.setState({ usdaUpdated: false });
+            this.addUsda();
+        }
+
         if (this.state.updated === true) {
             this.setState({ updated: false });
             this.props.addMeal(this.state.meals);
@@ -257,24 +263,19 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             if (this.state.foodPortionDtos.length > 0) {
                 this.setState({ portions: this.state.portions, selectedPortion: this.state.foodPortionDtos[0].modifier });
             }
+
+            this.setState({ usdaUpdated: true });
         }
 
         
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
 
         return (<div>
-            <Message color='teal'>
+            <Message color='blue' attached='top'>
                 <Grid centered>
                     <Grid.Row stretched textAlign='left'>
-                        <Grid.Column as='a' width={16} textAlign='left'>
-                            <h3 color='grey'>Food Database Search (USDA Food Data)</h3>
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <h5>Search Keywords:</h5>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
+                        <Grid.Column textAlign='center' width={16}>
+                            <h3>Food Search</h3>
                             <Search
                                 fluid
                                 size='small'
@@ -285,56 +286,42 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                 value={this.state.searchText}
                             />
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <h5>Selected Item:</h5>
+                        <Grid.Column verticalAlign='middle' as='a' width={16} textAlign='center'>
+                            <div style={divLabelStyle3}>
+                                <a style={divLabelStyle3} href={linkUsda} target='_blank'>{this.state.selectedValue}</a>
                             </div>
                         </Grid.Column>
-                        <Grid.Column as='a' width={10} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <a>{this.state.selectedValue}</a>
-                            </div>
+                    </Grid.Row>
+                    <Grid.Row columns={3} stretched textAlign='left'>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a style={divLabelStyle2}>Quantity:</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <h5>Quantity:</h5>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column width={5} textAlign='left'>
-                            <input value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
-                        </Grid.Column>
-                        <Grid.Column width={5} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <a> x  Portion</a>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <div style={divLabelStyle2}>
-                                <h5>Portion Options:</h5>
-                            </div>
+                        <Grid.Column width={2} textAlign='left'>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left' floated='left'>
-                            <Dropdown basic id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                            <a style={divLabelStyle2}>Meal Portions:</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
+                        <Grid.Column width={4} textAlign='left'>
+                            <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
                         </Grid.Column>
-                        <Grid.Column as='a' width={10} textAlign='left'>
-                            <Button floated='left' size='tiny' primary onClick={this.addUsda}>Use in Meal</Button>
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
+                        <Grid.Column width={2} textAlign='center'>
                             <div style={divLabelStyle2}>
-                                <h5>Link to nutrients page:</h5>
+                                <h3>x</h3>
                             </div>
                         </Grid.Column>
-                        <Grid.Column as='a' width={10} textAlign='left'>
-                            <div style={divLabelStyle3}>
-                                <a style={divLabelStyle3} href={linkUsda} target='_blank'>Data Source: USDA Data Food Central</a>
-                            </div>
+                        <Grid.Column width={10} textAlign='left'>
+                            <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
             </Message>
-            <Message color='grey'>
+            <Divider horizontal>
+                <Header as='h4'>
+                    <Icon name='food' />
+                    Meal
+                </Header>
+            </Divider>
+            <Message attached='bottom'>
                 <Grid centered>
                     <Grid.Row stretched>
                         <Grid.Column as='a' width={6} textAlign='left'>
