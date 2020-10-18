@@ -50,6 +50,13 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Login>> GetLogin(string username, string password);
 
         /// <summary>
+        /// Finds the login details.
+        /// </summary>
+        /// <param name="clientId">The user clientId.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Login>> GetLogin(int clientId);
+
+        /// <summary>
         /// Add a new client.
         /// </summary>
         /// <param name="client"></param>

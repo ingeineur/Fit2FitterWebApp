@@ -29,6 +29,13 @@ namespace Fit2FitterWebApp.Controllers
             return logins.ToArray();
         }
 
+        [HttpGet("{clientId}")]
+        public async Task<IEnumerable<LoginDto>> Get(int clientId)
+        {
+            var logins = await this.clientService.GetLogin(clientId).ConfigureAwait(false);
+            return logins.ToArray();
+        }
+
         [HttpPut]
         public async Task<IActionResult> Put([FromBody, Required]LoginDto login)
         {

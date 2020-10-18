@@ -62,6 +62,18 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         return 'yellow';
     }
 
+    getColour2 = (total: number) => {
+        if (total === 1.0) {
+            return 'teal';
+        }
+
+        if (total > 1.0) {
+            return 'teal';
+        }
+
+        return 'yellow';
+    }
+
     getMealTypeIndex = (type: number) => {
         if (type == 1) {
             return 1;
@@ -144,7 +156,7 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
                         <div><a>Fat(g)</a></div>
                         <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
                     </Grid.Column>
-                    <Grid.Column color={this.getColour(totalVeg / this.props.guides.fruits)} textAlign='center'>
+                    <Grid.Column color={this.getColour2(totalVeg / this.props.guides.fruits)} textAlign='center'>
                         <div><a>Serv</a></div>
                         <div style={divLabelStyle5}><a>{totalRemVeg}</a></div>
                     </Grid.Column>

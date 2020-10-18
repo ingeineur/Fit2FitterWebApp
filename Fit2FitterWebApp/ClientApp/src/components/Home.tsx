@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 
@@ -19,6 +19,43 @@ interface IState {
     unReadMessage: number;
     messageDtos: IMessageDto[];
     apiUpdate: boolean;
+    clientDtos: IClientDto[];
+    clientList: IOption[],
+    clients: IClient[];
+    toClientId: number;
+    checkClients: boolean;
+    loginDtos: LoginDto[] 
+}
+
+interface LoginDto {
+    id: number,
+    username: string;
+    password: string;
+    active: boolean;
+    lastLogin: string;
+    clientId: number;
+}
+
+interface IClient {
+    id: number
+    name: string;
+    age: number;
+    city: string;
+}
+interface IClientDto {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
+}
+
+interface IOption {
+    key: string,
+    text: string,
+    value: string
 }
 
 interface IMessageDto {
@@ -47,6 +84,13 @@ class Home extends React.Component<LoginProps, IState > {
         this.props.getLogin();
 
         if (this.props.logins.length > 0) {
+            //get client info
+            fetch('api/client/all')
+                .then(response => response.json() as Promise<IClientDto[]>)
+                .then(data => this.setState({
+                    clientDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+
             fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
@@ -71,14 +115,29 @@ class Home extends React.Component<LoginProps, IState > {
         super(props);
         this.state = {
             username: '', password: '', activeItem: '', error: '', login: '',
-            messageDtos: [], checkMail: false, unReadMessage: 0, apiUpdate: false
+            messageDtos: [], checkMail: false, unReadMessage: 0, apiUpdate: false,
+            clientDtos: [], clientList: [], clients: [], toClientId: 2, checkClients: false,
+            loginDtos: []
         };
     }
 
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
 
+    setValuesFromDto = () => {
+        if (this.state.clients.length > 0) {
+            return;
+        }
+
+        this.state.clientDtos.forEach(client => {
+            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
+        });
+
+        this.setState({ clients: this.state.clients });
+        console.log(this.state.clients);
+    }
+
     getAdmin = () => {
-        if (this.props.logins[0].username === 'admin') {
+        if (this.props.logins[0].username === 'admin2') {
             return (
                 <Menu.Item
                     name='Master'
@@ -87,6 +146,16 @@ class Home extends React.Component<LoginProps, IState > {
                     Master View
                     </Menu.Item>);
         }
+    }
+
+    setToClient = (event: any, data: any) => {
+        console.log(data);
+        this.setState({ toClientId: data['value'] });
+
+        // get logins
+        fetch('api/login/' + data['value'])
+            .then(response => response.json() as Promise<LoginDto[]>)
+            .then(data => this.setState({ loginDtos: data, username: data[0].username, password: data[0].password })).catch(error => console.log(error));
     }
 
     render() {
@@ -104,7 +173,7 @@ class Home extends React.Component<LoginProps, IState > {
             }
         }
 
-        if (this.props.logins.length > 0) {
+        if (this.props.logins.length > 0 && this.props.logins[0].username !== 'admin2') {
             if (this.state.error !== 'Login is Successfull') {
                 this.setState({ error: 'Login is Successfull' });
             }
@@ -121,6 +190,13 @@ class Home extends React.Component<LoginProps, IState > {
 
             if (this.state.apiUpdate === true) {
                 this.setState({ unReadMessage: this.state.messageDtos.length, apiUpdate: false });
+
+                this.setValuesFromDto();
+                if (this.state.clientList.length < 1) {
+                    this.state.clientDtos.forEach(client => {
+                        this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
+                    });
+                }
             }
 
             if (this.state.activeItem === 'Master') {
@@ -162,7 +238,7 @@ class Home extends React.Component<LoginProps, IState > {
             if (this.state.activeItem === 'Messages') {
                 return (<Redirect to="/messages" />);
             }
-        //if (true) {
+            //if (true) {
             return (
                 <div>
                     <Grid centered>
@@ -210,10 +286,10 @@ class Home extends React.Component<LoginProps, IState > {
                                         Body Assessments
                                     </Menu.Item>
                                     <Menu.Item
-                                            name='EBook'
-                                            onClick={this.handleItemClick}>
-                                            <Icon color='purple' name='book' />
-                                            E-Books
+                                        name='EBook'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='purple' name='book' />
+                                        E-Books
                                     </Menu.Item>
                                     <Menu.Item
                                         name='Admin'
@@ -241,6 +317,41 @@ class Home extends React.Component<LoginProps, IState > {
                         </Grid.Row>
                     </Grid>
                 </div>);
+        }
+        else if (this.props.logins.length > 0 && this.props.logins[0].username === 'admin2') {
+
+            if (this.state.apiUpdate === true) {
+                this.setState({ apiUpdate: false });
+                this.setValuesFromDto();
+                if (this.state.clientList.length < 1) {
+                    this.state.clientDtos.forEach(client => {
+                        this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
+                    });
+                }
+            }
+
+            if (this.state.checkClients === false) {
+                fetch('api/client/all')
+                    .then(response => response.json() as Promise<IClientDto[]>)
+                    .then(data => this.setState({
+                        clientDtos: data, apiUpdate: true, checkClients: true
+                    })).catch(error => console.log(error));
+            }
+
+            return (
+                <div>
+                    <div style={divLabelStyle2}>
+                        <h1>My Health & Fitness Tracker</h1>
+                    </div>
+                    <a>Select Client:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
+                    <Form size="small">
+                        <div>
+                            <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
+                            <a>{this.state.error}</a>
+                        </div>
+                    </Form>
+                </div>
+            );
         }
 
         return (

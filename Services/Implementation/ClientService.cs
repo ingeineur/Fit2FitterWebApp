@@ -327,6 +327,20 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<LoginDto>> GetLogin(int clientId)
+        {
+            var logins = await this.clientRepository.GetLogin(clientId).ConfigureAwait(false);
+            return logins.Select(login => new LoginDto
+            {
+                Id = login.Id,
+                Username = login.Username,
+                Password = login.Password,
+                Active = login.Active,
+                LastLogin = login.LastLogin,
+                ClientId = login.ClientId
+            });
+        }
+
         public async Task<IEnumerable<MacrosPlanDto>> GetMacrosPlan(int clientId)
         {
             var macrosPlan = await this.clientRepository.FindMacrosPlan(clientId).ConfigureAwait(false);

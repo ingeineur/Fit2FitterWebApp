@@ -33,6 +33,8 @@ namespace Fit2Fitter.Services.Contracts
 
         Task<IEnumerable<LoginDto>> GetLogin(string username, string password);
 
+        Task<IEnumerable<LoginDto>> GetLogin(int clientId);
+
         Task<IEnumerable<MacrosPlanDto>> GetMacrosPlan(int clientId);
 
         Task<bool> DeleteClient(int clientId);

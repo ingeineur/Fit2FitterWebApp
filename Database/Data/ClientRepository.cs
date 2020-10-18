@@ -55,8 +55,23 @@ namespace Fit2Fitter.Database.Data
 
         public async Task<IEnumerable<Models.Login>> GetLogin(string username, string password)
         {
-            return await this.databaseContext.Logins.Where(x =>
+            var results = await this.databaseContext.Logins.Where(x =>
                 x.Username == username && x.Password == password).ToArrayAsync().ConfigureAwait(false);
+
+            if (results != null && results.Length > 0)
+            {
+                var login = results.First();
+                login.LastLogin = DateTime.Now;
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            return results;
+        }
+
+        public async Task<IEnumerable<Models.Login>> GetLogin(int clientId)
+        {
+            return await this.databaseContext.Logins.Where(x =>
+                x.ClientId == clientId).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async Task AddClient(Client client)
