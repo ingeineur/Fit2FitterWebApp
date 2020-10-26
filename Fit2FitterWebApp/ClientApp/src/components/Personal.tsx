@@ -87,7 +87,6 @@ class Personal extends React.Component<LoginProps, IState> {
         this.setState({ selectedDate: new Date() });
 
         if (this.props.logins.length > 0) {
-            console.log('--->' + this.props.logins[0].clientId);
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
                 .then(data => this.setState({
@@ -259,7 +258,6 @@ class Personal extends React.Component<LoginProps, IState> {
                 carbPercent: input.carbPercent, proteinPercent: input.proteinPercent, fatPercent: input.fatPercent
             }
         });
-        console.log(input.targetWeight);
         this.setState({ updated: !this.state.updated, savingStatus:'Not Saved' });
     }
 
@@ -288,7 +286,6 @@ class Personal extends React.Component<LoginProps, IState> {
             this.state.personal.name = client.firstName + ' ' + client.lastName;
             this.state.personal.age = client.age;
             this.setState({ personal: this.state.personal });
-            console.log(this.state.personal.name);
             this.setState({ apiUpdate: false, updated: !this.state.updated });
         }
 
@@ -303,7 +300,6 @@ class Personal extends React.Component<LoginProps, IState> {
             this.state.personal.activityLevel = this.getActivityLevel(plan.activityLevel);
             this.state.personal.macroType = this.getMacroType(plan.macroType);
             this.setState({ personal: this.state.personal });
-            console.log(this.state.personal.name);
             this.setState({ apiUpdate: false, updated: !this.state.updated });
         }
     }

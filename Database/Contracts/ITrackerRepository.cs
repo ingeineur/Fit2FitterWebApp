@@ -57,7 +57,23 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="clientId">The user id.</param>
         /// <param name="readStatus">Read status.</param>
         /// <returns>The user that has the requirement user name.</returns>
-        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent);
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent, int mealsRef);
+
+        /// <summary>
+        /// Finds all comments on meals.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId);
+
+        /// <summary>
+        /// Finds all comments on meals by date.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">The meals date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date);
 
         /// <summary>
         /// Finds the comments by read status.
@@ -215,5 +231,13 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="read"></param>
         /// <returns></returns>
         Task UpdateComment(int commentId, bool read);
+
+        /// <summary>
+        /// Update comment's read status
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="read"></param>
+        /// <returns></returns>
+        Task UpdateCommentMeals(int clientId, bool read, DateTime date);
     }
 }

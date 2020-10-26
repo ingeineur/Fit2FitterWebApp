@@ -145,13 +145,13 @@ class Messages extends React.Component<LoginProps, IState> {
                     clientDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + false)
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + false + '&mealsRef=0')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
                     messageDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + true)
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + true + '&mealsRef=0')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
                     sentMessageDtos: data, apiUpdate: true
@@ -165,18 +165,15 @@ class Messages extends React.Component<LoginProps, IState> {
 
     updateInput = (event: any) => {
         this.setState({ username: event.target.value });
-        console.log(event.target.value);
     }
 
     updateInput2 = (event: any) => {
         this.setState({ password: event.target.value });
-        console.log(event.target.value);
     }
 
     addActivity = (event: any) => {
         this.state.activities.push({ name: '', ActivityDesc: 'test', steps: 1, calories: 100 });
         this.setState({ updated: !this.state.updated });
-        console.log(this.state.activities);
     }
 
     setValuesFromDto = () => {
@@ -189,7 +186,6 @@ class Messages extends React.Component<LoginProps, IState> {
         });
 
         this.setState({ clients: this.state.clients });
-        console.log(this.state.clients);
     }
 
     constructor(props: LoginProps) {
@@ -300,7 +296,6 @@ class Messages extends React.Component<LoginProps, IState> {
     }
 
     handleCheckChange = (field: any, value: any) => {
-        console.log(value['checked']);
         this.state.messages[parseInt(value['className'])].readStatus = value['checked'];
         this.setState({ messages: this.state.messages, updated: true });
         this.updateMessageRead(this.state.messages[parseInt(value['className'])].id, value['checked']);
@@ -413,14 +408,14 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getAllMessages = (sent: boolean) => {
         if (sent) {
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + sent)
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + sent + '&mealsRef=0')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
                     sentMessageDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
         }
         else {
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + sent)
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments?sent=' + sent + '&mealsRef=0')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
                     messageDtos: data, apiUpdate: true
@@ -491,7 +486,6 @@ class Messages extends React.Component<LoginProps, IState> {
     }
 
     setToClient = (event: any, data: any) => {
-        console.log(data);
         this.setState({ updated: true, toClientId: data['value'] });
         this.setState({ dateChanged: true })
     }
@@ -501,7 +495,7 @@ class Messages extends React.Component<LoginProps, IState> {
     getReplyOption = () => {
         if (this.props.logins[0].clientId == 2) {
             return (<Form reply>
-                <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} selection options={this.state.clientList} onChange={this.setToClient} />
+                <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
                 <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
                 <div>
                     <a>{this.state.numChar} characters (max: 255)</a>

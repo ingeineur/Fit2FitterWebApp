@@ -21,7 +21,11 @@ namespace Fit2Fitter.Services.Contracts
 
         Task<IEnumerable<ActivityDto>> GetActivities(DateTime date);
 
-        Task<IEnumerable<CommentDto>> GetAllComments(int clientId, bool sent);
+        Task<IEnumerable<CommentDto>> GetAllComments(int clientId, bool sent, int mealsRef);
+
+        Task<IEnumerable<CommentDto>> GetAllCommentsMeals(int clientId);
+
+        Task<IEnumerable<CommentDto>> GetCommentsMeals(int clientId, DateTime date);
 
         Task<IEnumerable<CommentDto>> GetComments(int clientId, bool readStatus);
 
@@ -42,6 +46,8 @@ namespace Fit2Fitter.Services.Contracts
         Task<bool> DeleteComment(int commentId);
 
         Task<bool> UpdateComment(int commentId, bool read);
+
+        Task<bool> UpdateCommentMeals(int clientId, bool read, DateTime date);
 
         Task<bool> DeleteMacroGuide(int macroGuideId);
 

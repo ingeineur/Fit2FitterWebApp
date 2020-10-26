@@ -87,7 +87,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     }
 
     handleCheckChange = (field: any, value: any) => {
-        console.log(value);
         this.state.meals.forEach(x => x.check = false);
         var arr = this.state.meals.filter(x => x.remove !== true);
         arr[parseInt(value['className'])]['check'] = value['checked'];
@@ -96,7 +95,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
 
     getRows = () => {
         var arr = this.state.meals.filter(x => x.remove !== true);
-        console.log(arr);
         return (
             arr.map((item, index) =>
                 <Grid.Row className={'row'} key={index} columns={3} stretched>

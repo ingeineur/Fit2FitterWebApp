@@ -18,6 +18,8 @@ import EBook from './components/EBook';
 import Admin from './components/Admin';
 import Master from './components/Master';
 import Messages from './components/Messages';
+import MessagesMeals from './components/MessagesMeals';
+import MessagesMealsAdmin from './components/MessagesMealsAdmin';
 
 import './custom.css'
 
@@ -38,6 +40,8 @@ export default () => (
         <Route path='/admin' component={Admin} />
         <Route path='/master' component={Master} />
         <Route path='/messages' component={Messages} />
+        <Route path='/messagesmeals' component={MessagesMeals} />
+        <Route path='/messagesmealsadmin' component={MessagesMealsAdmin} />
         <Route path='/macroguide' component={MacroGuide} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>

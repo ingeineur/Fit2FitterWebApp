@@ -54,6 +54,13 @@ namespace Fit2FitterWebApp.Controllers
             return this.Ok(result);
         }
 
+        [HttpPut("{clientId}/comment/meals/update")]
+        public async Task<IActionResult> Put(int clientId, [FromQuery, Required] bool read, [FromQuery, Required] string date)
+        {
+            var result = await this.trackerService.UpdateCommentMeals(clientId, read, DateTime.Parse(date)).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
         [HttpPut("macrosguide")]
         public async Task<IActionResult> Put([FromBody, Required]MacrosGuideDto guide, [FromQuery, Required] string date)
         {
@@ -105,9 +112,24 @@ namespace Fit2FitterWebApp.Controllers
         }
 
         [HttpGet("{clientId}/all/comments")]
-        public async Task<IEnumerable<CommentDto>> GetAllComments(int clientId, [FromQuery, Required] bool sent)
+        public async Task<IEnumerable<CommentDto>> GetAllComments(int clientId, [FromQuery, Required] bool sent, [FromQuery, Required] int mealsRef)
         {
-            var data = await this.trackerService.GetAllComments(clientId, sent).ConfigureAwait(false);
+            var data = await this.trackerService.GetAllComments(clientId, sent, mealsRef).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{clientId}/all/comments/meals")]
+        public async Task<IEnumerable<CommentDto>> GetAllCommentsMeals(int clientId)
+        {
+            var data = await this.trackerService.GetAllCommentsMeals(clientId).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{clientId}/comments/meals")]
+        public async Task<IEnumerable<CommentDto>> GetCommentsMeals(int clientId, string dateString)
+        {
+            var date = DateTime.Parse(dateString);
+            var data = await this.trackerService.GetCommentsMeals(clientId, date).ConfigureAwait(false);
             return data.ToArray();
         }
 

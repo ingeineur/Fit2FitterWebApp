@@ -7,8 +7,6 @@ import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import MacroNew from './MacroNew'
-import MacroHeader from './MacroHeader'
 import MacroModal from './MacroModal'
 
 interface IProps {

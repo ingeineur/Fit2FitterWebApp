@@ -17,7 +17,9 @@ interface IState {
     login: string;
     checkMail: boolean;
     unReadMessage: number;
+    unReadMessageMeals: number;
     messageDtos: IMessageDto[];
+    messageMealsDtos: IMessageDto[];
     apiUpdate: boolean;
     clientDtos: IClientDto[];
     clientList: IOption[],
@@ -96,6 +98,12 @@ class Home extends React.Component<LoginProps, IState > {
                 .then(data => this.setState({
                     messageDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
+
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageMealsDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
         }
     }
 
@@ -115,9 +123,9 @@ class Home extends React.Component<LoginProps, IState > {
         super(props);
         this.state = {
             username: '', password: '', activeItem: '', error: '', login: '',
-            messageDtos: [], checkMail: false, unReadMessage: 0, apiUpdate: false,
+            messageDtos: [], checkMail: false, unReadMessage: 0, unReadMessageMeals:0, apiUpdate: false,
             clientDtos: [], clientList: [], clients: [], toClientId: 2, checkClients: false,
-            loginDtos: []
+            loginDtos: [], messageMealsDtos: []
         };
     }
 
@@ -133,11 +141,10 @@ class Home extends React.Component<LoginProps, IState > {
         });
 
         this.setState({ clients: this.state.clients });
-        console.log(this.state.clients);
     }
 
     getAdmin = () => {
-        if (this.props.logins[0].username === 'admin2') {
+        if (this.props.logins[0].username === 'admin') {
             return (
                 <Menu.Item
                     name='Master'
@@ -148,8 +155,28 @@ class Home extends React.Component<LoginProps, IState > {
         }
     }
 
+    getMealsReview = () => {
+        if (this.props.logins[0].username === 'admin') {
+            return (
+                <Menu.Item
+                    name='Logged Meals (Admin)'
+                    onClick={this.handleItemClick}>
+                    <Icon color='violet' name='clipboard outline' />
+                    Logged Meals ({this.state.unReadMessageMeals})
+                    </Menu.Item>);
+        }
+
+        return (
+            <Menu.Item
+                name='Logged Meals'
+                onClick={this.handleItemClick}>
+                <Icon color='violet' name='clipboard outline' />
+                Logged Meals ({this.state.unReadMessageMeals})
+                </Menu.Item>
+        );
+    }
+
     setToClient = (event: any, data: any) => {
-        console.log(data);
         this.setState({ toClientId: data['value'] });
 
         // get logins
@@ -185,11 +212,21 @@ class Home extends React.Component<LoginProps, IState > {
                         .then(data => this.setState({
                             messageDtos: data, checkMail: true, apiUpdate: true
                         })).catch(error => console.log(error));
+
+                    fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
+                        .then(response => response.json() as Promise<IMessageDto[]>)
+                        .then(data => this.setState({
+                            messageMealsDtos: data, apiUpdate: true
+                        })).catch(error => console.log(error));
                 }
             }
 
             if (this.state.apiUpdate === true) {
-                this.setState({ unReadMessage: this.state.messageDtos.length, apiUpdate: false });
+                var miscMsg = this.state.messageDtos.filter(x => x.mealsRef === '0');
+                this.setState({ unReadMessage: miscMsg.length, apiUpdate: false });
+
+                var unreadMsg = this.state.messageMealsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
+                this.setState({ unReadMessageMeals: unreadMsg.length });
 
                 this.setValuesFromDto();
                 if (this.state.clientList.length < 1) {
@@ -238,6 +275,14 @@ class Home extends React.Component<LoginProps, IState > {
             if (this.state.activeItem === 'Messages') {
                 return (<Redirect to="/messages" />);
             }
+
+            if (this.state.activeItem === 'Logged Meals') {
+                return (<Redirect to="/messagesmeals" />);
+            }
+
+            if (this.state.activeItem === 'Logged Meals (Admin)') {
+                return (<Redirect to="/messagesmealsadmin" />);
+            }
             //if (true) {
             return (
                 <div>
@@ -255,7 +300,7 @@ class Home extends React.Component<LoginProps, IState > {
                                         name='New Meal'
                                         onClick={this.handleItemClick}>
                                         <Icon color='red' name='food' />
-                                        Meals Tracker (New Version)
+                                        Meals Tracker
                                     </Menu.Item>
                                     <Menu.Item
                                         name='Activity'
@@ -303,7 +348,6 @@ class Home extends React.Component<LoginProps, IState > {
                         <Grid.Row>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
-                                    {this.getAdmin()}
                                     <Menu.Item
                                         name='Logout'
                                         onClick={this.clearCredentials}>
@@ -313,6 +357,9 @@ class Home extends React.Component<LoginProps, IState > {
                                 </Menu>
                             </Grid.Column>
                             <Grid.Column width={8}>
+                                <Menu fluid vertical icon='labeled'>
+                                    {this.getMealsReview()}
+                                </Menu>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>

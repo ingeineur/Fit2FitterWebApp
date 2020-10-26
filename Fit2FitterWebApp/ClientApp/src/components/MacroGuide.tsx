@@ -7,7 +7,6 @@ import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import MacroNew from './MacroNew'
 import MacroGuideHeader from './MacroGuideHeader'
 import MacroGuideReviewModal from './MacroGuideReviewModal'
 import MacroGuideTable from './MacroGuideTable'
@@ -100,6 +99,19 @@ interface IMacrosPlanDto {
     fatPercent: number,
     updated: string;
     created: string;
+    clientId: number;
+}
+
+interface IMessageDto {
+    id: number,
+    measurementRef: string;
+    mealsRef: string;
+    activitiesRef: string;
+    message: string;
+    readStatus: boolean;
+    updated: string;
+    created: string;
+    fromId: number;
     clientId: number;
 }
 
@@ -311,8 +323,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             });
         }
 
-        console.log(JSON.stringify(newMealDtos));
-
         fetch(fetchStr, {
             method: 'PUT',
             headers: {
@@ -356,6 +366,29 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
     }
 
+    logMeals = () => {
+        var fetchStr = 'api/tracker/comment?date=' + this.state.selectedDate.toISOString();
+        fetch(fetchStr, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: 0,
+                measurementRef: 0,
+                mealsRef: 1,
+                activitiesRef: 0,
+                readStatus: false,
+                message: 'Log meals for today',
+                created: this.state.selectedDate.toISOString(),
+                updated: (new Date()).toISOString(),
+                fromId: this.props.logins[0].clientId,
+                clientId: 2,
+            })
+        }).then(response => response.json()).then(data => this.setState({ updated: !this.state.updated })).catch(error => console.log('put macros ---------->' + error));
+    }
+
     onSave = () => {
         this.setState({ savingStatus: 'Saving in progress' })
 
@@ -365,6 +398,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         // add rows
         setTimeout(() => {
             this.saveMacrosGuide();
+            this.logMeals();
         }, 2000);
     }
 
@@ -529,7 +563,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                     <Modal.Content scrolling>
                                         <Modal.Description>
-                                            <MacroGuideReviewModal guides={this.state.guides} meals={this.state.meals} update={this.state.updated} />
+                                            <MacroGuideReviewModal guides={this.state.guides} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
                                         </Modal.Description>
                                     </Modal.Content>
                                     <Modal.Actions>

@@ -69,16 +69,29 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
-        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent)
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllComments(int clientId, bool sent, int mealsRef)
         {
             if(sent == true)
             {
                 return await this.databaseContext.Comments.Where(x =>
-                x.FromId == clientId).ToArrayAsync().ConfigureAwait(false);
+                x.FromId == clientId && x.MealsRef == mealsRef).ToArrayAsync().ConfigureAwait(false);
             }
 
             return await this.databaseContext.Comments.Where(x =>
-                x.ClientId == clientId).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && x.MealsRef == mealsRef).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId)
+        {
+            return await this.databaseContext.Comments.Where(x =>
+                (x.ClientId == clientId || x.FromId == clientId) && x.MealsRef == 1).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                (x.ClientId == clientId || x.FromId == clientId) && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, bool readStatus)
@@ -212,8 +225,24 @@ namespace Fit2Fitter.Database.Data
         {
             if (await this.clientRepository.FindClientById(comment.ClientId).ConfigureAwait(false) != null)
             {
-                await this.databaseContext.Comments.AddAsync(comment).ConfigureAwait(false);
-                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+                // check if logging message
+                if (comment.Message == "Log meals for today")
+                {
+                    var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+                    var result = await this.databaseContext.Comments.Where(x =>
+                    x.ClientId == comment.ClientId && x.FromId == comment.FromId && x.Message == comment.Message && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, comment.Created) == 0).ToListAsync().ConfigureAwait(false);
+
+                    if (result.Count < 1)
+                    {
+                        await this.databaseContext.Comments.AddAsync(comment).ConfigureAwait(false);
+                        await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    await this.databaseContext.Comments.AddAsync(comment).ConfigureAwait(false);
+                    await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
         }
 
@@ -344,6 +373,19 @@ namespace Fit2Fitter.Database.Data
             if (result != null)
             {
                 result.ReadStatus = read;
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task UpdateCommentMeals(int clientId, bool read, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            var result = await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                result.ForEach(x => x.ReadStatus = read);
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
