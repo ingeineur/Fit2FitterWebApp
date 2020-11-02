@@ -68,6 +68,14 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId);
 
         /// <summary>
+        /// Finds all comments on meals.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(DateTime date);
+
+        /// <summary>
         /// Finds all comments on meals by date.
         /// </summary>
         /// <param name="clientId">The user id.</param>
@@ -239,5 +247,13 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="read"></param>
         /// <returns></returns>
         Task UpdateCommentMeals(int clientId, bool read, DateTime date);
+
+        /// <summary>
+        /// Update comment's read status
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="read"></param>
+        /// <returns></returns>
+        Task UpdateCommentMeals(int clientId, int fromClientId, bool read, DateTime date);
     }
 }

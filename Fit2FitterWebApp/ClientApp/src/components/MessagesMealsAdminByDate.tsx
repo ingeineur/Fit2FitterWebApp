@@ -30,7 +30,7 @@ interface IState {
     toClientId: number;
     numChar: number;
     status: string;
-    loggedMeals: ILoggedMeals[];
+    loggedMeals: INotification[];
     macrosPlanDtos: IMacrosPlanDto[];
     guides: IMacroGuides;
     openReview: boolean;
@@ -133,9 +133,12 @@ type LoginProps =
     & typeof LoginStore.actionCreators // ... plus action creators we've requested
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
 
-class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
+class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
     public componentDidMount() {
         this.props.getLogin();
+        var date = new Date();
+        date.setHours(0, 0, 0, 0);
+        this.setState({ selectedDate: date, prevDate: date });
 
         if (this.props.logins.length > 0) {
             fetch('api/client/all')
@@ -144,7 +147,7 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                     clientDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/tracker/' + this.state.toClientId + '/all/comments/meals')
+            fetch('api/tracker/all/comments/meals?dateString=' + date.toISOString())
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
                     mealsMessageDtos: data, apiUpdate: true
@@ -328,10 +331,10 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
             this.state.loggedMeals.pop();
         }
 
-        var test = this.groupBy(this.state.mealsMessageDtos);
-        test.forEach((values: IMessageDto[], key: string) => {
+        var test = this.groupByFromId(this.state.mealsMessageDtos);
+        test.forEach((values: IMessageDto[], key: number) => {
             var unRead = values.filter(x => x.readStatus == false && x.clientId === this.props.logins[0].clientId);
-            this.state.loggedMeals.push({ created: key, totalComments: values.length, unreadComments: unRead.length });
+            this.state.loggedMeals.push({ clientId: key, totalComments: values.length, unreadComments: unRead.length });
         });
 
         this.setState({ loggedMeals: this.state.loggedMeals });
@@ -407,18 +410,20 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
     }
 
     getLoggedMeals = () => {
-        this.state.loggedMeals.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
+        if (this.state.clientDtos.length < 1) {
+            return;
+        }
 
         return (
             this.state.loggedMeals.map((item, index) =>
                 <div key={index}>
                     <Message key={index} color={this.getUnReadMessageColour(item.unreadComments)}>
                         <Label key={index} as='a' color={this.getUnReadMessageColour(item.unreadComments)} corner='right'>
-                            <Icon key={index} name='food' />
+                            <Icon key={index} name='user' />
                         </Label>
                         <Message.Header key={index + 1}>
                             <div style={divHeaderStyle}>
-                                Logged Meals: {this.getDate(item.created)}
+                                {this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === parseInt(item.clientId.toString()))].firstName}
                             </div>
                             <Grid key={index} celled>
                                 <Grid.Row key={index} columns={3} textAlign='center'>
@@ -433,22 +438,22 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                                     <Grid.Column key={index + 1} textAlign='center'>
                                         <div>
                                             <a>Total Msg:</a>
-                                        </div>            
+                                        </div>
                                         <div>
                                             <a>{item.totalComments}</a>
-                                        </div>            
+                                        </div>
                                     </Grid.Column>
                                     <Grid.Column key={index + 2}>
                                         <div>
                                             <Modal
-                                                className={item.created}
+                                                className={item.clientId.toString()}
                                                 key={index + 3}
-                                                open={this.state.activeCreated === item.created}
-                                                trigger={<Button size='tiny' className={item.created} onClick={this.onClickViewMeals} primary>Review Meals</Button>}>
-                                                <Modal.Header key={index}>Meals Summary for {this.getDate(item.created)}</Modal.Header>
+                                                open={this.state.activeCreated === item.clientId.toString()}
+                                                trigger={<Button size='tiny' className={item.clientId.toString()} onClick={this.onClickViewMeals} primary>Review Meals</Button>}>
+                                                <Modal.Header key={index}>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MacroGuideReviewModal key={index} guides={this.state.guides} senderId={2} clientId={this.state.toClientId} mealDate={item.created} update={this.state.updated} />
+                                                        <MacroGuideReviewModal key={index} guides={this.state.guides} senderId={2} clientId={item.clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>
@@ -469,7 +474,7 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
     }
 
     getAllMessages = () => {
-        fetch('api/tracker/' + this.state.toClientId + '/all/comments/meals')
+        fetch('api/tracker/all/comments/meals?dateString=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IMessageDto[]>)
             .then(data => this.setState({
                 mealsMessageDtos: data, apiUpdate: true
@@ -507,8 +512,8 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
         this.setState({ dateChanged: true })
     }
 
-    updateMessageRead = (clientId: number, read: boolean, date: string) => {
-        var fetchStr = 'api/tracker/' + clientId + '/' + this.state.toClientId + '/comment/meals/update?read=' + read + '&date=' + date;
+    updateMessageRead = (clientId: number, read: boolean, toClientId: string) => {
+        var fetchStr = 'api/tracker/' + clientId + '/' + parseInt(toClientId) + '/comment/meals/update?read=' + read + '&date=' + this.state.selectedDate.toISOString();
         fetch(fetchStr, {
             method: 'PUT',
             headers: {
@@ -521,7 +526,6 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
         newDate.setHours(0, 0, 0, 0);
-        console.log(newDate);
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
@@ -556,32 +560,25 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                 }
             }
 
-            var name = '';
-            if (this.state.clientDtos.length > 0) {
-                name = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === parseInt(this.state.toClientId.toString()))].firstName;
-            }
-
         return (
             <div>
                 <Grid centered>
                     <Grid.Row columns={2}>
                         <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Meals Log</Label>
+                            <Label size='large' as='a' color='pink' basic circular>Meals Log Review</Label>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={2} textAlign='left'>
+                    <Grid.Row textAlign='left'>
                         <Grid.Column verticalAlign='middle' width={10} textAlign='left' floated='left'>
-                            <a>Select Trainee:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
+                            <div>
+                                <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                            </div>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <Segment attached='top'>
-                                <a>Current Meals Notifications</a>
-                                {this.getNotifications()}
-                            </Segment>
                             <Segment attached='bottom'>
-                                <a>Logged Meals for: {name}</a>
+                                <a>[Not Reviewed: {(this.state.loggedMeals.filter(x => x.unreadComments !== 0)).length}]  [Reviewed: {(this.state.loggedMeals.filter(x => x.unreadComments === 0)).length}]</a>
                                 {this.getLoggedMeals()}
                             </Segment>
                         </Grid.Column>
@@ -597,4 +594,4 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props
-)(MessagesMealsAdmin as any);
+)(MessagesMealsAdminByDate as any);

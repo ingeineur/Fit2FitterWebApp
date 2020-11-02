@@ -176,6 +176,18 @@ class Home extends React.Component<LoginProps, IState > {
         );
     }
 
+    getMealsReviewByDate = () => {
+        if (this.props.logins[0].username === 'admin') {
+            return (
+                <Menu.Item
+                    name='Logged Meals by Date (Admin)'
+                    onClick={this.handleItemClick}>
+                    <Icon color='violet' name='clipboard outline' />
+                    Logged Meals by Date ({this.state.unReadMessageMeals})
+                    </Menu.Item>);
+        }
+    }
+
     setToClient = (event: any, data: any) => {
         this.setState({ toClientId: data['value'] });
 
@@ -283,6 +295,10 @@ class Home extends React.Component<LoginProps, IState > {
             if (this.state.activeItem === 'Logged Meals (Admin)') {
                 return (<Redirect to="/messagesmealsadmin" />);
             }
+
+            if (this.state.activeItem === 'Logged Meals by Date (Admin)') {
+                return (<Redirect to="/messagesmealsadminbydate" />);
+            }
             //if (true) {
             return (
                 <div>
@@ -359,6 +375,7 @@ class Home extends React.Component<LoginProps, IState > {
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
                                     {this.getMealsReview()}
+                                    {this.getMealsReviewByDate()}
                                 </Menu>
                             </Grid.Column>
                         </Grid.Row>
