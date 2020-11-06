@@ -99,40 +99,40 @@ class EBook extends React.Component<LoginProps, IState> {
                         <Grid.Row columns={2} color='pink'>
                             <Grid.Column >
                                 <div>
-                                    <a>Programs</a>
+                                    <a>Workouts</a>
                                 </div>
                             </Grid.Column>
                             <Grid.Column >
                                 <div>
-                                    <a>Additional Refs</a>
+                                    <a>Foods</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>
                         <Grid.Row columns={2}>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP36WeekGuide.pdf&amp;embedded=true' target='_blank'>1. BTP Guide</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>2. Home Workouts</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>3. StarterPack Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>4. September Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>5. October Recipes</a>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>1. Home Workouts</a>
                                 </div>
                             </Grid.Column>
                             <Grid.Column>
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>1. Addictives to avoid</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>2. StarterPack Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>3. September Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>4. October Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>5. November Recipes</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>
