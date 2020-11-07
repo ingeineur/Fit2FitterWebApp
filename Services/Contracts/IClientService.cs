@@ -23,9 +23,9 @@ namespace Fit2Fitter.Services.Contracts
 
         Task<bool> AddMacrosPlan(MacrosPlanDto plan);
 
-        Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime date);
+        Task<IEnumerable<MeasurementDto>> GetMeasurement(int clientId, DateTime date);
 
-        Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId);
+        Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime date);
 
         Task<IEnumerable<MeasurementDto>> GetMeasurementsClosest(int clientId, DateTime date);
 

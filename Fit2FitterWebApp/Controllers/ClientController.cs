@@ -100,14 +100,14 @@ namespace Fit2FitterWebApp.Controllers
         [HttpGet("{clientId}/measurements")]
         public async Task<IEnumerable<MeasurementDto>> GetMeasurement(int clientId, [FromQuery, Required] string date)
         {
-            var data = await this.clientService.GetMeasurements(clientId, DateTime.Parse(date)).ConfigureAwait(false);
+            var data = await this.clientService.GetMeasurement(clientId, DateTime.Parse(date)).ConfigureAwait(false);
             return data.ToArray();
         }
 
         [HttpGet("{clientId}/all/measurements")]
-        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId)
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, [FromQuery, Required] string date)
         {
-            var data = await this.clientService.GetMeasurements(clientId).ConfigureAwait(false);
+            var data = await this.clientService.GetMeasurements(clientId, DateTime.Parse(date)).ConfigureAwait(false);
             return data.ToArray();
         }
 

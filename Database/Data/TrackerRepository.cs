@@ -27,11 +27,11 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
-        public async System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId)
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId, DateTime date)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Measurements.Where(x =>
-                x.ClientId == clientId).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<Models.Measurement> FindMeasurementClosest(int clientId, DateTime date)
@@ -99,6 +99,13 @@ namespace Fit2Fitter.Database.Data
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Comments.Where(x =>
                 (x.ClientId == clientId || x.FromId == clientId) && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeasurements(int clientId, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                (x.ClientId == clientId || x.FromId == clientId) && x.MeasurementRef == 1 && DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, bool readStatus)
@@ -388,7 +395,7 @@ namespace Fit2Fitter.Database.Data
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             var result = await this.databaseContext.Comments.Where(x =>
-                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+                x.ClientId == clientId && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
 
             if (result != null)
             {
@@ -401,7 +408,20 @@ namespace Fit2Fitter.Database.Data
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             var result = await this.databaseContext.Comments.Where(x =>
-                x.ClientId == clientId && x.FromId == fromClientId && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+                x.ClientId == clientId && x.FromId == fromClientId && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                result.ForEach(x => x.ReadStatus = read);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task UpdateCommentMeasurements(int clientId, bool read, DateTime date)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            var result = await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId && x.MeasurementRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToListAsync().ConfigureAwait(false);
 
             if (result != null)
             {

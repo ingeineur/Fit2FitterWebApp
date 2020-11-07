@@ -2,13 +2,14 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Input, Icon, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Input, Icon, Dropdown, Modal } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MeasurementsTable from './MeasurementsTable'
 import MeasurementsHeader from './MeasurementsHeader';
+import MeasurementsReviewModal from './MeasurementsReviewModal'
 import ChartistGraph from 'react-chartist';
 
 interface IProps {
@@ -36,6 +37,7 @@ interface IState {
     savingStatus: string;
     dateChanged: boolean; 
     measureType: string;
+    openReview: boolean;
 }
 
 interface IMacroGuides {
@@ -161,7 +163,6 @@ class Measurements extends React.Component<LoginProps, IState> {
 
         if (this.props.logins.length > 0) {
 
-            console.log('--->' + this.props.logins[0].clientId);
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
                 .then(data => this.setState({
@@ -174,7 +175,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                     measurementDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements')
+            fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?date=' + (date).toISOString())
                 .then(response => response.json() as Promise<IMeasurementDto[]>)
                 .then(data => this.setState({
                     allMeasurementDtos: data, apiUpdate: true
@@ -242,7 +243,8 @@ class Measurements extends React.Component<LoginProps, IState> {
             },
             graphsData: [[]],
             weightLabel: [],
-            measureType:'Neck'
+            measureType: 'Neck',
+            openReview: false
         };
     }
 
@@ -307,7 +309,6 @@ class Measurements extends React.Component<LoginProps, IState> {
     setValuesFromDto = () => {
         if (this.state.clients.length > 0) {
             const client = this.state.clients[0];
-            console.log(client.firstName);
             this.setState({ age: client.age });
         }
 
@@ -317,8 +318,6 @@ class Measurements extends React.Component<LoginProps, IState> {
         }
 
         if (this.state.measurementDtos.length > 0) {
-            console.log("----> have value");
-            console.log(this.state.measurementDtos);
             const measurement = this.state.measurementDtos[0];
             this.state.measurements.neck = measurement.neck;
             this.state.measurements.upperArm = measurement.upperArm;
@@ -331,7 +330,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.setState({ apiUpdate: false, updated: !this.state.updated });
         }
         else {
-            console.log("----> no value");
             this.state.measurements.neck = 0;
             this.state.measurements.upperArm = 0;
             this.state.measurements.chest = 0;
@@ -353,9 +351,7 @@ class Measurements extends React.Component<LoginProps, IState> {
     onSave = () => {
         this.setState({ savingStatus: 'Saving in progress' })
         var fetchStr = 'api/client/measurement?date=' + this.state.selectedDate.toISOString();
-        console.log(this.state.measurementDtos.length);
         if (this.state.measurementDtos.length < 1) {
-            console.log(fetchStr);
             this.state.measurementDtos.push({
                 id: 0,
                 neck: parseFloat(this.state.measurements.neck.toString()),
@@ -373,7 +369,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.setState({ measurementDtos: this.state.measurementDtos });
         }
 
-        console.log(fetchStr);
         fetch(fetchStr, {
             method: 'PUT',
             headers: {
@@ -395,6 +390,33 @@ class Measurements extends React.Component<LoginProps, IState> {
                 clientId: this.props.logins[0].clientId,
             })
         }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
+
+        setTimeout(() => {
+            this.logMeasurements();
+        }, 2000);
+    }
+
+    logMeasurements = () => {
+        var fetchStr = 'api/tracker/comment?date=' + this.state.selectedDate.toISOString();
+        fetch(fetchStr, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: 0,
+                measurementRef: 1,
+                mealsRef: 0,
+                activitiesRef: 0,
+                readStatus: false,
+                message: 'Log measurements for this week',
+                created: this.state.selectedDate.toISOString(),
+                updated: (new Date()).toISOString(),
+                fromId: this.props.logins[0].clientId,
+                clientId: 2,
+            })
+        }).then(response => response.json()).then(data => this.setState({ updated: !this.state.updated })).catch(error => console.log('put macros ---------->' + error));
     }
 
     getColour = () => {
@@ -435,6 +457,10 @@ class Measurements extends React.Component<LoginProps, IState> {
         }
     }
 
+    handleOpen = (open: boolean) => {
+        this.setState({ openReview: open });
+    }
+
     render() {
         var data = {
             labels: this.state.weightLabel,
@@ -465,6 +491,12 @@ class Measurements extends React.Component<LoginProps, IState> {
                         .then(data => this.setState({
                             measurementDtos: data, apiUpdate: true
                         })).catch(error => console.log(error));
+
+                    fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?date=' + this.state.selectedDate.toISOString())
+                        .then(response => response.json() as Promise<IMeasurementDto[]>)
+                        .then(data => this.setState({
+                            allMeasurementDtos: data, apiUpdate: true
+                        })).catch(error => console.log(error));
                 }
             }
 
@@ -491,21 +523,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
-                        <Grid.Column>
-                            <div>
-                                <a>All Measurements Progress: </a>
-                                <Dropdown basic id='plans' value={this.state.measureType} selection options={measureType} onChange={this.setMeasureType} />
-                                <ChartistGraph data={data} type={type} />
-                            </div>
-                            <div>
-                                <a>Weight Progress: : {(this.state.graphs.weight[0] - this.state.measurements.weight).toFixed(2)}kg from start weight</a>
-                                <ChartistGraph data={data2} type={type2} />
-                            </div>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
                         <Grid.Column width={16}>
-                            <div><a>Current Measurements</a></div>
                             <Menu attached='top' tabular compact>
                                 <Menu.Item
                                     name='Body'
@@ -526,14 +544,33 @@ class Measurements extends React.Component<LoginProps, IState> {
                             </div>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={3}>
+                    <Grid.Row columns={4}>
                         <Grid.Column width={4} textAlign='left' floated='left'>
                             <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                         </Grid.Column>
                         <Grid.Column width={4} textAlign='left' floated='left'>
                             <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
                         </Grid.Column>
-                        <Grid.Column verticalAlign='middle' width={8} textAlign='left' floated='left'>
+                        <Grid.Column verticalAlign='middle' width={2} textAlign='left' floated='left'>
+                        </Grid.Column>
+                        <Grid.Column width={6} textAlign='right' floated='right'>
+                            <Modal
+                                open={this.state.openReview}
+                                onClose={() => this.handleOpen(false)}
+                                onOpen={() => this.handleOpen(true)}
+                                trigger={<Button size='tiny' primary>Review Progress</Button>}>
+                                <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
+                                <Modal.Content scrolling>
+                                    <Modal.Description>
+                                        <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} clientId={this.props.logins[0].clientId} update={this.state.updated} />
+                                    </Modal.Description>
+                                </Modal.Content>
+                                <Modal.Actions>
+                                    <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
+                                        Close <Icon name='chevron right' />
+                                    </Button>
+                                </Modal.Actions>
+                            </Modal>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

@@ -94,7 +94,6 @@ class MeasurementsHeader extends React.Component<IProps, IState> {
             }
         }
         if (36 <= age && age <= 40) {
-            console.log("--------------> should at leats here");
             if (13.8 <= bodyFat && bodyFat <= 22.2) {
                 return 'LEAN';
             }

@@ -16,7 +16,7 @@ namespace Fit2Fitter.Database.Contracts
         /// <returns>The user that has the requirement user name.</returns>
         System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurement(int clientId, DateTime date);
 
-        System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId);
+        System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId, DateTime date);
 
         System.Threading.Tasks.Task<Models.Measurement> FindMeasurementClosest(int clientId, DateTime date);
 
@@ -82,6 +82,14 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="date">The meals date.</param>
         /// <returns>The user that has the requirement user name.</returns>
         System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date);
+
+        /// <summary>
+        /// Finds all comments on measurements by date.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">The meals date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeasurements(int clientId, DateTime date);
 
         /// <summary>
         /// Finds the comments by read status.
@@ -255,5 +263,13 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="read"></param>
         /// <returns></returns>
         Task UpdateCommentMeals(int clientId, int fromClientId, bool read, DateTime date);
+
+        /// <summary>
+        /// Update comment's read status
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="read"></param>
+        /// <returns></returns>
+        Task UpdateCommentMeasurements(int clientId, bool read, DateTime date);
     }
 }

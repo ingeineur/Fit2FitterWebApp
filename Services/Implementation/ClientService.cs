@@ -228,7 +228,7 @@ namespace Fit2Fitter.Services.Implementation
             }
         }
 
-        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime date)
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurement(int clientId, DateTime date)
         {
             var measurements = await this.trackerRepository.FindMeasurement(clientId, date).ConfigureAwait(false);
             return measurements.Select(measurement => new MeasurementDto
@@ -248,9 +248,9 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
-        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId)
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime date)
         {
-            var measurements = await this.trackerRepository.FindMeasurements(clientId).ConfigureAwait(false);
+            var measurements = await this.trackerRepository.FindMeasurements(clientId, date).ConfigureAwait(false);
             return measurements.Select(measurement => new MeasurementDto
             {
                 Id = measurement.Id,

@@ -96,7 +96,7 @@ class EBook extends React.Component<LoginProps, IState> {
                         <h5 color='red'>Click on the link below to read from the e-book. **Please refresh the page if the pdf file is not loaded.</h5>
                     </div>
                     <Grid celled centered>
-                        <Grid.Row columns={2} color='pink'>
+                        <Grid.Row columns={3} color='pink'>
                             <Grid.Column >
                                 <div>
                                     <a>Workouts</a>
@@ -104,21 +104,22 @@ class EBook extends React.Component<LoginProps, IState> {
                             </Grid.Column>
                             <Grid.Column >
                                 <div>
-                                    <a>Foods</a>
+                                    <a>Recipes</a>
+                                </div>
+                            </Grid.Column>
+                            <Grid.Column >
+                                <div>
+                                    <a>Add Info</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>
-                        <Grid.Row columns={2}>
+                        <Grid.Row columns={3}>
                             <Grid.Column>
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>1. Home Workouts</a>
                                 </div>
                             </Grid.Column>
                             <Grid.Column>
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>1. Addictives to avoid</a>
-                                </div>
-
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>2. StarterPack Recipes</a>
                                 </div>
@@ -133,6 +134,11 @@ class EBook extends React.Component<LoginProps, IState> {
 
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>5. November Recipes</a>
+                                </div>
+                            </Grid.Column>
+                            <Grid.Column>
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>1. Addictives to avoid</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>

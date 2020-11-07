@@ -18,8 +18,10 @@ interface IState {
     checkMail: boolean;
     unReadMessage: number;
     unReadMessageMeals: number;
+    unReadMessageMeasurements: number;
     messageDtos: IMessageDto[];
     messageMealsDtos: IMessageDto[];
+    messageMeasurementsDtos: IMessageDto[];
     apiUpdate: boolean;
     clientDtos: IClientDto[];
     clientList: IOption[],
@@ -82,6 +84,17 @@ type LoginProps =
     
 class Home extends React.Component<LoginProps, IState > {
 
+    getAllMeasurementsMessages = () => {
+        var date = new Date();
+        date.setHours(0, 0, 0, 0);
+
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/comments/measurements?dateString=' + date.toISOString())
+            .then(response => response.json() as Promise<IMessageDto[]>)
+            .then(data => this.setState({
+                messageMeasurementsDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+    }
+
     public componentDidMount() {
         this.props.getLogin();
 
@@ -104,6 +117,8 @@ class Home extends React.Component<LoginProps, IState > {
                 .then(data => this.setState({
                     messageMealsDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
+
+            this.getAllMeasurementsMessages();
         }
     }
 
@@ -125,7 +140,7 @@ class Home extends React.Component<LoginProps, IState > {
             username: '', password: '', activeItem: '', error: '', login: '',
             messageDtos: [], checkMail: false, unReadMessage: 0, unReadMessageMeals:0, apiUpdate: false,
             clientDtos: [], clientList: [], clients: [], toClientId: 2, checkClients: false,
-            loginDtos: [], messageMealsDtos: []
+            loginDtos: [], messageMealsDtos: [], messageMeasurementsDtos: [], unReadMessageMeasurements: 0
         };
     }
 
@@ -159,19 +174,40 @@ class Home extends React.Component<LoginProps, IState > {
         if (this.props.logins[0].username === 'admin') {
             return (
                 <Menu.Item
-                    name='Logged Meals (Admin)'
+                    name='Meals Logger (Admin)'
                     onClick={this.handleItemClick}>
                     <Icon color='violet' name='clipboard outline' />
-                    Logged Meals ({this.state.unReadMessageMeals})
+                    Meals Logger ({this.state.unReadMessageMeals})
                     </Menu.Item>);
         }
 
         return (
             <Menu.Item
-                name='Logged Meals'
+                name='Meals Logger'
                 onClick={this.handleItemClick}>
                 <Icon color='violet' name='clipboard outline' />
-                Logged Meals ({this.state.unReadMessageMeals})
+                Meals Logger ({this.state.unReadMessageMeals})
+                </Menu.Item>
+        );
+    }
+
+    getMeasurementsReview = () => {
+        if (this.props.logins[0].username === 'admin') {
+            return (
+                <Menu.Item
+                    name='Measurements Logger'
+                    onClick={this.handleItemClick}>
+                    <Icon color='brown' name='clipboard outline' />
+                    Measurements Logger ({this.state.unReadMessageMeasurements})
+                    </Menu.Item>);
+        }
+
+        return (
+            <Menu.Item
+                name='Measurements Logger'
+                onClick={this.handleItemClick}>
+                <Icon color='brown' name='clipboard outline' />
+                Measurements Logger ({this.state.unReadMessageMeasurements})
                 </Menu.Item>
         );
     }
@@ -180,7 +216,7 @@ class Home extends React.Component<LoginProps, IState > {
         if (this.props.logins[0].username === 'admin') {
             return (
                 <Menu.Item
-                    name='Logged Meals by Date (Admin)'
+                    name='Meals Logger by Date (Admin)'
                     onClick={this.handleItemClick}>
                     <Icon color='violet' name='clipboard outline' />
                     Logged Meals by Date ({this.state.unReadMessageMeals})
@@ -230,6 +266,8 @@ class Home extends React.Component<LoginProps, IState > {
                         .then(data => this.setState({
                             messageMealsDtos: data, apiUpdate: true
                         })).catch(error => console.log(error));
+
+                    this.getAllMeasurementsMessages();
                 }
             }
 
@@ -239,6 +277,9 @@ class Home extends React.Component<LoginProps, IState > {
 
                 var unreadMsg = this.state.messageMealsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
                 this.setState({ unReadMessageMeals: unreadMsg.length });
+
+                var unreadMsg2 = this.state.messageMeasurementsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
+                this.setState({ unReadMessageMeasurements: unreadMsg2.length });
 
                 this.setValuesFromDto();
                 if (this.state.clientList.length < 1) {
@@ -288,16 +329,20 @@ class Home extends React.Component<LoginProps, IState > {
                 return (<Redirect to="/messages" />);
             }
 
-            if (this.state.activeItem === 'Logged Meals') {
+            if (this.state.activeItem === 'Meals Logger') {
                 return (<Redirect to="/messagesmeals" />);
             }
 
-            if (this.state.activeItem === 'Logged Meals (Admin)') {
+            if (this.state.activeItem === 'Meals Logger (Admin)') {
                 return (<Redirect to="/messagesmealsadmin" />);
             }
 
-            if (this.state.activeItem === 'Logged Meals by Date (Admin)') {
+            if (this.state.activeItem === 'Meals Logger by Date (Admin)') {
                 return (<Redirect to="/messagesmealsadminbydate" />);
+            }
+
+            if (this.state.activeItem === 'Measurements Logger') {
+                return (<Redirect to="/messagesmeasurements" />);
             }
             //if (true) {
             return (
@@ -376,6 +421,7 @@ class Home extends React.Component<LoginProps, IState > {
                                 <Menu fluid vertical icon='labeled'>
                                     {this.getMealsReview()}
                                     {this.getMealsReviewByDate()}
+                                    {this.getMeasurementsReview()}
                                 </Menu>
                             </Grid.Column>
                         </Grid.Row>
@@ -438,6 +484,7 @@ class Home extends React.Component<LoginProps, IState > {
                         <a>{this.state.error}</a>
                     </div>
                 </Form>
+                <footer> <small>&copy; Copyright 2020, Fit2Fitter by Ida</small> </footer> 
             </div>
             );
     }

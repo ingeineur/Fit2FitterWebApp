@@ -210,7 +210,6 @@ class MeasurementsTable extends React.Component<IProps, IState> {
     render() {
         if (this.props.update !== this.state.dirty)
         {
-            console.log('updating measurement values');
             this.setState({
                 neck: this.props.measurements.neck,
                 upperArm: this.props.measurements.upperArm,
