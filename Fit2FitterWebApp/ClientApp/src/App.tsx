@@ -22,6 +22,7 @@ import MessagesMeals from './components/MessagesMeals';
 import MessagesMeasurements from './components/MessagesMeasurements';
 import MessagesMealsAdmin from './components/MessagesMealsAdmin';
 import MessagesMealsAdminByDate from './components/MessagesMealsAdminByDate';
+import MessagesMeasurementsAdminByDate from './components/MessagesMeasurementsAdminByDate';
 
 import './custom.css'
 
@@ -45,6 +46,7 @@ export default () => (
         <Route path='/messagesmeals' component={MessagesMeals} />
         <Route path='/messagesmealsadmin' component={MessagesMealsAdmin} />
         <Route path='/messagesmealsadminbydate' component={MessagesMealsAdminByDate} />
+        <Route path='/messagesmeasurementsadminbydate' component={MessagesMeasurementsAdminByDate} />
         <Route path='/messagesmeasurements' component={MessagesMeasurements} />
         <Route path='/macroguide' component={MacroGuide} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />

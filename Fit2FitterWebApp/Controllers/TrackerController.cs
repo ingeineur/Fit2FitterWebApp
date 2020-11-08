@@ -75,6 +75,13 @@ namespace Fit2FitterWebApp.Controllers
             return this.Ok(result);
         }
 
+        [HttpPut("{clientId}/{fromClientId}/comment/measurements/update")]
+        public async Task<IActionResult> PutWithToIdMeasurements(int clientId, int fromClientId, [FromQuery, Required] bool read, [FromQuery, Required] string date)
+        {
+            var result = await this.trackerService.UpdateCommentMeasurements(clientId, fromClientId, read, DateTime.Parse(date)).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
         [HttpPut("macrosguide")]
         public async Task<IActionResult> Put([FromBody, Required]MacrosGuideDto guide, [FromQuery, Required] string date)
         {
@@ -151,6 +158,13 @@ namespace Fit2FitterWebApp.Controllers
         {
             var date = DateTime.Parse(dateString);
             var data = await this.trackerService.GetCommentsMeals(clientId, date).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("all/comments/measurements")]
+        public async Task<IEnumerable<CommentDto>> GetAllCommentsMeasurements([FromQuery, Required] string dateString)
+        {
+            var data = await this.trackerService.GetAllCommentsMeasurements(DateTime.Parse(dateString)).ConfigureAwait(false);
             return data.ToArray();
         }
 

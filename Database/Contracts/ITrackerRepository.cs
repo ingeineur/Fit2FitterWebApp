@@ -86,6 +86,13 @@ namespace Fit2Fitter.Database.Contracts
         /// <summary>
         /// Finds all comments on measurements by date.
         /// </summary>
+        /// <param name="date">The meals date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeasurements(DateTime date);
+
+        /// <summary>
+        /// Finds all comments on measurements by clientid and date.
+        /// </summary>
         /// <param name="clientId">The user id.</param>
         /// <param name="date">The meals date.</param>
         /// <returns>The user that has the requirement user name.</returns>
@@ -271,5 +278,13 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="read"></param>
         /// <returns></returns>
         Task UpdateCommentMeasurements(int clientId, bool read, DateTime date);
+
+        /// <summary>
+        /// Update comment's read status
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="read"></param>
+        /// <returns></returns>
+        Task UpdateCommentMeasurements(int clientId, int fromClientId, bool read, DateTime date);
     }
 }

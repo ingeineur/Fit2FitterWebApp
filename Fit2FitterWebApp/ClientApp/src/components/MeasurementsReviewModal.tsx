@@ -6,6 +6,7 @@ import MeasurementsChat from './MeasurementsChat';
 
 interface IProps {
     update: boolean;
+    senderId: number;
     clientId: number;
     age: number;
     date: string;
@@ -435,7 +436,7 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                                 <Icon name='comment' />
                                 <Header.Content>Comments</Header.Content>
                             </Header>
-                            <MeasurementsChat clientId={this.props.clientId} toClientId={this.props.clientId} created={this.props.date} />
+                            <MeasurementsChat clientId={this.props.senderId} toClientId={this.props.clientId} created={this.props.date} />
                         </Segment>
                     </Grid.Column>
                 </Grid.Row>

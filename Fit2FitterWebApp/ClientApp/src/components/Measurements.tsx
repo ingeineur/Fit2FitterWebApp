@@ -562,7 +562,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                                 <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                 <Modal.Content scrolling>
                                     <Modal.Description>
-                                        <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} clientId={this.props.logins[0].clientId} update={this.state.updated} />
+                                        <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
                                     </Modal.Description>
                                 </Modal.Content>
                                 <Modal.Actions>

@@ -195,7 +195,7 @@ class Home extends React.Component<LoginProps, IState > {
         if (this.props.logins[0].username === 'admin') {
             return (
                 <Menu.Item
-                    name='Measurements Logger'
+                    name='Measurements Logger Admin'
                     onClick={this.handleItemClick}>
                     <Icon color='brown' name='clipboard outline' />
                     Measurements Logger ({this.state.unReadMessageMeasurements})
@@ -343,6 +343,10 @@ class Home extends React.Component<LoginProps, IState > {
 
             if (this.state.activeItem === 'Measurements Logger') {
                 return (<Redirect to="/messagesmeasurements" />);
+            }
+
+            if (this.state.activeItem === 'Measurements Logger Admin') {
+                return (<Redirect to="/messagesmeasurementsadminbydate" />);
             }
             //if (true) {
             return (
