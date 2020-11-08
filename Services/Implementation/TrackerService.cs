@@ -30,6 +30,7 @@ namespace Fit2Fitter.Services.Implementation
                     ClientId = activity.ClientId,
                     Calories = activity.Calories,
                     Steps = activity.Steps,
+                    MaxHr = activity.MaxHr,
                     Description = activity.Description,
                     Updated = DateTime.Now,
                     Created = activity.Created
@@ -145,6 +146,7 @@ namespace Fit2Fitter.Services.Implementation
                 Id = activity.Id,
                 Calories = activity.Calories,
                 Steps = activity.Steps,
+                MaxHr = activity.MaxHr,
                 Description = activity.Description,
                 Updated = activity.Updated,
                 Created = activity.Created,

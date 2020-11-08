@@ -19,6 +19,7 @@ interface IActivityGuides {
 interface IActivity {
     calories: number;
     steps: number;
+    maxHr: number;
     ActivityDesc: string;
     check: boolean;
 }
@@ -78,7 +79,6 @@ class ActivityTable extends React.Component<IProps, IState> {
     }
 
     handleStepsChange = (field: any, value: any) => {
-        console.log(parseInt(value['value']));
         if ((parseInt(value['value']) === 0) || isNaN(parseInt(value['value']))) {
             this.state.activities[parseInt(value['className'])]['steps'] = 0;
         }
@@ -88,8 +88,17 @@ class ActivityTable extends React.Component<IProps, IState> {
         this.setState({ activities: this.state.activities, updated: true });
     }
 
+    handleMaxHrChange = (field: any, value: any) => {
+        if ((parseInt(value['value']) === 0) || isNaN(parseInt(value['value']))) {
+            this.state.activities[parseInt(value['className'])]['maxHr'] = 0;
+        }
+        else {
+            this.state.activities[parseInt(value['className'])]['maxHr'] = parseInt(value['value']);
+        }
+        this.setState({ activities: this.state.activities, updated: true });
+    }
+
     handleCheckChange = (field: any, value: any) => {
-        console.log(value['checked']);
         this.state.activities[parseInt(value['className'])]['check'] = value['value'];
         this.setState({ activities: this.state.activities, updated: true });
     }
@@ -97,11 +106,11 @@ class ActivityTable extends React.Component<IProps, IState> {
     getRows = () => {
         return (
             this.state.activities.map((item, index) =>
-                <Grid.Row className={'row'} key={index} columns={4} stretched>
+                <Grid.Row className={'row'} key={index} columns={5} stretched>
                     <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
                         <Checkbox className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
-                    <Grid.Column className={'col_desc'} key={index + 1} width={6}>
+                    <Grid.Column className={'col_desc'} key={index + 1} width={5}>
                         <Input className={index.toString()} key={index + 1} list='activities' onChange={this.handleActivityChange} value={item.ActivityDesc} placeholder='Choose Activity...' />
                         <datalist className={'datalist_desc'} key={index + 2} id='activities'>
                             <option key={index + 2} value='Jogging'>Jogging</option>
@@ -119,11 +128,14 @@ class ActivityTable extends React.Component<IProps, IState> {
                             <option key={index + 14} value='Weekly Challenge'>Weekly Challenge</option>
                         </datalist>
                     </Grid.Column>
-                    <Grid.Column className={'col_calories'} key={index + 2} width={4}>
+                    <Grid.Column className={'col_calories'} key={index + 2} width={3}>
                         <Input className={index.toString()} key={index + 2} as='a' size='mini' onChange={this.handleCaloriesChange} value={item.calories} placeholder='Calories' />
                     </Grid.Column>
-                    <Grid.Column className={'col_steps'} key={index + 3} as='a' width={4}>
+                    <Grid.Column className={'col_steps'} key={index + 3} as='a' width={3}>
                         <Input className={index.toString()} key={index + 3} size='mini' onChange={this.handleStepsChange} value={item.steps} placeholder='Steps' />
+                    </Grid.Column>
+                    <Grid.Column className={'col_maxhr'} key={index + 4} as='a' width={3}>
+                        <Input className={index.toString()} key={index + 4} size='mini' onChange={this.handleMaxHrChange} value={item.maxHr} placeholder='MaxHr' />
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -133,7 +145,6 @@ class ActivityTable extends React.Component<IProps, IState> {
         
         if (this.state.dirty !== this.props.update)
         {
-            //console.log(this.props.activities);
             this.setState({ dirty: this.props.update, activities: this.props.activities });
         }
 
@@ -147,17 +158,20 @@ class ActivityTable extends React.Component<IProps, IState> {
         const totalStepsPercent = (totalSteps / this.props.guides.steps) * 100.0;
         return (
             <Grid centered>
-                <Grid.Row columns={4} textAlign='center'>
+                <Grid.Row columns={5} textAlign='center'>
                     <Grid.Column width={2}>
                     </Grid.Column>
-                    <Grid.Column width={6} textAlign='left'>
+                    <Grid.Column width={5} textAlign='left'>
                         <div><a>Activity</a></div>
                     </Grid.Column>
-                    <Grid.Column width={4} textAlign='left'>
-                        <div><a>Calories</a></div>
+                    <Grid.Column width={3} textAlign='left'>
+                        <div><a>Cals</a></div>
                     </Grid.Column>
-                    <Grid.Column width={4} textAlign='left'>
+                    <Grid.Column width={3} textAlign='left'>
                         <div><a>Steps</a></div>
+                    </Grid.Column>
+                    <Grid.Column width={3} textAlign='left'>
+                        <div><a>Max HR</a></div>
                     </Grid.Column>
                 </Grid.Row>
                 {this.getRows()}

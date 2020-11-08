@@ -26,6 +26,8 @@ interface IState {
     apiUpdate: boolean;
     savingStatus: string;
     dateChanged: boolean;
+    clients: IClient[];
+    age: number;
 }
 
 interface IActivityGuides {
@@ -41,6 +43,7 @@ interface ITotalDailyActivity {
 interface IActivity {
     calories: number;
     steps: number;
+    maxHr: number;
     ActivityDesc: string;
     check: boolean;
 }
@@ -49,11 +52,22 @@ interface IActivityDto {
     id: number,
     calories: number;
     steps: number;
+    maxHr: number;
     description: string;
     check: boolean;
     updated: string;
     created: string;
     clientId: number;
+}
+
+interface IClient {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
 }
 
 // At runtime, Redux will merge together...
@@ -72,6 +86,13 @@ class Activities extends React.Component<LoginProps, IState> {
         this.setState({ selectedDate: date, prevDate: date });
         
         if (this.props.logins.length > 0) {
+
+            //get client info
+            fetch('api/client?clientId=' + this.props.logins[0].clientId)
+                .then(response => response.json() as Promise<IClient[]>)
+                .then(data => this.setState({
+                    clients: data, apiUpdate: true
+                })).catch(error => console.log(error));
 
             //get all activities
             fetch('api/tracker/' + this.props.logins[0].clientId + '/activity?date=' + date.toISOString())
@@ -95,7 +116,7 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     addActivity = (event: any) => {
-        this.state.activities.push({ ActivityDesc: '', steps: 0, calories: 0, check: false });
+        this.state.activities.push({ ActivityDesc: '', steps: 0, calories: 0, maxHr:0, check: false });
         this.setState({ updated: !this.state.updated });
     }
 
@@ -125,7 +146,9 @@ class Activities extends React.Component<LoginProps, IState> {
             updated: false,
             apiUpdate: false,
             savingStatus: 'Saved',
-            dateChanged: false
+            dateChanged: false,
+            clients: [],
+            age: 0
         };
     }
 
@@ -137,7 +160,7 @@ class Activities extends React.Component<LoginProps, IState> {
             }
 
             this.state.activityDtos.forEach(activity => {
-                this.state.activities.push({ ActivityDesc: activity.description, calories: activity.calories, steps: activity.steps, check: false });
+                this.state.activities.push({ ActivityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, check: false });
             })
         }
     }
@@ -174,6 +197,7 @@ class Activities extends React.Component<LoginProps, IState> {
                     Id: 0,
                     Calories: activity.calories,
                     Steps: activity.steps,
+                    MaxHr: activity.maxHr,
                     Description: activity.ActivityDesc,
                     Updated: new Date(),
                     Created: this.state.selectedDate.toISOString(),
@@ -247,6 +271,11 @@ class Activities extends React.Component<LoginProps, IState> {
             if (this.state.apiUpdate === true) {
                 this.setActivities();
                 this.setState({ activities: this.state.activities, apiUpdate: false, updated: !this.state.updated });
+
+                if (this.state.clients.length > 0) {
+                    const client = this.state.clients[0];
+                    this.setState({ age: client.age });
+                }
             }
 
             var divLabelStyle = {
@@ -267,7 +296,7 @@ class Activities extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column>
                             <Segment textAlign='center'>
-                                <ActivityHeader activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
+                                <ActivityHeader age={this.state.age} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>

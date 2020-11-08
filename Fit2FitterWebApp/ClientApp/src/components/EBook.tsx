@@ -118,6 +118,9 @@ class EBook extends React.Component<LoginProps, IState> {
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>1. Home Workouts</a>
                                 </div>
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/Week1ResetFitnessChallenge.pdf&amp;embedded=true' target='_blank'>2. Wk1 Challenge</a>
+                                </div>
                             </Grid.Column>
                             <Grid.Column>
                                 <div>

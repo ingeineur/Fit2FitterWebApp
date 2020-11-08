@@ -244,6 +244,10 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.ClientId)
                     .IsRequired()
                     .HasMaxLength(4);
+
+                entity.Property(e => e.MaxHr)
+                    .IsRequired()
+                    .HasMaxLength(4);
             });
 
             modelBuilder.Entity<Models.MacrosGuide>(entity =>
