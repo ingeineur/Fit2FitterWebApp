@@ -277,6 +277,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.setState({ usdaUpdated: true });
         }
 
+
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
 
         return (<div>
