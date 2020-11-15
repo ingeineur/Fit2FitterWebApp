@@ -276,7 +276,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var totalProtein: number = 0.0;
         var totalFat: number = 0.0;
         
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             totalCarb += (this.state.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
             totalProtein += (this.state.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
             totalFat += (this.state.meals[this.getMealTypeIndex(i)].reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
@@ -291,9 +291,110 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
 
         var type = 'Line'
         var lineChartOptions = {
-            low: 0,
+            reverseData: false,
             showArea: true
         }
+
+        var divCarb = {
+            color: 'red',
+            backgroundColor: 'red'
+        };
+
+        var divPro = {
+            color: '#FF5E13',
+            backgroundColor: '#FF5E13'
+        };
+
+        var divFat = {
+            color: 'yellow',
+            backgroundColor: 'yellow'
+        };
+
+        var divVeg = {
+            color: '#CE8B54',
+            backgroundColor: '#CE8B54'
+        };
+
+        var carbMacros: number[] = [];
+        var proMacros: number[] = [];
+        var fatMacros: number[] = [];
+        var vegMacros: number[] = [];
+
+        var totalC: number = 0.0;
+        var totalP: number = 0.0;
+        var totalF: number = 0.0;
+        var totalV: number = 0.0;
+
+        for (let i = 0; i < 4; i++) {
+            var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+            totalC += (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+            totalP += (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+            totalF += (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+            totalV += (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+        }
+
+        for (var i = 0; i < 4; i++) {
+            if (i === 0) {
+                var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+                var totalCarb = (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+                var totalProtein = (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+                var totalFat = (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+                var totalVeg = (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalProtein / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
+            }
+            else if (i === 1) {
+                var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+                var totalCarb = (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+                var totalProtein = (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+                var totalFat = (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+                var totalVeg = (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalProtein / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
+            }
+            else if (i === 2) {
+                var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+                var totalCarb = (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+                var totalProtein = (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+                var totalFat = (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+                var totalVeg = (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalProtein / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
+            }
+            else {
+                var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
+                var totalCarb = (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+                var totalProtein = (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+                var totalFat = (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+                var totalVeg = (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+
+                carbMacros.push((totalCarb / totalC) * 100.0);
+                proMacros.push((totalProtein / totalP) * 100.0);
+                fatMacros.push((totalFat / totalF) * 100.0);
+                vegMacros.push((totalVeg / totalV) * 100.0);
+            }
+        }
+
+        var data2 = {
+            labels: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
+            series: [
+                carbMacros, proMacros, fatMacros, vegMacros
+            ]
+        };
+
+        var options = {
+            reverseData: false,
+            seriesBarDistance: 10
+        };
 
         return (<div>
             <Grid centered>
@@ -308,8 +409,19 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                     <Grid.Column>
                         <div>
                             <a>Total Macros Consumptions</a>
-                            <ChartistGraph data={data} type={type} />
+                            <ChartistGraph data={data} options={lineChartOptions} type={type} />
                             <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalCarb.toFixed(2)}g] [Protein: {totalProtein.toFixed(2)}g] [Fat: {totalFat.toFixed(2)}g]</a></div>
+                        </div>
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row>
+                    <Grid.Column>
+                        <div>
+                            <a>Breakdown (%) of Macros Consumptions</a>
+                        </div>
+                        <div>
+                            <ChartistGraph data={data2} options={options} type='Bar' />
+                            <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
                         </div>
                     </Grid.Column>
                 </Grid.Row>

@@ -2,13 +2,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider } from 'semantic-ui-react'
 import ChartistGraph from 'react-chartist';
-import MacroTable from './MacroTable'
-import Meals from './Meals';
 import { isNullOrUndefined } from 'util';
 
 interface IProps {
-    update: boolean;
-    addMeal: Function;
 }
 
 interface IMealDetails {
@@ -17,6 +13,17 @@ interface IMealDetails {
     carb: number;
     protein: number;
     fat: number;
+    sugar: number,
+    fiber: number,
+    water: number,
+    vitaminA: number,
+    vitaminB6: number,
+    vitaminC: number,
+    vitaminD: number,
+    calcium: number,
+    iron: number,
+    potassium: number,
+    zinc: number,
     fv: number;
     check: boolean;
     remove: boolean;
@@ -35,6 +42,17 @@ interface IFoodPortionDto {
     proteinValue: number,
     fatValue: number,
     carbValue: number,
+    sugarValue: number,
+    fiberValue: number,
+    waterValue: number,
+    vitaminAValue: number,
+    vitaminB6Value: number,
+    vitaminCValue: number,
+    vitaminDValue: number,
+    calciumValue: number,
+    ironValue: number,
+    potassiumValue: number,
+    zincValue: number,
 }
 
 interface IOption {
@@ -62,13 +80,15 @@ interface IState {
     usdaUpdated: boolean
 }
 
-class MacroGuideModal extends React.Component<IProps, IState> {
+class MacroGuideSearch extends React.Component<IProps, IState> {
 
     constructor(props: IProps) {
         super(props);
         this.state = {
             dirty: false,
-            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false },
+            meal: {
+                id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, sugar: 0, water: 0, fiber: 0,
+                vitaminA: 0, vitaminB6: 0, vitaminC: 0, vitaminD: 0, calcium: 0, potassium: 0, iron: 0, zinc: 0 },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: '', usdaUpdated: false
@@ -76,11 +96,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     public componentDidMount() {
-    }
-
-    updateFood = (event: any) => {
-        this.state.meal.food = event.target.value;
-        this.setState({ meal: this.state.meal, status: 'Pending to add' });
     }
 
     updateCarb = (event: any) => {
@@ -115,18 +130,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
     }
 
-    addMeal = () => {
-        if (this.state.meal.food.trim().length < 1) {
-            this.setState({ status: 'Error: No Food Description' });
-            return;
-        }
-
-        this.setState({ status: 'Added to list' });
-        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove });
-        this.setState({ meals: this.state.meals, updated: true })
-        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false } });
-    }
-
     updateUsdaQuantity = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
@@ -158,22 +161,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             ));
     }
 
-    getColour = () => {
-        if (this.state.status.includes('Error')) {
-            return 'red';
-        }
-
-        if (this.state.status.includes('Pending')) {
-            return 'orange';
-        }
-
-        if (this.state.status.includes('Updating')) {
-            return 'black';
-        }
-
-        return 'green';
-    }
-
     handleSearchChange = (e: any, data: any) => {
         this.setState({ loading: true });
 
@@ -187,7 +174,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     handleSelectResult = (e: any, data: any) => {
-        this.setState({ status: 'Updating Data From Search.......' });
+        this.setState({ status: 'Updating Data.......' });
         var sel = data['result'];
         if (!isNullOrUndefined(sel)) {
             this.setState({ selectedValue: sel['description'] });
@@ -196,7 +183,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             fetch('api/tracker/' + fdcId + '/food/portions')
                 .then(response => response.json() as Promise<IFoodPortionDto[]>)
                 .then(data => this.setState({
-                    foodPortionDtos: data, apiUpdated: true, portions: [], usdaQuantity: 1.0, selectedFdcId: fdcId
+                    foodPortionDtos: data, apiUpdated: true, portions: [], usdaQuantity: 1.0, selectedFdcId: fdcId, status: 'data updated'
                 })).catch(error => console.log(error))
         }
     }
@@ -210,12 +197,23 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         if (this.state.portions.length > 0 && this.state.foodPortionDtos.length > 0) {
             this.state.foodPortionDtos.forEach(x => {
                 if (x.modifier === this.state.selectedPortion) {
-                    this.state.meal.carb = parseFloat((this.state.usdaQuantity * x.carbValue * x.gramWeight).toFixed(2));
-                    this.state.meal.protein = parseFloat((this.state.usdaQuantity * x.proteinValue * x.gramWeight).toFixed(2));
-                    this.state.meal.fat = parseFloat((this.state.usdaQuantity * x.fatValue * x.gramWeight).toFixed(2));
+                    this.state.meal.carb = parseFloat((this.state.usdaQuantity * x.carbValue * x.gramWeight).toFixed(3));
+                    this.state.meal.protein = parseFloat((this.state.usdaQuantity * x.proteinValue * x.gramWeight).toFixed(3));
+                    this.state.meal.fat = parseFloat((this.state.usdaQuantity * x.fatValue * x.gramWeight).toFixed(3));
 
-                    var totalWeight = this.state.usdaQuantity * x.gramWeight;
-                    this.state.meal.food = this.state.selectedValue + ' (' + totalWeight.toFixed(2) + 'g)';
+                    this.state.meal.water = parseFloat((this.state.usdaQuantity * x.waterValue * x.gramWeight).toFixed(3));
+                    this.state.meal.fiber = parseFloat((this.state.usdaQuantity * x.fiberValue * x.gramWeight).toFixed(3));
+                    this.state.meal.sugar = parseFloat((this.state.usdaQuantity * x.sugarValue * x.gramWeight).toFixed(3));
+
+                    this.state.meal.vitaminA = parseFloat((this.state.usdaQuantity * x.vitaminAValue * x.gramWeight).toFixed(3));
+                    this.state.meal.vitaminB6 = parseFloat((this.state.usdaQuantity * x.vitaminB6Value * x.gramWeight).toFixed(3));
+                    this.state.meal.vitaminC = parseFloat((this.state.usdaQuantity * x.vitaminCValue * x.gramWeight).toFixed(3));
+                    this.state.meal.vitaminD = parseFloat((this.state.usdaQuantity * x.vitaminDValue * x.gramWeight).toFixed(3));
+
+                    this.state.meal.calcium = parseFloat((this.state.usdaQuantity * x.calciumValue * x.gramWeight).toFixed(3));
+                    this.state.meal.potassium = parseFloat((this.state.usdaQuantity * x.potassiumValue * x.gramWeight).toFixed(3));
+                    this.state.meal.iron = parseFloat((this.state.usdaQuantity * x.ironValue * x.gramWeight).toFixed(3));
+                    this.state.meal.zinc = parseFloat((this.state.usdaQuantity * x.zincValue * x.gramWeight).toFixed(3));
                 }
             });
         }
@@ -226,17 +224,32 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.fv = this.state.usdaQuantity;
         }
 
-        this.setState({ meal: this.state.meal, status: 'Pending to add', updated: true });
+        this.setState({ meal: this.state.meal, status: 'Data Updated', updated: true });
+    }
+
+    getColour = () => {
+        if (this.state.status.includes('Updating')) {
+            return 'orange';
+        }
+
+        return 'green';
     }
 
     render() {
 
         var divLabelStyle = {
-            display: 'flex',
+            display: 'flex', 
             justifyContent: 'center',
             alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
+        };
+
+        var divLabelStyle1 = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'blue'
         };
 
         var divLabelStyle2 = {
@@ -247,20 +260,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             color: 'red'
         };
         
-        if (this.state.dirty !== this.props.update) {
-            while (this.state.meals.length > 0) {
-                this.state.meals.pop();
-            }
-        }
-
         if (this.state.usdaUpdated === true) {
             this.setState({ usdaUpdated: false });
             this.addUsda();
-        }
-
-        if (this.state.updated === true) {
-            this.setState({ updated: false });
-            this.props.addMeal(this.state.meals);
         }
 
         if (this.state.apiUpdated === true) {
@@ -277,6 +279,67 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.setState({ usdaUpdated: true });
         }
 
+        var totalGram: number = 1;
+        var selectedPortion = this.state.foodPortionDtos.find(x => x.modifier === this.state.selectedPortion);
+        if (!isNullOrUndefined(selectedPortion)) {
+            totalGram = selectedPortion.gramWeight;
+        }
+        
+        var data = {
+            labels: ['Carb', 'Protein', 'Fat', 'Fiber', 'Sugar'],
+            series: [
+                    ((this.state.meal.carb) / totalGram) * 100.0
+                ,
+                    ((this.state.meal.protein) / totalGram) * 100.0
+                ,
+                    ((this.state.meal.fat) / totalGram) * 100.0
+                ,
+                    ((this.state.meal.fiber) / totalGram) * 100.0
+                ,
+                    ((this.state.meal.sugar) / totalGram) * 100.0
+            ]
+        };
+
+        var percentageWater = (this.state.meal.water / totalGram) * 100.0;
+        var data2 = {
+            labels: ['Water', 'Solid'],
+            series: [percentageWater, 100.0 - percentageWater]
+        }
+
+        var options2 = {
+            reverseData: true,
+            donut: true,
+            donutWidth: 60,
+            donutSolid: true,
+            startAngle: 270,
+            showLabel: true
+        };
+
+        var responsiveOptions = [
+            ['screen and (min-width: 640px)', {
+                chartPadding: 30,
+                labelOffset: 100,
+                labelDirection: 'explode',
+                labelInterpolationFnc: function (value:number) {
+                    return value;
+                }
+            }],
+            ['screen and (min-width: 1024px)', {
+                labelOffset: 80,
+                chartPadding: 20
+            }]
+        ];
+        
+        var options = {
+            seriesBarDistance: 10,
+            reverseData: true,
+            distributeSeries: true,
+            horizontalBars: true,
+            axisY: {
+                offset: 70
+            }
+        }
+        
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
 
         return (<div>
@@ -327,7 +390,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             <Divider horizontal>
                 <Header as='h4'>
                     <Icon name='food' />
-                    Meal
+                    Nutrition Facts
                 </Header>
             </Divider>
             <Message attached='bottom'>
@@ -337,56 +400,115 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 <Grid centered>
                     <Grid.Row stretched>
                         <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Foods or Drinks</h5>
+                            <h5>Food Name</h5>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
+                            <a>{this.state.meal.food}</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Total Weight (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{totalGram * this.state.usdaQuantity}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
                             <h5>Carb (g)</h5>
                         </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.carb}</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
+                        <Grid.Column as='a' width={12} textAlign='left'>
                             <h5>Protein (g)</h5>
                         </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.protein}</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
+                        <Grid.Column as='a' width={12} textAlign='left'>
                             <h5>Fat (g)</h5>
                         </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.fat}</a>
                         </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Fruit/Veg (serv)</h5>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Fiber (g)</h5>
                         </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.fiber}</a>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row columns={2}>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
-                            <div>
-                                <Button floated='left' size='tiny' primary onClick={this.addMeal}>Add</Button>
-                                <Button floated='left' size='tiny' secondary onClick={this.removeLastAddedMeal}>Undo</Button>
-                            </div>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Water (Moistures) (g)</h5>
                         </Grid.Column>
-                        <Grid.Column verticalAlign='middle' width={6} textAlign='left' floated='left'>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.water}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Sugar: Fructose, Luctose, Glucose (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.sugar}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Vitamin A (micro-g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.vitaminA}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Vitamin B6 (micro-g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.vitaminB6}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Vitamin C (micro-g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.vitaminC}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Vitamin D (micro-g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.vitaminD}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Calcium (mg)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.calcium}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Iron (mg)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.iron}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Potassium (mg)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.potassium}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h5>Zinc (mg)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='left'>
+                            <a>{this.state.meal.zinc}</a>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
                 <div>
-                    <a>List of new items:</a>
-                    <List>
-                        {this.getItems()}
-                    </List>
+                    <a style={divLabelStyle1}>Percentage (%) of macro-nutrients</a>
+                    <ChartistGraph data={data} type='Bar' options={options} />
                 </div>
+                <div>
+                    <a style={divLabelStyle1}>Percentage (%) of water (moistures)</a>
+                    <ChartistGraph data={data2} type='Pie' options={options2}/>
+                </div>
+                <a>Data Source: </a><a style={divLabelStyle3} href={linkUsda} target='_blank'>USDA Food Data Central</a>
             </Message>
         </div>);
     }
 }
 
-export default connect()(MacroGuideModal);
+export default connect()(MacroGuideSearch);

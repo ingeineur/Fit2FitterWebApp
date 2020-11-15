@@ -79,6 +79,11 @@ class EBook extends React.Component<LoginProps, IState> {
             color: 'red'
         };
 
+        var divLabelStyle2 = {
+            color: 'black',
+            backgroundColor: 'yellow'
+        };
+
         var divPdf = {
             width: '100%',
             height: '700px'
@@ -116,32 +121,35 @@ class EBook extends React.Component<LoginProps, IState> {
                         <Grid.Row columns={3}>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>1. Home Workouts</a>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>Home Workouts</a>
                                 </div>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/Week1ResetFitnessChallenge.pdf&amp;embedded=true' target='_blank'>2. Wk1 Challenge</a>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/Week1ResetFitnessChallenge.pdf&amp;embedded=true' target='_blank'>Week 1 Challenge</a>
+                                </div>
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/WeeklyChallenge2.pdf&amp;embedded=true' target='_blank'>Week 2 Challenge</a>
+                                </div>
+                            </Grid.Column>
+                            <Grid.Column>
+                                <div style={divLabelStyle2}>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>StarterPack Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>September Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>October Recipes</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>November Recipes</a>
                                 </div>
                             </Grid.Column>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>2. StarterPack Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>3. September Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>4. October Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>5. November Recipes</a>
-                                </div>
-                            </Grid.Column>
-                            <Grid.Column>
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>1. Addictives to avoid</a>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>Addictives to avoid</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>

@@ -9,6 +9,7 @@ import Activities from './components/Activities';
 import Meals from './components/Meals';
 import Macro from './components/Macro';
 import MacroGuide from './components/MacroGuide';
+import MacroGuideSearch from './components/MacroGuideSearch';
 import MacroHeader from './components/MacroHeader';
 import ActivivtyHeader from './components/ActivityHeader';
 import ActivivtyTable from './components/ActivityTable';
@@ -49,6 +50,7 @@ export default () => (
         <Route path='/messagesmeasurementsadminbydate' component={MessagesMeasurementsAdminByDate} />
         <Route path='/messagesmeasurements' component={MessagesMeasurements} />
         <Route path='/macroguide' component={MacroGuide} />
+        <Route path='/macroguidesearch' component={MacroGuideSearch} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>
 );

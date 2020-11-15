@@ -348,6 +348,10 @@ class Home extends React.Component<LoginProps, IState > {
             if (this.state.activeItem === 'Measurements Logger Admin') {
                 return (<Redirect to="/messagesmeasurementsadminbydate" />);
             }
+
+            if (this.state.activeItem === 'Nutrients Lookup') {
+                return (<Redirect to="/macroguidesearch" />);
+            }
             //if (true) {
             return (
                 <div>
@@ -413,6 +417,12 @@ class Home extends React.Component<LoginProps, IState > {
                         <Grid.Row>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
+                                    <Menu.Item
+                                        name='Nutrients Lookup'
+                                        onClick={this.handleItemClick}>
+                                        <Icon color='green' name='search' />
+                                        Nutrients Lookup
+                                    </Menu.Item>
                                     <Menu.Item
                                         name='Logout'
                                         onClick={this.clearCredentials}>

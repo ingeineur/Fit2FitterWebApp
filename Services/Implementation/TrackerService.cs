@@ -411,6 +411,24 @@ namespace Fit2Fitter.Services.Implementation
             var protein = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1003").ConfigureAwait(false));
             var fat = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1004").ConfigureAwait(false));
 
+            var sugar = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1063").ConfigureAwait(false));
+            var sucrose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1010").ConfigureAwait(false));
+            var glucose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1011").ConfigureAwait(false));
+            var fruitose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1012").ConfigureAwait(false));
+
+            var fiber = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1079").ConfigureAwait(false));
+            var water = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1051").ConfigureAwait(false));
+
+            var vA = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1105").ConfigureAwait(false));
+            var vB6 = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1175").ConfigureAwait(false));
+            var vC = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1162").ConfigureAwait(false));
+            var vD = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1110").ConfigureAwait(false));
+
+            var calcium = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1087").ConfigureAwait(false));
+            var iron = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1089").ConfigureAwait(false));
+            var potassium = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1092").ConfigureAwait(false));
+            var zinc = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1095").ConfigureAwait(false));
+
             if (carbs == 0.0 && 
                 protein == 0.0 && 
                 fat == 0.0)
@@ -428,7 +446,18 @@ namespace Fit2Fitter.Services.Implementation
                     GramWeight = portion.GramWeight,
                     CarbValue = carbs/100,
                     ProteinValue = protein/100,
-                    FatValue = fat/100
+                    FatValue = fat/100,
+                    SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
+                    FiberValue = fiber/100,
+                    WaterValue = water/100,
+                    VitaminAValue = vA/100,
+                    VitaminB6Value = vB6/100,
+                    VitaminCValue = vC/100,
+                    VitaminDValue = vD/100,
+                    CalciumValue = calcium/100,
+                    IronValue = iron/100,
+                    PotassiumValue = potassium / 100,
+                    ZincValue = zinc/100
                 });
             }
 
@@ -440,7 +469,18 @@ namespace Fit2Fitter.Services.Implementation
                 GramWeight = 1.0,
                 CarbValue = carbs / 100,
                 ProteinValue = protein / 100,
-                FatValue = fat / 100
+                FatValue = fat / 100,
+                SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
+                FiberValue = fiber / 100,
+                WaterValue = water / 100,
+                VitaminAValue = vA / 100,
+                VitaminB6Value = vB6 / 100,
+                VitaminCValue = vC / 100,
+                VitaminDValue = vD / 100,
+                CalciumValue = calcium / 100,
+                IronValue = iron / 100,
+                PotassiumValue = potassium / 100,
+                ZincValue = zinc / 100
             });
 
             dtos.Add(new FoodPortionDto
@@ -451,7 +491,18 @@ namespace Fit2Fitter.Services.Implementation
                 GramWeight = 100.0,
                 CarbValue = carbs / 100,
                 ProteinValue = protein / 100,
-                FatValue = fat / 100
+                FatValue = fat / 100,
+                SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
+                FiberValue = fiber / 100,
+                WaterValue = water / 100,
+                VitaminAValue = vA / 100,
+                VitaminB6Value = vB6 / 100,
+                VitaminCValue = vC / 100,
+                VitaminDValue = vD / 100,
+                CalciumValue = calcium / 100,
+                IronValue = iron / 100,
+                PotassiumValue = potassium / 100,
+                ZincValue = zinc / 100
             });
 
             return dtos;

@@ -311,9 +311,16 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
 
         });
+
         arr.forEach(m => {
             var values: IMeta[] = [];
-            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
+            if (index === 0 || index === arr.length - 1) {
+                this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
+            }
+            else {
+                this.state.weightLabel.push('');
+            }
+            
             this.state.graphs.chest.push(m.chest);
             values.push({ 'meta': 'chest', 'value': m.chest });
             this.state.graphs.neck.push(m.neck);
@@ -371,7 +378,8 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         const level = this.getBodyFatIndicator(this.props.age, bodyFatPercent);
 
         var divLabelStyle1 = {
-            color: this.getColour(level),
+            color: 'black',
+            background: this.getColour(level)
         };
 
         if (this.state.dirty !== this.props.update) {
@@ -390,6 +398,11 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
 
         var type = 'Line'
 
+        var lineChartOptions = {
+            reverseData: false,
+            showArea: true
+        }
+
         return (<div>
             <Grid centered>
                 <a>Weight and Body Measurements Review</a>
@@ -397,35 +410,35 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                     <Grid.Column>
                         <a>Weight Progress: : {(this.state.graphs.weight[0] - this.state.measurements.weight).toFixed(2)}kg from start weight</a>
                         <div>
-                            <ChartistGraph data={data2} type={type} />
+                            <ChartistGraph data={data2} type={type} options={lineChartOptions} />
                         </div>
-                        <a style={divLabelStyle1}>Body Fat: {level}</a>
+                        <a>Body Fat: </a><a style={divLabelStyle1}>{level}</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('BodyFat')} type={type} />
+                            <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
                         </div>
                         <a>Neck</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Neck')} type={type} />
+                            <ChartistGraph data={this.getGraphData('Neck')} type={type} options={lineChartOptions} />
                         </div>
                         <a>Waist</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Waist')} type={type} />
-                        </div>
-                        <a>Thigh</a>
-                        <div>
-                            <ChartistGraph data={this.getGraphData('Thigh')} type={type} />
-                        </div>
-                        <a>Chest</a>
-                        <div>
-                            <ChartistGraph data={this.getGraphData('Chest')} type={type} />
-                        </div>
-                        <a>UpperArm</a>
-                        <div>
-                            <ChartistGraph data={this.getGraphData('UpperArm')} type={type} />
+                            <ChartistGraph data={this.getGraphData('Waist')} type={type} options={lineChartOptions} />
                         </div>
                         <a>Hips</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Hips')} type={type} />
+                            <ChartistGraph data={this.getGraphData('Hips')} type={type} options={lineChartOptions} />
+                        </div>
+                        <a>Chest</a>
+                        <div>
+                            <ChartistGraph data={this.getGraphData('Chest')} type={type} options={lineChartOptions} />
+                        </div>
+                        <a>UpperArm</a>
+                        <div>
+                            <ChartistGraph data={this.getGraphData('UpperArm')} type={type} options={lineChartOptions} />
+                        </div>
+                        <a>Thigh</a>
+                        <div>
+                            <ChartistGraph data={this.getGraphData('Thigh')} type={type} options={lineChartOptions} />
                         </div>
                     </Grid.Column>
                 </Grid.Row>
