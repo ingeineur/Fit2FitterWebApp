@@ -448,7 +448,7 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                                                 <Modal.Header key={index}>Meals Summary for {this.getDate(item.created)}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MacroGuideReviewModal key={index} guides={this.state.guides} senderId={2} clientId={this.state.toClientId} mealDate={item.created} update={this.state.updated} />
+                                                        <MacroGuideReviewModal key={index} senderId={2} clientId={this.state.toClientId} mealDate={item.created} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>
@@ -576,12 +576,8 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <Segment attached='top'>
-                                <a>Current Meals Notifications</a>
-                                {this.getNotifications()}
-                            </Segment>
                             <Segment attached='bottom'>
-                                <a>Logged Meals for: {name}</a>
+                                <h2>Logged Meals for: {name}</h2>
                                 {this.getLoggedMeals()}
                             </Segment>
                         </Grid.Column>

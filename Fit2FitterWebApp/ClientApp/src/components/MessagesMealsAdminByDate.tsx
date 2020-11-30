@@ -453,7 +453,7 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
                                                 <Modal.Header key={index}>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MacroGuideReviewModal key={index} guides={this.state.guides} senderId={2} clientId={item.clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
+                                                        <MacroGuideReviewModal key={index} senderId={2} clientId={item.clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>

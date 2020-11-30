@@ -7,7 +7,6 @@ import MessagesMealsChat from './MessagesMealsChat';
 
 interface IProps {
     update: boolean;
-    guides: IMacroGuides;
     clientId: number;
     senderId: number;
     mealDate: string;
@@ -51,6 +50,30 @@ interface IMealDetails {
     remove: boolean;
 }
 
+interface IMacrosPlanDto {
+    id: number,
+    height: number,
+    weight: number,
+    macroType: string;
+    activityLevel: string;
+    carbPercent: number,
+    proteinPercent: number,
+    fatPercent: number,
+    updated: string;
+    created: string;
+    clientId: number;
+}
+
+interface IClientDto {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
+}
+
 interface IState {
     meals: IMeals;
     dirty: boolean;
@@ -59,6 +82,9 @@ interface IState {
     mealDtos: IMealDto[];
     apiUpdate: boolean;
     updated: boolean;
+    macrosPlanDtos: IMacrosPlanDto[];
+    clientDtos: IClientDto[];
+    guides: IMacroGuides;
 }
 
 class MacroGuideReviewModal extends React.Component<IProps, IState> {
@@ -72,7 +98,10 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             mealDate: '',
             mealDtos: [],
             apiUpdate: false,
-            updated: false
+            updated: false,
+            macrosPlanDtos: [],
+            clientDtos: [],
+            guides: { carb: 0, protein: 0, fat: 0, fruits: 0 }
         };
     }
 
@@ -81,12 +110,68 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
 
         console.log(this.props.mealDate);
 
+        //get client info
+        fetch('api/client?clientId=' + this.props.clientId)
+            .then(response => response.json() as Promise<IClientDto[]>)
+            .then(data => this.setState({
+                clientDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+
+        //get macros plan
+        fetch('api/client/' + this.props.clientId + '/macrosplan')
+            .then(response => response.json() as Promise<IMacrosPlanDto[]>)
+            .then(data => this.setState({
+                macrosPlanDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+
         //get all meals
         fetch('api/tracker/' + this.props.clientId + '/macrosguide?date=' + this.props.mealDate)
             .then(response => response.json() as Promise<IMealDto[]>)
             .then(data => this.setState({
                 mealDtos: data, apiUpdate: true, updated: !this.state.updated
             })).catch(error => console.log(error));
+    }
+
+    getActivityLevel = (activityLevel: string) => {
+        if (activityLevel == 'Sedentary') {
+            return 1.2;
+        }
+
+        if (activityLevel == 'Lightly Active') {
+            return 1.375;
+        }
+
+        if (activityLevel == 'Moderately Active') {
+            return 1.55;
+        }
+
+        if (activityLevel == 'Very Active') {
+            return 1.725;
+        }
+
+        if (activityLevel == 'Extra Active') {
+            return 1.9;
+        }
+
+        return 0;
+    }
+
+    setMacroGuides = () => {
+        if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
+            const client = this.state.clientDtos[0];
+            const macrosPlan = this.state.macrosPlanDtos[0];
+            const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
+            const totalCalories = this.getActivityLevel(macrosPlan.activityLevel) * bmr;
+            const carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            const protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            const fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+
+            this.state.guides.carb = parseFloat(carb);
+            this.state.guides.protein = parseFloat(protein);
+            this.state.guides.fat = parseFloat(fat);
+            this.state.guides.fruits = 4;
+            this.setState({ guides: this.state.guides });
+        }
     }
 
     getMealTypeString = (type: number) => {
@@ -262,14 +347,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             this.setState({ mealDate: this.props.mealDate, dirty: this.props.update });
             this.resetMeals();
             this.getMeals();
-
-            this.setState({ updated: !this.state.updated });
-            console.log(this.props.mealDate);
         }
 
         if (this.state.apiUpdate === true) {
-            this.setState({ apiUpdate: false});
+            this.setState({ apiUpdate: false });
+            this.setMacroGuides();
             this.setMeals();
+            this.setState({ updated: !this.state.updated });
         }
 
         var totalCarb: number = 0.0;
@@ -401,7 +485,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 <Grid.Row>
                     <Grid.Column>
                         <Segment textAlign='center' attached='bottom'>
-                            <MacroGuideHeader meals={this.state.meals} guides={this.props.guides} update={this.state.updated} />
+                            <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                         </Segment>
                     </Grid.Column>
                 </Grid.Row>
@@ -410,7 +494,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         <div>
                             <a>Total Macros Consumptions</a>
                             <ChartistGraph data={data} options={lineChartOptions} type={type} />
-                            <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalCarb.toFixed(2)}g] [Protein: {totalProtein.toFixed(2)}g] [Fat: {totalFat.toFixed(2)}g]</a></div>
+                            <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalC.toFixed(2)}g] [Protein: {totalP.toFixed(2)}g] [Fat: {totalF.toFixed(2)}g]</a></div>
                         </div>
                     </Grid.Column>
                 </Grid.Row>

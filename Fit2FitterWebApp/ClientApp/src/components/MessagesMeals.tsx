@@ -350,7 +350,7 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
                                                 <Modal.Header key={index}>Meals Summary for {this.getDate(item.created)}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MacroGuideReviewModal key={index} guides={this.state.guides} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={item.created} update={this.state.updated} />
+                                                        <MacroGuideReviewModal key={index} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={item.created} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>

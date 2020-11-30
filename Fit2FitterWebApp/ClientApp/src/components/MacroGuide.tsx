@@ -563,7 +563,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                     <Modal.Content scrolling>
                                         <Modal.Description>
-                                            <MacroGuideReviewModal guides={this.state.guides} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
+                                            <MacroGuideReviewModal senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
                                         </Modal.Description>
                                     </Modal.Content>
                                     <Modal.Actions>
