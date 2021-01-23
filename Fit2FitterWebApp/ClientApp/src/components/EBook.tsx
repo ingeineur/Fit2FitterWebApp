@@ -146,10 +146,18 @@ class EBook extends React.Component<LoginProps, IState> {
                                 <div>
                                     <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>November Recipes</a>
                                 </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/december-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>December Recipes</a>
+                                </div>
                             </Grid.Column>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>Addictives to avoid</a>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>Addictives to Avoid</a>
+                                </div>
+
+                                <div>
+                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/immunity-support-pack.pdf&amp;embedded=true' target='_blank'>Immunity Support Pack</a>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>
