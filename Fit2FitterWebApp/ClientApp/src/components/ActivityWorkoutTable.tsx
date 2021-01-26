@@ -20,7 +20,7 @@ interface IActivity {
     calories: number;
     steps: number;
     maxHr: number;
-    ActivityDesc: string;
+    activityDesc: string;
     check: boolean;
 }
 
@@ -32,7 +32,7 @@ interface IState {
     activities: IActivity[];
 }
 
-class ActivityTable extends React.Component<IProps, IState> {
+class ActivityWorkoutTable extends React.Component<IProps, IState> {
 
     constructor(props: IProps) {
         super(props);
@@ -64,7 +64,7 @@ class ActivityTable extends React.Component<IProps, IState> {
     }
 
     handleActivityChange = (field: any, value: any) => {
-        this.state.activities[parseInt(value['className'])]['ActivityDesc'] = value['value'];
+        this.state.activities[parseInt(value['className'])]['activityDesc'] = value['value'];
         this.setState({ activities: this.state.activities, updated: true});
     }
 
@@ -99,19 +99,20 @@ class ActivityTable extends React.Component<IProps, IState> {
     }
 
     handleCheckChange = (field: any, value: any) => {
-        this.state.activities[parseInt(value['className'])]['check'] = value['value'];
+        this.state.activities[parseInt(value['className'])]['check'] = value['checked'];
         this.setState({ activities: this.state.activities, updated: true });
     }
 
     getRows = () => {
+        var arr = this.state.activities.filter(x => x.activityDesc !== 'sleeps' && x.activityDesc !== 'steps');
         return (
-            this.state.activities.map((item, index) =>
-                <Grid.Row className={'row'} key={index} columns={5} stretched>
+            arr.map((item, index) =>
+                <Grid.Row className={'row'} key={index} columns={4} stretched>
                     <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
-                        <Checkbox className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
+                        <Checkbox className={(index + 2).toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
-                    <Grid.Column className={'col_desc'} key={index + 1} width={5}>
-                        <Input className={index.toString()} key={index + 1} list='activities' onChange={this.handleActivityChange} value={item.ActivityDesc} placeholder='Choose Workout...' />
+                    <Grid.Column className={'col_desc'} key={index + 1} width={8}>
+                        <Input className={(index + 2).toString()} key={index + 1} list='activities' onChange={this.handleActivityChange} value={item.activityDesc} placeholder='Choose Workout...' />
                         <datalist className={'datalist_desc'} key={index + 2} id='activities'>
                             <option key={index + 2} value='Jogging'>Jogging</option>
                             <option key={index + 3} value='Walking'>Walking</option>
@@ -129,13 +130,10 @@ class ActivityTable extends React.Component<IProps, IState> {
                         </datalist>
                     </Grid.Column>
                     <Grid.Column className={'col_calories'} key={index + 2} width={3}>
-                        <Input className={index.toString()} key={index + 2} as='a' size='mini' onChange={this.handleCaloriesChange} value={item.calories} placeholder='Calories' />
-                    </Grid.Column>
-                    <Grid.Column className={'col_steps'} key={index + 3} as='a' width={3}>
-                        <Input className={index.toString()} key={index + 3} size='mini' onChange={this.handleStepsChange} value={item.steps} placeholder='Steps' />
+                        <Input className={(index + 2).toString()} key={index + 2} as='a' size='mini' onChange={this.handleCaloriesChange} value={item.calories} placeholder='Calories' />
                     </Grid.Column>
                     <Grid.Column className={'col_maxhr'} key={index + 4} as='a' width={3}>
-                        <Input className={index.toString()} key={index + 4} size='mini' onChange={this.handleMaxHrChange} value={item.maxHr} placeholder='MaxHr' />
+                        <Input className={((index + 2)).toString()} key={index + 4} size='mini' onChange={this.handleMaxHrChange} value={item.maxHr} placeholder='MaxHr' />
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -153,22 +151,16 @@ class ActivityTable extends React.Component<IProps, IState> {
             this.props.updateActivities(this.state.activities);
         }
 
-        const totalCalories = (this.props.activities.reduce(function (a, b) { return a + b.calories; }, 0));
-        const totalSteps = (this.props.activities.reduce(function (a, b) { return a + b.steps; }, 0));
-        const totalStepsPercent = (totalSteps / this.props.guides.steps) * 100.0;
         return (
             <Grid centered>
-                <Grid.Row columns={5} textAlign='center'>
+                <Grid.Row columns={4} textAlign='center'>
                     <Grid.Column width={2}>
                     </Grid.Column>
-                    <Grid.Column width={5} textAlign='left'>
-                        <div><a>Activity</a></div>
+                    <Grid.Column width={8} textAlign='left'>
+                        <div><a>Workout Description</a></div>
                     </Grid.Column>
                     <Grid.Column width={3} textAlign='left'>
                         <div><a>Cals</a></div>
-                    </Grid.Column>
-                    <Grid.Column width={3} textAlign='left'>
-                        <div><a>Steps</a></div>
                     </Grid.Column>
                     <Grid.Column width={3} textAlign='left'>
                         <div><a>Max HR</a></div>
@@ -179,4 +171,4 @@ class ActivityTable extends React.Component<IProps, IState> {
     }
 }
 
-export default connect()(ActivityTable);
+export default connect()(ActivityWorkoutTable);

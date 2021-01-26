@@ -278,14 +278,18 @@ namespace Fit2Fitter.Database.Data
 
         public async Task UpdateActivity(Activity activity)
         {
-            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
-            var result = await this.databaseContext.Activities.Where(x =>
-                x.ClientId == activity.ClientId && DbF.DateDiffDay(x.Created, activity.Created) < 1).SingleOrDefaultAsync().ConfigureAwait(false);
+            var result = await this.databaseContext.Activities.SingleOrDefaultAsync(x =>
+                x.ClientId == activity.ClientId && x.Id == activity.Id).ConfigureAwait(false);
 
             if (result != null)
             {
-                activity.Id = result.Id;
-                this.databaseContext.Activities.Update(activity);
+                result.Description = activity.Description;
+                result.Calories = activity.Calories;
+                result.Steps = activity.Steps;
+                result.MaxHr = activity.MaxHr;
+                result.Duration = activity.Duration;
+                result.Updated = activity.Updated;
+                result.Created = activity.Created;
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -357,6 +361,18 @@ namespace Fit2Fitter.Database.Data
             if (result != null)
             {
                 this.databaseContext.MacrosGuides.RemoveRange(result);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async Task DeleteActivities(int clientId, IEnumerable<int> activityIds)
+        {
+            var result = await this.databaseContext.Activities.Where(x =>
+                x.ClientId == clientId && activityIds.Contains(x.Id)).ToListAsync().ConfigureAwait(false);
+
+            if (result != null)
+            {
+                this.databaseContext.Activities.RemoveRange(result);
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }

@@ -91,18 +91,15 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
     render() {
 
         var divLabelStyle1 = {
-            color: 'black',
-            fontFamily: 'Comic Sans MS'
+            color: 'black'
         };
 
         var divLabelStyle2 = {
-            color: 'black',
-            fontFamily: 'Comic Sans MS'
+            color: 'black'
         };
 
         var divLabelStyle3 = {
-            color: 'black',
-            fontFamily: 'Comic Sans MS'
+            color: 'black'
         };
 
         var divLabelStyle4 = {
@@ -111,8 +108,7 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         };
 
         var divLabelStyle5 = {
-            color: 'black',
-            fontFamily: 'Comic Sans MS'
+            color: 'black'
         };
 
         if (this.state.updated !== this.props.update)
@@ -140,9 +136,6 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
 
         return (
             <Grid centered>
-                <Grid.Row columns={1} color='pink' textAlign='center'>
-                    <div style={divLabelStyle4}>Total Remaining Macros</div>
-                </Grid.Row>
                 <Grid.Row divided columns={4} textAlign='center'>
                     <Grid.Column color={this.getColour(totalCarb / this.props.guides.carb)} textAlign='center'>
                         <div><a>Carb(g)</a></div>

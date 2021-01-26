@@ -7,8 +7,9 @@ import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import ActivityTable from './ActivityTable'
+import ActivityWorkoutTable from './ActivityWorkoutTable'
 import ActivityHeader from './ActivityHeader'
+import { isNull, isNullOrUndefined } from 'util';
 
 interface IProps {
 }
@@ -21,6 +22,7 @@ interface IState {
     guides: IActivityGuides;
     totalActivities: ITotalDailyActivity;
     activities: IActivity[];
+    removedActivities: IActivity[];
     activityDtos: IActivityDto[];
     updated: boolean;
     apiUpdate: boolean;
@@ -28,6 +30,10 @@ interface IState {
     dateChanged: boolean;
     clients: IClient[];
     age: number;
+    steps: number;
+    sleeps: number;
+    status: string,
+    workoutUpdated: boolean;
 }
 
 interface IActivityGuides {
@@ -41,10 +47,12 @@ interface ITotalDailyActivity {
 }
 
 interface IActivity {
+    id: number,
     calories: number;
     steps: number;
     maxHr: number;
-    ActivityDesc: string;
+    activityDesc: string;
+    duration: number;
     check: boolean;
 }
 
@@ -53,6 +61,7 @@ interface IActivityDto {
     calories: number;
     steps: number;
     maxHr: number;
+    duration: number;
     description: string;
     check: boolean;
     updated: string;
@@ -116,20 +125,24 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     addActivity = (event: any) => {
-        this.state.activities.push({ ActivityDesc: '', steps: 0, calories: 0, maxHr:0, check: false });
+        this.state.activities.push({ id:0, activityDesc: '', steps: 0, calories: 0, maxHr: 0, duration: 0, check: false });
         this.setState({ updated: !this.state.updated });
     }
 
     removeActivities = (event: any) => {
         var arr = this.state.activities.filter(obj => obj.check === false);
-        this.setState({ updated: !this.state.updated, activities: arr });
+        var removed = this.state.activities.filter(obj => obj.check === true);
+        console.log(arr);
+        console.log(this.state.activities);
+        console.log(removed);
+        this.setState({ updated: !this.state.updated, activities: arr, removedActivities: removed, workoutUpdated: true });
     }
 
     updateActivities = (input:IActivity[]) => {
         this.setState({
             activities: input
         });
-        this.setState({ updated: !this.state.updated, savingStatus: 'Not Saved' });
+        this.setState({ updated: !this.state.updated, savingStatus: 'Not Saved', workoutUpdated: true });
     }
 
     constructor(props: LoginProps) {
@@ -142,39 +155,84 @@ class Activities extends React.Component<LoginProps, IState> {
             guides: { calories: 150, steps: 10000 },
             totalActivities: { calories: 0, steps: 0 },
             activities: [],
+            removedActivities: [],
             activityDtos: [],
             updated: false,
             apiUpdate: false,
             savingStatus: 'Saved',
             dateChanged: false,
             clients: [],
-            age: 0
+            age: 0,
+            sleeps: 0,
+            steps: 0,
+            status: "test",
+            workoutUpdated: false
         };
     }
 
     setActivities = () => {
         if (this.state.activityDtos.length > 0) {
 
-            if (this.state.activities.length === this.state.activityDtos.length) {
+            if ((this.state.activities.filter(x => x.id > 0)).length === this.state.activityDtos.length) {
                 return;
             }
 
+            var activities: IActivity[] = [];
+            var steps: number = 0;
+            var sleeps: number = 0.0;
+
+            var index = this.state.activityDtos.findIndex(x => x.description === 'steps')
+            if (index >= 0) {
+                var stepsActivity = this.state.activityDtos[index];
+                steps = stepsActivity.steps;
+                activities.push({ id: stepsActivity.id, activityDesc: stepsActivity.description, calories: stepsActivity.calories, steps: stepsActivity.steps, maxHr: stepsActivity.maxHr, duration: stepsActivity.duration, check: false });
+            }
+
+            index = this.state.activityDtos.findIndex(x => x.description === 'sleeps')
+            if (index >= 0) {
+                var sleepsActivity = this.state.activityDtos[index];
+                sleeps = sleepsActivity.duration;
+                activities.push({ id: sleepsActivity.id, activityDesc: sleepsActivity.description, calories: sleepsActivity.calories, steps: sleepsActivity.steps, maxHr: sleepsActivity.maxHr, duration: sleepsActivity.duration, check: false });
+            }
+
             this.state.activityDtos.forEach(activity => {
-                this.state.activities.push({ ActivityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, check: false });
+                if (activity.description !== 'sleeps' && activity.description !== 'steps') {
+                    activities.push({ id: activity.id, activityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, duration: activity.duration, check: false });
+                }
             })
+
+            this.setState({ activities: activities, steps: steps, sleeps: sleeps });
+        }
+        else {
+            var activities: IActivity[] = [];
+            activities.push({ id: 0, activityDesc: 'steps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
+            activities.push({ id: 0, activityDesc: 'sleeps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
+            this.setState({ steps: 0, sleeps: 0.0, activities: activities });
         }
     }
 
-    deleteActivities = () => {
-        this.setState({ savingStatus: 'Saving in progress' })
-        var fetchStr = 'api/tracker/' + this.props.logins[0].clientId + '/activity/delete?date=' + this.state.selectedDate.toISOString();
+    deleteActivitiesByIds = () => {
+        var activityIds: number[] = [];
+        this.state.removedActivities.forEach(x => {
+            if (x.id != 0) {
+                activityIds.push(x.id);
+            }
+        });
+
+        if (activityIds.length < 1) {
+            return;
+        }
+
+        this.setState({ savingStatus: 'Deleting in progress' })
+        var fetchStr = 'api/tracker/' + this.props.logins[0].clientId + '/activity/delete';
         fetch(fetchStr, {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-            }
-        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saving in progress' })).catch(error => console.log('delete meals---------->' + error));
+            },
+            body: JSON.stringify(activityIds)
+        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Delete Completed' })).catch(error => console.log('delete meals---------->' + error));
     }
 
     saveActivities = () => {
@@ -186,6 +244,7 @@ class Activities extends React.Component<LoginProps, IState> {
         this.setState({ savingStatus: 'Saving in progress' })
         var fetchStr = 'api/tracker/activity?date=' + this.state.selectedDate.toISOString();
 
+        console.log(this.state.activities);
         this.state.activities.forEach(activity => {
             fetch(fetchStr, {
                 method: 'PUT',
@@ -194,11 +253,12 @@ class Activities extends React.Component<LoginProps, IState> {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    Id: 0,
+                    Id: activity.id,
                     Calories: activity.calories,
                     Steps: activity.steps,
                     MaxHr: activity.maxHr,
-                    Description: activity.ActivityDesc,
+                    Duration: activity.duration,
+                    Description: activity.activityDesc,
                     Updated: new Date(),
                     Created: this.state.selectedDate.toISOString(),
                     ClientId: this.props.logins[0].clientId,
@@ -215,7 +275,7 @@ class Activities extends React.Component<LoginProps, IState> {
 
     onSave = () => {
         // delete rows
-        this.deleteActivities();
+        this.deleteActivitiesByIds();
 
         // add rows
         setTimeout(() => {
@@ -243,8 +303,6 @@ class Activities extends React.Component<LoginProps, IState> {
 
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
-        //console.log('1 --' + Math.abs((this.state.selectedDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
-        //console.log('2 --' + Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
@@ -260,6 +318,51 @@ class Activities extends React.Component<LoginProps, IState> {
         return 'green';
     }
 
+    updateSteps = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            var index = this.state.activities.findIndex(x => x.activityDesc === 'steps');
+            if (index > -1) {
+                this.state.activities[index].steps = parseInt(event.target.value);
+            }
+            this.setState({ activities: this.state.activities, steps: event.target.value, updated: true });
+        }
+    }
+
+    updateSleeps = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            var index = this.state.activities.findIndex(x => x.activityDesc === 'sleeps');
+            if (index > -1) {
+                this.state.activities[index].duration = parseFloat(event.target.value);
+            }
+            this.setState({ activities: this.state.activities, sleeps: event.target.value, updated: true });
+        }
+    }
+
+    setHeartRateStatus = () => {
+        var maxHr: number = Math.max.apply(Math, this.state.activities.map(function (o) { return o.maxHr; }));
+        if (this.state.activities.length < 1) {
+            maxHr = 0;
+        }
+
+        if (maxHr > (220 - this.state.age)) {
+            this.setState({ status: 'Warning!!!: Exceeding your max heart-rate is not advisable' });
+        }
+        else if (maxHr === (220 - this.state.age)) {
+            this.setState({ status: 'Awesome!!!: Your body will keep burning for the next 24 Hours' });
+        }
+        else if (maxHr > (0.65 * (220 - this.state.age))) {
+            this.setState({ status: 'Excellent: Your body will keep burning for the next 12 Hours' });
+        }
+        else if (maxHr > 0) {
+            this.setState({ status: 'Great work so far' });
+        }
+        else {
+            this.setState({ status: 'No max heartrate detected!!' });
+        }
+    }
+
     render() {
         if (this.props.logins.length > 0) {
             if (this.state.dateChanged === true) {
@@ -270,13 +373,28 @@ class Activities extends React.Component<LoginProps, IState> {
 
             if (this.state.apiUpdate === true) {
                 this.setActivities();
-                this.setState({ activities: this.state.activities, apiUpdate: false, updated: !this.state.updated });
+                this.setState({ apiUpdate: false, updated: !this.state.updated });
 
                 if (this.state.clients.length > 0) {
                     const client = this.state.clients[0];
                     this.setState({ age: client.age });
                 }
+
+                this.setHeartRateStatus();
             }
+
+            if (this.state.workoutUpdated === true) {
+                this.setState({ workoutUpdated: false });
+                this.setHeartRateStatus();
+            }
+
+            var divStatusLabelStyle = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: 'black',
+                backgroundColor: 'yellow'
+            };
 
             var divLabelStyle = {
                 color: '#fffafa',
@@ -295,8 +413,35 @@ class Activities extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Segment textAlign='center'>
-                                <ActivityHeader age={this.state.age} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
+                            <Segment attached='top' textAlign='center'>
+                                <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
+                            </Segment>
+                            <div style={divStatusLabelStyle}>
+                                <a>{this.state.status}</a>
+                            </div>
+                            <Segment attached='bottom' textAlign='center'>
+                                <Grid centered>
+                                    <Grid.Row columns={3} stretched>
+                                        <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                                            <a>Steps (Count)</a>
+                                        </Grid.Column>
+                                        <Grid.Column width={4} textAlign='left' verticalAlign='middle'>
+                                            <Input as='a' size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
+                                        </Grid.Column>
+                                        <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
+                                            <a>Keep Moving</a>
+                                        </Grid.Column>
+                                        <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                                            <a>Sleep (Hours)</a>
+                                        </Grid.Column>
+                                        <Grid.Column width={4} textAlign='left' verticalAlign='middle'>
+                                            <Input as='a' size='mini' value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
+                                        </Grid.Column>
+                                        <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
+                                            <a>You need more rest</a>
+                                        </Grid.Column>
+                                    </Grid.Row>
+                                </Grid>
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
@@ -304,26 +449,29 @@ class Activities extends React.Component<LoginProps, IState> {
                         <Grid.Column>
                             <Segment attached='top'>
                                 <Grid centered>
-                                    <Grid.Row columns={4}>
+                                    <Grid.Row columns={5}>
                                         <Grid.Column floated='left'>
                                             <Button size='tiny' color='black' fluid icon onClick={this.removeActivities}>
                                                 <Icon name='minus' />
                                             </Button>
-                                        </Grid.Column>
-                                        <Grid.Column>
-                                        </Grid.Column>
-                                        <Grid.Column>
                                         </Grid.Column>
                                         <Grid.Column floated='right'>
                                             <Button size='tiny' color='black' fluid icon onClick={this.addActivity}>
                                                 <Icon name='plus' />
                                             </Button>
                                         </Grid.Column>
+                                        <Grid.Column verticalAlign='middle'>
+                                            <h2>Workouts</h2>
+                                        </Grid.Column>
+                                        <Grid.Column>
+                                        </Grid.Column>
+                                        <Grid.Column>
+                                        </Grid.Column>
                                     </Grid.Row>
                                 </Grid>
                             </Segment>
                             <Segment textAlign='center' attached='bottom'>
-                                <ActivityTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
+                                <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
@@ -348,14 +496,6 @@ class Activities extends React.Component<LoginProps, IState> {
             </div>);
         }
         return (<Redirect to="/" />);
-    }
-
-    private getLoginCredentials = () => {
-        this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
     }
 }
 

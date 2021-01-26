@@ -25,16 +25,35 @@ namespace Fit2Fitter.Services.Implementation
         {
             try
             {
-                await this.trackerRepository.AddActivity(new Activity
+                if (activity.Id < 1)
                 {
-                    ClientId = activity.ClientId,
-                    Calories = activity.Calories,
-                    Steps = activity.Steps,
-                    MaxHr = activity.MaxHr,
-                    Description = activity.Description,
-                    Updated = DateTime.Now,
-                    Created = activity.Created
-                }).ConfigureAwait(false);
+                    await this.trackerRepository.AddActivity(new Activity
+                    {
+                        ClientId = activity.ClientId,
+                        Calories = activity.Calories,
+                        Steps = activity.Steps,
+                        MaxHr = activity.MaxHr,
+                        Duration = activity.Duration,
+                        Description = activity.Description,
+                        Updated = DateTime.Now,
+                        Created = activity.Created
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    await this.trackerRepository.UpdateActivity(new Activity
+                    {
+                        Id = activity.Id,
+                        ClientId = activity.ClientId,
+                        Calories = activity.Calories,
+                        Steps = activity.Steps,
+                        MaxHr = activity.MaxHr,
+                        Duration = activity.Duration,
+                        Description = activity.Description,
+                        Updated = activity.Updated,
+                        Created = activity.Created
+                    }).ConfigureAwait(false);
+                }
 
                 return true;
             }
@@ -147,6 +166,7 @@ namespace Fit2Fitter.Services.Implementation
                 Calories = activity.Calories,
                 Steps = activity.Steps,
                 MaxHr = activity.MaxHr,
+                Duration = activity.Duration,
                 Description = activity.Description,
                 Updated = activity.Updated,
                 Created = activity.Created,
@@ -170,6 +190,7 @@ namespace Fit2Fitter.Services.Implementation
                         Id = a.Id,
                         Calories = a.Calories,
                         Steps = a.Steps,
+                        Duration = a.Duration,
                         Description = a.Description,
                         Updated = a.Updated,
                         Created = a.Created,
@@ -526,6 +547,19 @@ namespace Fit2Fitter.Services.Implementation
             try
             {
                 await this.trackerRepository.DeleteActivities(clientId, date).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteActivities(int clientId, IEnumerable<int> activityIds)
+        {
+            try
+            {
+                await this.trackerRepository.DeleteActivities(clientId, activityIds).ConfigureAwait(false);
                 return true;
             }
             catch (Exception e)

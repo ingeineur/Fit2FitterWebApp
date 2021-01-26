@@ -6,6 +6,8 @@ import { Button, Form, Input, Grid, Label, Icon, Card, Header } from 'semantic-u
 
 interface IProps {
     activities: IActivity[];
+    steps: number;
+    sleeps: number;
     guides: IActivityGuides;
     update: boolean;
     age: number;
@@ -20,7 +22,7 @@ interface IActivity {
     calories: number;
     steps: number;
     maxHr: number;
-    ActivityDesc: string;
+    activityDesc: string;
 }
 
 interface IState {
@@ -44,7 +46,7 @@ class ActivityHeader extends React.Component<IProps, IState> {
         }
 
         if (total === 100) {
-            return 'teal';
+            return 'green';
         }
 
         if (total > 100.0) {
@@ -57,32 +59,63 @@ class ActivityHeader extends React.Component<IProps, IState> {
     getMaxHrColour = (maxHr: number) => {
         var calcMaxHr = 220 - this.props.age;
         var minMaxHr = 0.65 * calcMaxHr;
-        var maxMaxHr = 0.75 * calcMaxHr;
+        var maxMaxHr = 0.85 * calcMaxHr;
 
         if (maxHr >= minMaxHr && maxHr <= maxMaxHr) {
             return 'green';
         }
-
-        if (maxHr > maxMaxHr && maxHr < calcMaxHr) {
+        else if (maxHr > maxMaxHr && maxHr <= calcMaxHr) {
             return 'orange';
         }
-
-        if (maxHr >= calcMaxHr) {
+        else if (maxHr > calcMaxHr) {
             return 'red';
         }
 
         return 'grey';
     }
 
+    getIndicatorColour = (percent: number) => {
+        if (percent >= 1.0) {
+            return 'green';
+        }
+
+        return 'red';
+    }
+
+    getStepIndicatorColour = (percent: number) => {
+        if (percent <= 0.5) {
+            return 'red';
+        }
+
+        if (percent > 0.99) {
+            return 'green';
+        }
+
+        return 'yellow';
+    }
+
+    getSleepColour = (hour: number) => {
+        if (hour < 6.0) {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
+    getWarningText = () => {
+        return (<Grid.Row>
+            <a>Warning Text</a>
+        </Grid.Row>
+            )
+    }
+
     render() {
         var divLabelStyle2 = {
-            color: '#0a0212',
-            backgroundColor: 'Yellow'
+            color: '#0a0212'
         };
 
         var divLabelStyle3 = {
-            color: '#fffafa',
-            backgroundColor: 'Blue'
+            color: '#fffafa'
         };
 
         var divLabelStyle4 = {
@@ -97,35 +130,36 @@ class ActivityHeader extends React.Component<IProps, IState> {
         }
 
         const totalCalories = (this.props.activities.reduce(function (a, b) { return a + b.calories; }, 0));
-        const totalSteps = (this.props.activities.reduce(function (a, b) { return a + b.steps; }, 0));
         var maxHr: number = Math.max.apply(Math, this.props.activities.map(function (o) { return o.maxHr; }));
         if (this.props.activities.length < 1) {
             maxHr = 0;
         }
-        const totalStepsPercent = (totalSteps / this.props.guides.steps) * 100.0;
+
+        const totalCaloriesPercent = (totalCalories / this.props.guides.calories);
+        const totalStepsPercent = (this.props.steps / this.props.guides.steps);
 
         var divLabelStyle5 = {
-            color: '#fffafa',
-            backgroundColor: this.getMaxHrColour(maxHr)
+            color: '#fffafa'
         };
 
         return (
             <Grid centered>
-                <Grid.Row columns={1} color='pink' textAlign='center'>
-                    <a style={divLabelStyle4}>Total Activities</a>
-                </Grid.Row>
-                <Grid.Row columns={3} textAlign='center'>
-                    <Grid.Column color='black' textAlign='center'>
+                <Grid.Row divided columns={4} textAlign='center'>
+                    <Grid.Column color={this.getIndicatorColour(totalCaloriesPercent)} textAlign='center'>
                         <div><a>Calories</a></div>
-                        <div style={divLabelStyle2}><a>{totalCalories}</a></div>
+                        <div style={divLabelStyle3}><a>{totalCalories}/{this.props.guides.calories}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
-                        <div><a>Steps</a></div>
-                        <div style={divLabelStyle3}><a>{totalSteps}</a></div>
-                    </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color={this.getMaxHrColour(maxHr)} textAlign='center'>
                         <div><a>Max HR</a></div>
-                        <div style={divLabelStyle5}><a>{maxHr}</a></div>
+                        <div style={divLabelStyle5}><a>{maxHr}/{220 - this.props.age}</a></div>
+                    </Grid.Column>
+                    <Grid.Column color={this.getStepIndicatorColour(totalStepsPercent)} textAlign='center'>
+                        <div><a>Steps</a></div>
+                        <div style={divLabelStyle3}><a>{this.props.steps}/{this.props.guides.steps}</a></div>
+                    </Grid.Column>
+                    <Grid.Column color={this.getSleepColour(this.props.sleeps)} textAlign='center'>
+                        <div><a>Sleep</a></div>
+                        <div style={divLabelStyle5}><a>{this.props.sleeps}</a></div>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

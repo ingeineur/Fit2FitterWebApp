@@ -49,6 +49,8 @@ namespace Fit2Fitter.Services.Contracts
 
         Task<bool> DeleteActivities(int clientId, DateTime date);
 
+        Task<bool> DeleteActivities(int clientId, IEnumerable<int> activityIds);
+
         Task<bool> DeleteComment(int commentId);
 
         Task<bool> UpdateComment(int commentId, bool read);

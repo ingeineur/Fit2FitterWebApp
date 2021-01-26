@@ -11,6 +11,7 @@ namespace Fit2Fitter.Database.Models
         public int Calories { get; set; }
         public int Steps { get; set; }
         public int MaxHr { get; set; }
+        public double Duration { get; set; }
         public string Description { get; set; }
         public DateTime Updated { get; set; }
         public DateTime Created { get; set; }

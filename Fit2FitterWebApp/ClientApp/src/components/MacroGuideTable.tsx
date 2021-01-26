@@ -196,13 +196,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                 <Grid.Column>
                     <Segment attached='top'>
                         <Grid centered>
-                            <Grid.Row columns={3}>
-                                <Grid.Column floated='left' width={4}>
+                            <Grid.Row columns={4}>
+                                <Grid.Column floated='left'>
                                     <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
                                         <Icon name='minus' />
                                     </Button>
                                 </Grid.Column>
-                                <Grid.Column floated='right' width={4}>
+                                <Grid.Column floated='right'>
                                     <Modal
                                         open={this.state.openAddMeal}
                                         onClose={() => this.handleOpen(false)}
@@ -226,7 +226,9 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         </Modal.Actions>
                                     </Modal>
                                 </Grid.Column>
-                                <Grid.Column floated='right' width={8}>
+                                <Grid.Column>
+                                </Grid.Column>
+                                <Grid.Column floated='right'>
                                     <Modal
                                         open={this.state.updateMeal}
                                         onClose={() => this.handleUpdateOpen(false)}

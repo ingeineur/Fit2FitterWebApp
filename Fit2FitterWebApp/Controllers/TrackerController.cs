@@ -218,10 +218,17 @@ namespace Fit2FitterWebApp.Controllers
             return this.Ok(result);
         }
 
-        [HttpDelete("{clientId}/activity/delete")]
-        public async Task<IActionResult> deleteActivities(int clientId, [FromQuery, Required] string date)
+        [HttpDelete("{clientId}/activity/all/delete")]
+        public async Task<IActionResult> deleteAllActivities(int clientId, [FromQuery, Required] string date)
         {
             var result = await this.trackerService.DeleteActivities(clientId, DateTime.Parse(date)).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpDelete("{clientId}/activity/delete")]
+        public async Task<IActionResult> deleteActivities(int clientId, [FromBody, Required] IEnumerable<int> activityIds)
+        {
+            var result = await this.trackerService.DeleteActivities(clientId, activityIds).ConfigureAwait(false);
             return this.Ok(result);
         }
 
