@@ -14,5 +14,6 @@ namespace Fit2Fitter.Database.Models
         public DateTime Updated { get; set; }
         public DateTime Created { get; set; }
         public int ClientId { get; set; }
+        public string Photo { get; set; }
     }
 }

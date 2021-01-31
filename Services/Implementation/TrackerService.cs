@@ -121,6 +121,7 @@ namespace Fit2Fitter.Services.Implementation
                 {
                     await this.trackerRepository.AddMacroGuide(new MacrosGuide
                     {
+                        Photo = macrosGuide.Photo,
                         Food = macrosGuide.Food,
                         MealType = macrosGuide.MealType,
                         Carb = macrosGuide.Carb,
@@ -137,6 +138,7 @@ namespace Fit2Fitter.Services.Implementation
                     await this.trackerRepository.UpdateMacroGuide(new MacrosGuide
                     {
                         Id = macrosGuide.Id,
+                        Photo = macrosGuide.Photo,
                         Food = macrosGuide.Food,
                         MealType = macrosGuide.MealType,
                         Carb = macrosGuide.Carb,
@@ -368,6 +370,7 @@ namespace Fit2Fitter.Services.Implementation
             return macrosGuides.Select(guide => new MacrosGuideDto
             {
                 Id = guide.Id,
+                Photo = guide.Photo,
                 Food = guide.Food,
                 MealType = guide.MealType,
                 Carb = guide.Carb,
@@ -668,6 +671,7 @@ namespace Fit2Fitter.Services.Implementation
                     await this.trackerRepository.UpdateMacroGuide(new MacrosGuide
                     {
                         Id = guide.Id,
+                        Photo = guide.Photo,
                         Food = guide.Food,
                         MealType = guide.MealType,
                         Carb = guide.Carb,

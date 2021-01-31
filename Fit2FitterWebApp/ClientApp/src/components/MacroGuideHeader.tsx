@@ -31,6 +31,7 @@ interface IMealDetails {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     check: boolean;
     remove: boolean;
 }

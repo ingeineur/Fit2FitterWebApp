@@ -33,6 +33,8 @@ interface IState {
     steps: number;
     sleeps: number;
     status: string,
+    stepsStatus: string,
+    sleepsStatus: string,
     workoutUpdated: boolean;
 }
 
@@ -166,7 +168,9 @@ class Activities extends React.Component<LoginProps, IState> {
             sleeps: 0,
             steps: 0,
             status: "test",
-            workoutUpdated: false
+            workoutUpdated: false,
+            stepsStatus: '',
+            sleepsStatus:''
         };
     }
 
@@ -201,13 +205,13 @@ class Activities extends React.Component<LoginProps, IState> {
                 }
             })
 
-            this.setState({ activities: activities, steps: steps, sleeps: sleeps });
+            this.setState({ activities: activities, steps: steps, stepsStatus: this.getStepsStatus(steps), sleeps: sleeps, sleepsStatus: this.getSleepsStatus(sleeps) });
         }
         else {
             var activities: IActivity[] = [];
             activities.push({ id: 0, activityDesc: 'steps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
             activities.push({ id: 0, activityDesc: 'sleeps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
-            this.setState({ steps: 0, sleeps: 0.0, activities: activities });
+            this.setState({ steps: 0, sleeps: 0.0, activities: activities, stepsStatus: this.getStepsStatus(0), sleepsStatus: this.getSleepsStatus(0.0) });
         }
     }
 
@@ -318,6 +322,17 @@ class Activities extends React.Component<LoginProps, IState> {
         return 'green';
     }
 
+    getStepsStatus = (steps: number) => {
+        var status = 'Keep Moving';
+        if (steps >= this.state.guides.steps) {
+            status = 'Excellent!! Target Achieved';
+        }
+        else if (steps > this.state.guides.steps / 2) {
+            status = 'Great!! Almost There';
+        }
+        return status;
+    } 
+
     updateSteps = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
@@ -325,8 +340,18 @@ class Activities extends React.Component<LoginProps, IState> {
             if (index > -1) {
                 this.state.activities[index].steps = parseInt(event.target.value);
             }
-            this.setState({ activities: this.state.activities, steps: event.target.value, updated: true });
+
+            this.setState({ activities: this.state.activities, steps: event.target.value, stepsStatus: this.getStepsStatus(event.target.value), updated: true });
         }
+    }
+
+    getSleepsStatus = (sleeps: number) => {
+        var status = 'You need more rest';
+        if (sleeps >= 6.5) {
+            status = 'Excellent!! Your Body is Well Rested';
+        }
+        
+        return status;
     }
 
     updateSleeps = (event: any) => {
@@ -336,7 +361,7 @@ class Activities extends React.Component<LoginProps, IState> {
             if (index > -1) {
                 this.state.activities[index].duration = parseFloat(event.target.value);
             }
-            this.setState({ activities: this.state.activities, sleeps: event.target.value, updated: true });
+            this.setState({ activities: this.state.activities, sleeps: event.target.value, sleepsStatus: this.getSleepsStatus(event.target.value), updated: true });
         }
     }
 
@@ -429,7 +454,7 @@ class Activities extends React.Component<LoginProps, IState> {
                                             <Input as='a' size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
                                         </Grid.Column>
                                         <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
-                                            <a>Keep Moving</a>
+                                            <a>{this.state.stepsStatus}</a>
                                         </Grid.Column>
                                         <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
                                             <a>Sleep (Hours)</a>
@@ -438,7 +463,7 @@ class Activities extends React.Component<LoginProps, IState> {
                                             <Input as='a' size='mini' value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
                                         </Grid.Column>
                                         <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
-                                            <a>You need more rest</a>
+                                            <a>{this.state.sleepsStatus}</a>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>

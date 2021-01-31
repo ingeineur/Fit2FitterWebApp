@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { Button, Form, Input, Grid, Segment, Menu, Dropdown, Label } from 'semantic-ui-react'
+import { Grid, Label, Icon, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { RouteComponentProps } from 'react-router';
@@ -49,31 +49,6 @@ class EBook extends React.Component<LoginProps, IState> {
         this.setState({ activeItem: value['value'], recipeText: value['value'] })
     }
 
-    getPdf = () => {
-        var divPdf = {
-            width: '100%',
-            height: '700px'
-        };
-
-        if (this.state.activeItem === 'Workout') {
-            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true" style={divPdf} /></div>);
-        }
-
-        if (this.state.activeItem === 'StarterPack Recipes') {
-            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/BTP3StarterRecipePack.pdf&amp;embedded=true" style={divPdf} /></div>);
-        }
-
-        if (this.state.activeItem === 'September Recipes') {
-            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true" style={divPdf} /></div>);
-        }
-
-        if (this.state.activeItem === 'October Recipes') {
-            return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/october-2020-recipe-pack1.pdf&amp;embedded=true" style={divPdf} /></div>);
-        }
-
-        return (<div><iframe className="embed-responsive-item" src="https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/BTP36WeekGuide.pdf&amp;embedded=true" style={divPdf} /></div>);
-    }
-
     render() {
         var divLabelStyle = {
             color: 'red'
@@ -84,17 +59,13 @@ class EBook extends React.Component<LoginProps, IState> {
             backgroundColor: 'yellow'
         };
 
-        var divPdf = {
-            width: '100%',
-            height: '700px'
-        };
-
         if (this.props.logins.length > 0) {
             return (
                 <div>
                     <div>
                         <Label size='large' as='a' color='pink' basic circular>E-Book</Label>
                     </div>
+                    <Divider/>
                     <div>
                     </div>
                     <div style={divLabelStyle}>
@@ -104,7 +75,7 @@ class EBook extends React.Component<LoginProps, IState> {
                         <Grid.Row columns={3} color='pink'>
                             <Grid.Column >
                                 <div>
-                                    <a>Workouts</a>
+                                    <a>BTP2021/1</a>
                                 </div>
                             </Grid.Column>
                             <Grid.Column >
@@ -121,43 +92,62 @@ class EBook extends React.Component<LoginProps, IState> {
                         <Grid.Row columns={3}>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/HomeWorkoutGuideBTP3.1.pdf&amp;embedded=true' target='_blank'>Home Workouts</a>
+                                    <Label basic color='blue'>
+                                        <Icon color='yellow' name='star' corner='top left' />
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/btp2021book1.pdf&amp;embedded=true' target='_blank'>Calorie, Macro & Portion Guide (Book 1)</a>
+                                    </Label>
                                 </div>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/Week1ResetFitnessChallenge.pdf&amp;embedded=true' target='_blank'>Week 1 Challenge</a>
+                                    <Label basic color='green'>
+                                        <Icon color='yellow' name='star' corner='top left' />
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/btp2021book2.pdf&amp;embedded=true' target='_blank'>Nutrition Weekly Challenge 2021 (Book 2)</a>
+                                    </Label>
                                 </div>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/WeeklyChallenge2.pdf&amp;embedded=true' target='_blank'>Week 2 Challenge</a>
-                                </div>
-                            </Grid.Column>
-                            <Grid.Column>
-                                <div style={divLabelStyle2}>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>StarterPack Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>September Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>October Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>November Recipes</a>
-                                </div>
-
-                                <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/december-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>December Recipes</a>
+                                    <Label basic color='black'>
+                                        <Icon color='yellow' name='star' corner='top left' />
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/btp2021book3.pdf&amp;embedded=true' target='_blank'>Workout Weekly Challenge 2021 (Book 3)</a>
+                                    </Label>
                                 </div>
                             </Grid.Column>
                             <Grid.Column>
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>Addictives to Avoid</a>
+                                    <Label basic color='blue'>
+                                        <Icon color='yellow' name='star' corner='top left' />
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/BTP3StarterRecipePack.pdf&amp;embedded=true' target='_blank'>StarterPack Recipes</a>
+                                    </Label>
                                 </div>
-
                                 <div>
-                                    <a href='https://docs.google.com/gview?embedded=true&url=http://ingeineur-001-site1.ctempurl.com/immunity-support-pack.pdf&amp;embedded=true' target='_blank'>Immunity Support Pack</a>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>September Recipes</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>October Recipes</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>November Recipes</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/december-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>December Recipes</a>
+                                    </Label>
+                                </div>
+                            </Grid.Column>
+                            <Grid.Column>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/AddictivesToAvoidCancauseHyperactiveAthmaandCancer.pdf&amp;embedded=true' target='_blank'>Addictives to Avoid</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/immunity-support-pack.pdf&amp;embedded=true' target='_blank'>Immunity Support Pack</a>
+                                    </Label>
                                 </div>
                             </Grid.Column>
                         </Grid.Row>

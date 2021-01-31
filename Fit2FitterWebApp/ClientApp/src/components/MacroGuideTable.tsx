@@ -10,7 +10,18 @@ interface IProps {
     meals: IMealDetails[] 
     update: boolean;
     mealType: number;
-    updateMeals: Function
+    updateMeals: Function;
+    client: IClientDto;
+}
+
+interface IClientDto {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
 }
 
 interface IMealDetails {
@@ -20,6 +31,7 @@ interface IMealDetails {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     check: boolean;
     remove: boolean;
 }
@@ -63,7 +75,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         this.state = {
             username: '', password: '', updated: false, mealType: 1, meals: [],
             dirty: false, openAddMeal: false, updateMeal: false, addedMeals: [],
-            updateDetails: { index: -1, meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false } }
+            updateDetails: { index: -1, meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo:'', check: false, remove: false } }
         };
     }
 
@@ -93,11 +105,21 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         this.setState({ meals: this.state.meals, updated: true });
     }
 
+    getPhotoIndicator = (photo: string, index: number) => {
+        if (photo === '') {
+            return;
+        }
+        return (<Label size='tiny' key={index} as='a' corner='right'>
+            <Icon key={index} color='blue' size='tiny' name='camera' />
+        </Label>);
+    }
+
     getRows = () => {
         var arr = this.state.meals.filter(x => x.remove !== true);
         return (
             arr.map((item, index) =>
                 <Grid.Row className={'row'} key={index} columns={3} stretched>
+                    {this.getPhotoIndicator(item.photo, index)}
                     <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
                         <Radio className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
@@ -160,6 +182,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     handleUpdate = (open: boolean) => {
         if (this.state.updateDetails.index > -1 && this.state.updateDetails.index < this.state.meals.length) {
             this.state.meals[this.state.updateDetails.index] = this.state.updateDetails.meal;
+            console.log(this.state.updateDetails);
             this.state.updateDetails.index = -1;
             this.setState({ updated: true, meals: this.state.meals, updateDetails: this.state.updateDetails });
         }

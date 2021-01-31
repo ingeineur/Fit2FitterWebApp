@@ -67,11 +67,8 @@ class ActivityHeader extends React.Component<IProps, IState> {
         else if (maxHr > maxMaxHr && maxHr <= calcMaxHr) {
             return 'orange';
         }
-        else if (maxHr > calcMaxHr) {
-            return 'red';
-        }
-
-        return 'grey';
+        
+        return 'red';
     }
 
     getIndicatorColour = (percent: number) => {

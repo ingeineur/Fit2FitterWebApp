@@ -4,6 +4,8 @@ import { Button, Icon, Input, Grid, Message, Header, Segment } from 'semantic-ui
 import ChartistGraph from 'react-chartist';
 import MacroGuideHeader from './MacroGuideHeader';
 import MessagesMealsChat from './MessagesMealsChat';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
 
 interface IProps {
     update: boolean;
@@ -27,6 +29,7 @@ interface IMealDto {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     updated: string;
     created: string;
     clientId: number;
@@ -46,6 +49,7 @@ interface IMealDetails {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     check: boolean;
     remove: boolean;
 }
@@ -85,6 +89,16 @@ interface IState {
     macrosPlanDtos: IMacrosPlanDto[];
     clientDtos: IClientDto[];
     guides: IMacroGuides;
+    breakfastImages: GalleryImage[];
+    lunchImages: GalleryImage[];
+    dinnerImages: GalleryImage[];
+    snackImages: GalleryImage[];
+}
+
+interface GalleryImage {
+    original: string,
+    thumbnail: string,
+    sizes: string
 }
 
 class MacroGuideReviewModal extends React.Component<IProps, IState> {
@@ -101,7 +115,8 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             updated: false,
             macrosPlanDtos: [],
             clientDtos: [],
-            guides: { carb: 0, protein: 0, fat: 0, fruits: 0 }
+            guides: { carb: 0, protein: 0, fat: 0, fruits: 0 },
+            breakfastImages: [], lunchImages: [], dinnerImages: [], snackImages: []
         };
     }
 
@@ -202,6 +217,93 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         return 0;
     }
 
+    setMealGalleryImages = (mealType: number) => {
+        let breakfastImages: GalleryImage[] = [];
+        let lunchImages: GalleryImage[] = [];
+        let dinnerImages: GalleryImage[] = [];
+        let snackImages: GalleryImage[] = [];
+
+        var arr = this.state.meals[this.getMealTypeIndex(mealType)].filter(x => x.remove !== true);
+        arr.forEach(x => {
+            if (mealType === 0 && x.photo !== '') {
+                breakfastImages.push({
+                    original: '/images/meals/' + x.photo,
+                    thumbnail: '/images/meals/' + x.photo,
+                    sizes: '(max-width: 400px) 400px, 100vw'
+                });
+            }
+            else if (mealType === 1 && x.photo !== '') {
+                lunchImages.push({
+                    original: '/images/meals/' + x.photo,
+                    thumbnail: '/images/meals/' + x.photo,
+                    sizes: '(max-width: 400px) 400px, 100vw'
+                });
+            }
+            else if (mealType === 2 && x.photo !== '') {
+                dinnerImages.push({
+                    original: '/images/meals/' + x.photo,
+                    thumbnail: '/images/meals/' + x.photo,
+                    sizes: '(max-width: 400px) 400px, 100vw'
+                });
+            }
+            else if (mealType === 3 && x.photo !== '') {
+                snackImages.push({
+                    original: '/images/meals/' + x.photo,
+                    thumbnail: '/images/meals/' + x.photo,
+                    sizes: '(max-width: 400px) 400px, 100vw'
+                });
+            }
+        });
+
+        if (mealType === 0) {
+            this.setState({ breakfastImages: breakfastImages });
+        }
+        else if (mealType === 1) {
+            this.setState({ lunchImages: lunchImages });
+        }
+        else if (mealType === 2) {
+            this.setState({ dinnerImages: dinnerImages });
+        }
+        else if (mealType === 3) {
+            this.setState({ snackImages: snackImages });
+        }
+    }
+
+    getMealGallery = (mealType: number) => {
+        if (mealType === 0 && this.state.breakfastImages.length > 0) {
+            return (
+                <Grid.Row >
+                    <Segment size='tiny'>
+                        <ImageGallery items={this.state.breakfastImages} />                
+                    </Segment>
+                </Grid.Row>);
+        }
+        else if (mealType === 1 && this.state.lunchImages.length > 0) {
+            return (
+                <Grid.Row >
+                    <Segment size='tiny'>
+                        <ImageGallery items={this.state.lunchImages} />
+                    </Segment>
+                </Grid.Row>);
+        }
+        else if (mealType === 2 && this.state.dinnerImages.length > 0) {
+            return (
+                <Grid.Row >
+                    <Segment size='tiny'>
+                        <ImageGallery items={this.state.dinnerImages} />
+                    </Segment>
+                </Grid.Row>);
+        }
+        else if (mealType === 3 && this.state.snackImages.length > 0) {
+            return (
+                <Grid.Row >
+                    <Segment size='tiny'>
+                        <ImageGallery items={this.state.snackImages} />
+                    </Segment>
+                </Grid.Row>);
+        }
+    }
+
     getTableRows = (mealType: number) => {
         var arr = this.state.meals[this.getMealTypeIndex(mealType)].filter(x => x.remove !== true);
         return (
@@ -241,6 +343,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 </Segment>
                 <Segment textAlign='center' attached='bottom'>
                     <Grid centered>
+                        {this.getMealGallery(mealType)}
                         <Grid.Row columns={6} textAlign='left' color='grey'>
                             <Grid.Column width={2}>
                             </Grid.Column>
@@ -311,7 +414,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             }
 
             this.state.mealDtos.forEach(meal => {
-                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, check: false, remove: false });
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
             })
 
             this.setState({ meals: this.state.meals });
@@ -353,6 +456,10 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             this.setState({ apiUpdate: false });
             this.setMacroGuides();
             this.setMeals();
+            this.setMealGalleryImages(0);
+            this.setMealGalleryImages(1);
+            this.setMealGalleryImages(2);
+            this.setMealGalleryImages(3);
             this.setState({ updated: !this.state.updated });
         }
 

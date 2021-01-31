@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Web;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,6 +22,31 @@ namespace Fit2FitterWebApp.Controllers
         public TrackerController(ITrackerService trackerService)
         {
             this.trackerService = trackerService;
+        }
+
+        [HttpPost("meal/image")]
+        public async Task<IActionResult> PutMealImage([FromBody, Required] string imageData)
+        {
+            try
+            {
+                string Pic_Path = "~/Images/t.jpg";
+                using (FileStream fs = new FileStream(Pic_Path, FileMode.Create))
+                {
+                    using (BinaryWriter bw = new BinaryWriter(fs))
+                    {
+                        byte[] data = Convert.FromBase64String(imageData);
+                        bw.Write(data);
+                        bw.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //ErrorSignal.FromCurrentContext().Raise(ex);
+                throw;
+            }
+
+            return this.Ok(true);
         }
 
         // PUT api/<controller>/5

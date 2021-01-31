@@ -323,6 +323,38 @@ class PersonalTable extends React.Component<IProps, IState> {
         return this.macroPortionsDict['Lose Weight'];
     }
 
+    getActivityLevelFactor = () => {
+        if (this.props.personal.activityLevel == 0) {
+            return 1.2;
+        }
+
+        if (this.props.personal.activityLevel == 1) {
+            return 1.375;
+        }
+
+        if (this.props.personal.activityLevel == 2) {
+            return 1.55;
+        }
+
+        if (this.props.personal.activityLevel == 3) {
+            return 1.725;
+        }
+
+        if (this.props.personal.activityLevel == 4) {
+            return 1.9;
+        }
+
+        return 0;
+    }
+
+    getColor = (percent: number) => {
+        if (percent < 100.00) {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
     render() {
         if (this.props.update !== this.state.dirty)
         {
@@ -357,6 +389,15 @@ class PersonalTable extends React.Component<IProps, IState> {
             color:'blue',
             fontSize: '10px',
             verticalAlign: 'middle'
+        };
+
+        const totalMacros = this.props.personal.carbPercent + this.props.personal.proteinPercent + this.props.personal.fatPercent;
+        var divStatusLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getColor(totalMacros)
         };
 
         return (
@@ -465,6 +506,9 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <a>{this.state.fatPercent}%</a>
                     </Grid.Column>
                 </Grid.Row>
+                <div style={divStatusLabelStyle}>
+                    <a>Total Macros Calculation: {totalMacros} %</a>
+                </div>
             </Grid>);
     }
 }

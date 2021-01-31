@@ -293,6 +293,10 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.ClientId)
                     .IsRequired()
                     .HasMaxLength(4);
+
+                entity.Property(e => e.Photo)
+                    .IsRequired()
+                    .HasMaxLength(255);
             });
 
             modelBuilder.Entity<Models.MacrosPlan>(entity =>

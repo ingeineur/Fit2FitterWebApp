@@ -138,10 +138,10 @@ namespace Fit2Fitter.Database.Data
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword)
         {
-            //string[] categories = {"1", "4", "5", "6", "7", "8", "9", "11", "12", "13", "14", 
-            //    "15", "16", "17", "18", "20", "22", "25"};
+            string[] notRelevantCategories = {"3", "21", "10", "25", "23", "24", "19", "18"};
+
             return await this.databaseContext.FoodLegacy.Where(x =>
-                x.Description.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
+                x.Description.Contains(keyword) && !notRelevantCategories.Contains(x.Category)).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId)
@@ -321,6 +321,7 @@ namespace Fit2Fitter.Database.Data
                 result.Protein = macrosGuide.Protein;
                 result.Fat = macrosGuide.Fat;
                 result.FV = macrosGuide.FV;
+                result.Photo = macrosGuide.Photo;
                 result.Updated = macrosGuide.Updated;
                 result.Created = macrosGuide.Created;
                 await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);

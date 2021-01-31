@@ -88,7 +88,6 @@ class PersonalHeader extends React.Component<IProps, IState> {
 
         var divLabelStyle4 = {
             color: '#fffafa',
-            fontFamily: 'Comic Sans MS',
             fontSize: '20px'
         };
 
@@ -110,8 +109,7 @@ class PersonalHeader extends React.Component<IProps, IState> {
                 <Grid.Row divided color='pink' textAlign='center'>
                     <Grid.Column color='pink' textAlign='center'>
                         <div style={divLabelStyle4}>
-                            <a>Macros Calculation: </a>
-                            <a>{totalMacros} %</a>
+                            <a>Macros Calculation</a>
                         </div>
                     </Grid.Column>
                 </Grid.Row>

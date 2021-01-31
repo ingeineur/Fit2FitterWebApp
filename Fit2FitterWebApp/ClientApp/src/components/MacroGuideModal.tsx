@@ -1,9 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider } from 'semantic-ui-react'
-import ChartistGraph from 'react-chartist';
-import MacroTable from './MacroTable'
-import Meals from './Meals';
 import { isNullOrUndefined } from 'util';
 
 interface IProps {
@@ -19,6 +16,7 @@ interface IMealDetails {
     fat: number;
     fv: number;
     check: boolean;
+    photo: string;
     remove: boolean;
 }
 
@@ -59,7 +57,8 @@ interface IState {
     apiUpdated: boolean,
     usdaQuantity: number,
     selectedFdcId: string,
-    usdaUpdated: boolean
+    usdaUpdated: boolean,
+    imageUploadStatus: string
 }
 
 class MacroGuideModal extends React.Component<IProps, IState> {
@@ -68,10 +67,10 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             dirty: false,
-            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false },
+            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, photo:'' },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
-            searchText: '', selectedFdcId: '', usdaUpdated: false
+            searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus:'No Image'
         };
     }
 
@@ -122,9 +121,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
 
         this.setState({ status: 'Added to list' });
-        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove });
-        this.setState({ meals: this.state.meals, updated: true })
-        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false } });
+        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove, photo: this.state.meal.photo });
+        this.setState({ meals: this.state.meals, updated: true, imageUploadStatus: 'No Image' })
+        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, photo: '' } });
     }
 
     updateUsdaQuantity = (event: any) => {
@@ -168,6 +167,18 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
 
         if (this.state.status.includes('Updating')) {
+            return 'black';
+        }
+
+        return 'green';
+    }
+
+    getUploadImageColour = () => {
+        if (this.state.imageUploadStatus.includes('Uploading')) {
+            return 'orange';
+        }
+
+        if (this.state.imageUploadStatus.includes('No Image')) {
             return 'black';
         }
 
@@ -229,6 +240,27 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         this.setState({ meal: this.state.meal, status: 'Pending to add', updated: true });
     }
 
+    handleImageChange = (event: any) => {
+        const formData = new FormData()
+        formData.append('Filename', event.target.files[0]['name'])
+        formData.append('FormFile', event.target.files[0])
+        this.setState({ imageUploadStatus: 'Uploading..' });
+        fetch('api/Utilities/image/meal/upload',
+            {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(uploadedFilename => {
+                console.log(uploadedFilename)
+                this.state.meal.photo = uploadedFilename;
+                this.setState({ meal: this.state.meal, updated: true, imageUploadStatus: 'Uploaded' });
+            })
+            .catch(error => {
+                console.error(error)
+            })
+    }
+
     render() {
 
         var divLabelStyle = {
@@ -237,6 +269,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
+        };
+
+        var divUploadImageStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getUploadImageColour()
         };
 
         var divLabelStyle2 = {
@@ -325,6 +365,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     </Grid.Row>
                 </Grid>
             </Message>
+            <div style={divLabelStyle}>
+                <a>{this.state.status}</a>
+            </div>
             <Divider horizontal>
                 <Header as='h4'>
                     <Icon name='food' />
@@ -332,9 +375,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 </Header>
             </Divider>
             <Message attached='bottom'>
-                <div style={divLabelStyle}>
-                    <a>{this.state.status}</a>
-                </div>
                 <Grid centered>
                     <Grid.Row stretched>
                         <Grid.Column as='a' width={6} textAlign='left'>
@@ -366,6 +406,21 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
                             <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Image</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <div>
+                                <div style={divUploadImageStyle}>
+                                    <a>{this.state.imageUploadStatus}</a>
+                                </div>
+                                <input
+                                    type='file'
+                                    accept="image/*"
+                                    onChange={this.handleImageChange}
+                                />
+                            </div>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row columns={2}>

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.Net.Http.Headers;
 
 namespace Fit2FitterWebApp
 {
@@ -43,6 +44,24 @@ namespace Fit2FitterWebApp
                 options => options.UseSqlServer(this.Configuration.GetConnectionString("DB_Connection_String")), ServiceLifetime.Transient);
 
             this.AddFrameworkServices(services);
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Policy1", builder =>
+                {
+                    builder.WithOrigins("http://localhost:3000")
+                    .WithMethods("POST", "GET", "PUT", "DELETE")
+                    .WithHeaders(HeaderNames.ContentType);
+                });
+            });
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("Policy2", builder =>
+            //    {
+            //        builder.WithOrigins("http://idafit2fitter.com/")
+            //        .WithMethods("POST", "GET", "PUT", "DELETE")
+            //        .WithHeaders(HeaderNames.ContentType);
+            //    });
+            //});
             //this.AddSwaggerToServices(services);
         }
 
@@ -71,6 +90,8 @@ namespace Fit2FitterWebApp
                 app.UseHsts();
             }
 
+            app.UseCors("Policy1");
+            //app.UseCors("Policy2");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();

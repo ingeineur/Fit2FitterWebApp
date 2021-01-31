@@ -61,6 +61,7 @@ interface IMealDetails {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     check: boolean;
     remove: boolean;
 }
@@ -83,6 +84,7 @@ interface IMealDto {
     protein: number;
     fat: number;
     fv: number;
+    photo: string;
     updated: string;
     created: string;
     clientId: number;
@@ -316,6 +318,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                     protein: parseFloat(x.protein.toString()),
                     fat: parseFloat(x.fat.toString()),
                     fv: parseFloat(x.fv.toString()),
+                    photo: x.photo,
                     created: this.state.selectedDate.toISOString(),
                     updated: (new Date()).toISOString(),
                     clientId: this.props.logins[0].clientId
@@ -349,6 +352,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                     protein: parseFloat(x.protein.toString()),
                     fat: parseFloat(x.fat.toString()),
                     fv: parseFloat(x.fv.toString()),
+                    photo: x.photo,
                     created: this.state.selectedDate.toISOString(),
                     updated: (new Date()).toISOString(),
                     clientId: this.props.logins[0].clientId
@@ -449,7 +453,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             }
 
             this.state.mealDtos.forEach(meal => {
-                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, check: false, remove: false });
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
             })
 
             this.setState({ meals: this.state.meals });
@@ -533,7 +537,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
                                 <Segment attached='bottom'>
                                     <Grid.Column stretched width={16}>
-                                        <MacroGuideTable update={this.state.updated} meals={this.state.meals[this.getMealType(activeItem)]} updateMeals={this.updateMeals} mealType={this.getMealType(this.state.activeItem)} />
+                                        <MacroGuideTable update={this.state.updated} client={this.state.clientDtos[0]} meals={this.state.meals[this.getMealType(activeItem)]} updateMeals={this.updateMeals} mealType={this.getMealType(this.state.activeItem)} />
                                     </Grid.Column>
                                 </Segment>
                             </Grid.Column>
