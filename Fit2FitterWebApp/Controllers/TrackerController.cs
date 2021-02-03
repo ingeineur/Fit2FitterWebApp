@@ -224,6 +224,13 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/macrosguide/search")]
+        public async Task<IEnumerable<MacrosGuideDto>> SearchMacrosGuides(int clientId, [FromQuery, Required] string keyword)
+        {
+            var data = await this.trackerService.GetMacrosGuides(clientId, keyword).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("{keyword}/foods")]
         public async Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword)
         {

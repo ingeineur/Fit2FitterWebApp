@@ -36,6 +36,7 @@ interface IState {
     stepsStatus: string,
     sleepsStatus: string,
     workoutUpdated: boolean;
+    savingDone: boolean;
 }
 
 interface IActivityGuides {
@@ -97,7 +98,6 @@ class Activities extends React.Component<LoginProps, IState> {
         this.setState({ selectedDate: date, prevDate: date });
         
         if (this.props.logins.length > 0) {
-
             //get client info
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
@@ -170,7 +170,8 @@ class Activities extends React.Component<LoginProps, IState> {
             status: "test",
             workoutUpdated: false,
             stepsStatus: '',
-            sleepsStatus:''
+            sleepsStatus: '',
+            savingDone: false
         };
     }
 
@@ -267,7 +268,7 @@ class Activities extends React.Component<LoginProps, IState> {
                     Created: this.state.selectedDate.toISOString(),
                     ClientId: this.props.logins[0].clientId,
                 })
-            }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
+            }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved', savingDone: true })).catch(error => console.log('put macros ---------->' + error));
         });
     }
 
@@ -341,7 +342,7 @@ class Activities extends React.Component<LoginProps, IState> {
                 this.state.activities[index].steps = parseInt(event.target.value);
             }
 
-            this.setState({ activities: this.state.activities, steps: event.target.value, stepsStatus: this.getStepsStatus(event.target.value), updated: true });
+            this.setState({ activities: this.state.activities, steps: event.target.value, stepsStatus: this.getStepsStatus(event.target.value), savingStatus: 'Not Saved', updated: true });
         }
     }
 
@@ -361,7 +362,7 @@ class Activities extends React.Component<LoginProps, IState> {
             if (index > -1) {
                 this.state.activities[index].duration = parseFloat(event.target.value);
             }
-            this.setState({ activities: this.state.activities, sleeps: event.target.value, sleepsStatus: this.getSleepsStatus(event.target.value), updated: true });
+            this.setState({ activities: this.state.activities, sleeps: event.target.value, sleepsStatus: this.getSleepsStatus(event.target.value), savingStatus: 'Not Saved', updated: true });
         }
     }
 
@@ -390,6 +391,12 @@ class Activities extends React.Component<LoginProps, IState> {
 
     render() {
         if (this.props.logins.length > 0) {
+            if (this.state.savingDone === true) {
+                this.setState({ savingDone: false });
+                this.resetActivities();
+                this.getActivities();
+            }
+
             if (this.state.dateChanged === true) {
                 this.setState({ dateChanged: false });
                 this.resetActivities();
@@ -398,7 +405,7 @@ class Activities extends React.Component<LoginProps, IState> {
 
             if (this.state.apiUpdate === true) {
                 this.setActivities();
-                this.setState({ apiUpdate: false, updated: !this.state.updated });
+                this.setState({ apiUpdate: false, updated: !this.state.updated});
 
                 if (this.state.clients.length > 0) {
                     const client = this.state.clients[0];
@@ -409,8 +416,8 @@ class Activities extends React.Component<LoginProps, IState> {
             }
 
             if (this.state.workoutUpdated === true) {
-                this.setState({ workoutUpdated: false });
                 this.setHeartRateStatus();
+                this.setState({ workoutUpdated: false });
             }
 
             var divStatusLabelStyle = {
@@ -422,6 +429,9 @@ class Activities extends React.Component<LoginProps, IState> {
             };
 
             var divLabelStyle = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 color: '#fffafa',
                 backgroundColor: this.getColour()
             };
@@ -438,32 +448,35 @@ class Activities extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Segment attached='top' textAlign='center'>
+                            <div style={divLabelStyle}>
+                                <a>{this.state.savingStatus}</a>
+                            </div>
+                            <Segment attached='bottom' textAlign='center'>
                                 <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
                             <div style={divStatusLabelStyle}>
                                 <a>{this.state.status}</a>
                             </div>
                             <Segment attached='bottom' textAlign='center'>
-                                <Grid centered>
-                                    <Grid.Row columns={3} stretched>
-                                        <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
-                                            <a>Steps (Count)</a>
+                                <Grid key={100} centered>
+                                    <Grid.Row key={100} columns={3} stretched>
+                                        <Grid.Column key={100} width={4} textAlign='left' verticalAlign='middle'>
+                                            <div><a>Steps (Count)</a></div>
                                         </Grid.Column>
-                                        <Grid.Column width={4} textAlign='left' verticalAlign='middle'>
+                                        <Grid.Column key={100 + 1} width={4} textAlign='left' verticalAlign='middle'>
                                             <Input as='a' size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
                                         </Grid.Column>
-                                        <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
-                                            <a>{this.state.stepsStatus}</a>
+                                        <Grid.Column key={100 + 2} width={8} textAlign='left' verticalAlign='middle'>
+                                            <div><a>{this.state.stepsStatus}</a></div>
                                         </Grid.Column>
-                                        <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
-                                            <a>Sleep (Hours)</a>
+                                        <Grid.Column key={100 + 3} width={4} textAlign='left' verticalAlign='middle'>
+                                            <div><a>Sleep (Hours)</a></div>
                                         </Grid.Column>
-                                        <Grid.Column width={4} textAlign='left' verticalAlign='middle'>
-                                            <Input as='a' size='mini' value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
+                                        <Grid.Column key={100 + 4} width={4} textAlign='left' verticalAlign='middle'>
+                                            <Input size='mini' value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
                                         </Grid.Column>
-                                        <Grid.Column as='a' width={8} textAlign='left' verticalAlign='middle'>
-                                            <a>{this.state.sleepsStatus}</a>
+                                        <Grid.Column key={100 + 5} width={8} textAlign='left' verticalAlign='middle'>
+                                            <div><a>{this.state.sleepsStatus}</a></div>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>
@@ -476,12 +489,12 @@ class Activities extends React.Component<LoginProps, IState> {
                                 <Grid centered>
                                     <Grid.Row columns={5}>
                                         <Grid.Column floated='left'>
-                                            <Button size='tiny' color='black' fluid icon onClick={this.removeActivities}>
+                                            <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
                                                 <Icon name='minus' />
                                             </Button>
                                         </Grid.Column>
                                         <Grid.Column floated='right'>
-                                            <Button size='tiny' color='black' fluid icon onClick={this.addActivity}>
+                                            <Button size='tiny' color='blue' fluid icon onClick={this.addActivity}>
                                                 <Icon name='plus' />
                                             </Button>
                                         </Grid.Column>
@@ -498,13 +511,6 @@ class Activities extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
-                            <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
-                            </div>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row columns={3}>

@@ -391,15 +391,6 @@ class PersonalTable extends React.Component<IProps, IState> {
             verticalAlign: 'middle'
         };
 
-        const totalMacros = this.props.personal.carbPercent + this.props.personal.proteinPercent + this.props.personal.fatPercent;
-        var divStatusLabelStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColor(totalMacros)
-        };
-
         return (
             <Grid centered>
                 <Grid.Row columns={2} stretched>
@@ -506,9 +497,6 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <a>{this.state.fatPercent}%</a>
                     </Grid.Column>
                 </Grid.Row>
-                <div style={divStatusLabelStyle}>
-                    <a>Total Macros Calculation: {totalMacros} %</a>
-                </div>
             </Grid>);
     }
 }

@@ -274,7 +274,7 @@ class Personal extends React.Component<LoginProps, IState> {
             macrosPlans: [],
             updated: false,
             apiUpdate: false,
-            savingStatus:'No Status'
+            savingStatus:'Info Updated'
         };
     }
 
@@ -305,17 +305,37 @@ class Personal extends React.Component<LoginProps, IState> {
     }
 
     getColour = () => {
-        if (this.state.savingStatus === 'Saved' || this.state.savingStatus === 'No Status') {
+        if (this.state.savingStatus === 'Saved' || this.state.savingStatus === 'Info Updated') {
             return 'green';
         }
 
         return 'red';
     }
 
+    getMacroPercentColor = (percent: number) => {
+        if (percent < 100.00) {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
     render() {
         var divLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
+        };
+
+        const totalMacros = this.state.personal.carbPercent + this.state.personal.proteinPercent + this.state.personal.fatPercent;
+        var divStatusLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getMacroPercentColor(totalMacros)
         };
 
         const activeItem = this.state.activeItem;
@@ -328,12 +348,15 @@ class Personal extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Personal Tracker</Label>
+                            <Label size='large' as='a' color='pink' basic circular>Personalized Macro Tracker</Label>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Segment textAlign='center'>
+                            <div style={divLabelStyle}>
+                                <a>{this.state.savingStatus}</a>
+                            </div>
+                            <Segment textAlign='center' attached='bottom'>
                                 <PersonalHeader guides={this.state.macroGuides} personal={this.state.personal} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
@@ -351,12 +374,8 @@ class Personal extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 {this.getComponent()}
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
-                            <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
+                            <div style={divStatusLabelStyle}>
+                                <a>Total Macros Calculation: {totalMacros} %</a>
                             </div>
                         </Grid.Column>
                     </Grid.Row>

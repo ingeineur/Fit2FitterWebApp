@@ -111,7 +111,7 @@ class ActivityWorkoutTable extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
                         <Checkbox className={(index + 2).toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
-                    <Grid.Column className={'col_desc'} key={index + 1} width={8}>
+                    <Grid.Column className={'col_desc'} key={index + 1} width={6}>
                         <Input className={(index + 2).toString()} key={index + 1} list='activities' onChange={this.handleActivityChange} value={item.activityDesc} placeholder='Choose Workout...' />
                         <datalist className={'datalist_desc'} key={index + 2} id='activities'>
                             <option key={index + 2} value='Jogging'>Jogging</option>
@@ -129,10 +129,10 @@ class ActivityWorkoutTable extends React.Component<IProps, IState> {
                             <option key={index + 14} value='Weekly Challenge'>Weekly Challenge</option>
                         </datalist>
                     </Grid.Column>
-                    <Grid.Column className={'col_calories'} key={index + 2} width={3}>
+                    <Grid.Column className={'col_calories'} key={index + 2} width={4}>
                         <Input className={(index + 2).toString()} key={index + 2} as='a' size='mini' onChange={this.handleCaloriesChange} value={item.calories} placeholder='Calories' />
                     </Grid.Column>
-                    <Grid.Column className={'col_maxhr'} key={index + 4} as='a' width={3}>
+                    <Grid.Column className={'col_maxhr'} key={index + 4} as='a' width={4}>
                         <Input className={((index + 2)).toString()} key={index + 4} size='mini' onChange={this.handleMaxHrChange} value={item.maxHr} placeholder='MaxHr' />
                     </Grid.Column>
                 </Grid.Row>
@@ -156,13 +156,13 @@ class ActivityWorkoutTable extends React.Component<IProps, IState> {
                 <Grid.Row columns={4} textAlign='center'>
                     <Grid.Column width={2}>
                     </Grid.Column>
-                    <Grid.Column width={8} textAlign='left'>
+                    <Grid.Column width={6} textAlign='left'>
                         <div><a>Workout Description</a></div>
                     </Grid.Column>
-                    <Grid.Column width={3} textAlign='left'>
-                        <div><a>Cals</a></div>
+                    <Grid.Column width={4} textAlign='left'>
+                        <div><a>Calories</a></div>
                     </Grid.Column>
-                    <Grid.Column width={3} textAlign='left'>
+                    <Grid.Column width={4} textAlign='left'>
                         <div><a>Max HR</a></div>
                     </Grid.Column>
                 </Grid.Row>

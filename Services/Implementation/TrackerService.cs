@@ -383,6 +383,55 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, string keyword)
+        {
+            try
+            {
+                var macrosGuides = await this.trackerRepository.FindMacroGuides(clientId, keyword).ConfigureAwait(false);
+
+                if (macrosGuides == null)
+                {
+                    return new List<MacrosGuideDto>();
+                }
+
+                var results = macrosGuides.Select(Value => new { Value, Index = Value.Food.IndexOf(keyword, StringComparison.InvariantCultureIgnoreCase) })
+                       .Where(pair => pair.Index >= 0)
+                       .OrderBy(pair => pair.Index)
+                       .Select(pair => pair.Value);
+
+                List<MacrosGuideDto> temp = new List<MacrosGuideDto>();
+                int i = 0;
+                foreach (var guide in results)
+                {
+                    temp.Add(new MacrosGuideDto
+                    {
+                        Id = guide.Id,
+                        Photo = guide.Photo,
+                        Food = guide.Food,
+                        MealType = guide.MealType,
+                        Carb = guide.Carb,
+                        Protein = guide.Protein,
+                        Fat = guide.Fat,
+                        FV = guide.FV,
+                        Updated = guide.Updated,
+                        Created = guide.Created,
+                        ClientId = guide.ClientId
+                    });
+
+                    if (i++ > 20)
+                    {
+                        break;
+                    }
+                }
+
+                return temp;
+            }
+            catch (Exception ex)
+            {
+                return new List<MacrosGuideDto>();
+            }
+        }
+
         private double GetNutrientValue(IEnumerable<FoodNutrient> nutrients)
         {
             if (nutrients == null)

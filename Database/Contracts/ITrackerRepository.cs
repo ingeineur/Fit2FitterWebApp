@@ -124,6 +124,14 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime date);
 
         /// <summary>
+        /// Find meals by keyword
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="keyword"></param>
+        /// <returns></returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, string keyword);
+
+        /// <summary>
         /// Find food by keyword
         /// </summary>
         /// <param name="keyword"></param>

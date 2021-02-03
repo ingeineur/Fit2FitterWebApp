@@ -468,6 +468,9 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
     render() {
         var divLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
         };
@@ -487,7 +490,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             }
 
             if (this.state.apiUpdate === true) {
-                this.setState({ apiUpdate: false, updated: !this.state.updated });
+                this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
                 this.setMacroGuides();
                 this.setMeals();
             }
@@ -505,6 +508,9 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         </Grid.Row>
                         <Grid.Row>
                             <Grid.Column>
+                                <div style={divLabelStyle}>
+                                <a>{this.state.savingStatus}</a>
+                            </div>
                                 <Segment textAlign='center' attached='bottom'>
                                     <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                                 </Segment>
@@ -540,13 +546,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                         <MacroGuideTable update={this.state.updated} client={this.state.clientDtos[0]} meals={this.state.meals[this.getMealType(activeItem)]} updateMeals={this.updateMeals} mealType={this.getMealType(this.state.activeItem)} />
                                     </Grid.Column>
                                 </Segment>
-                            </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row>
-                            <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
-                                <div style={divLabelStyle}>
-                                    <a>{this.state.savingStatus}</a>
-                                </div>
                             </Grid.Column>
                         </Grid.Row>
                         <Grid.Row columns={3}>

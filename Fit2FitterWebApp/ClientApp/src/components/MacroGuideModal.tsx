@@ -1,11 +1,22 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider } from 'semantic-ui-react'
+import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider, Segment, Label } from 'semantic-ui-react'
 import { isNullOrUndefined } from 'util';
 
 interface IProps {
+    client: IClientDto;
     update: boolean;
     addMeal: Function;
+}
+
+interface IClientDto {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
 }
 
 interface IMealDetails {
@@ -22,6 +33,11 @@ interface IMealDetails {
 
 interface IFoodLegacyDto {
     fdcId: string,
+    description: string
+}
+
+interface IMealDesc {
+    id: string,
     description: string
 }
 
@@ -58,7 +74,25 @@ interface IState {
     usdaQuantity: number,
     selectedFdcId: string,
     usdaUpdated: boolean,
-    imageUploadStatus: string
+    imageUploadStatus: string,
+    searchFoodResults: IMealDto[],
+    dropDownString: IMealDesc[],
+    searchFoodText: string,
+    selectedFoodValue: string,
+}
+
+interface IMealDto {
+    id: number;
+    mealType: string;
+    food: string;
+    carb: number;
+    protein: number;
+    fat: number;
+    fv: number;
+    photo: string;
+    updated: string;
+    created: string;
+    clientId: number;
 }
 
 class MacroGuideModal extends React.Component<IProps, IState> {
@@ -70,7 +104,8 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, photo:'' },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
-            searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus:'No Image'
+            searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus: 'No Image', searchFoodResults: [],
+            searchFoodText: '', selectedFoodValue: '', dropDownString:[]
         };
     }
 
@@ -79,14 +114,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
 
     updateFood = (event: any) => {
         this.state.meal.food = event.target.value;
-        this.setState({ meal: this.state.meal, status: 'Pending to add' });
+        this.setState({ meal: this.state.meal, status: 'Pending add to the list' });
     }
 
     updateCarb = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.carb = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending add to the list' });
         }
     }
 
@@ -94,7 +129,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.protein = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending add to the list' });
         }
     }
 
@@ -102,7 +137,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.fat = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending add to the list' });
         }
     }
 
@@ -110,7 +145,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.state.meal.fv = event.target.value;
-            this.setState({ meal: this.state.meal, updated: true, status: 'Pending to add' });
+            this.setState({ meal: this.state.meal, updated: true, status: 'Pending add to the list' });
         }
     }
 
@@ -167,7 +202,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
 
         if (this.state.status.includes('Updating')) {
-            return 'black';
+            return 'red';
         }
 
         return 'green';
@@ -198,7 +233,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     handleSelectResult = (e: any, data: any) => {
-        this.setState({ status: 'Updating Data From Search.......' });
+        this.setState({ status: 'Updating Data From USDA.......' });
         var sel = data['result'];
         if (!isNullOrUndefined(sel)) {
             this.setState({ selectedValue: sel['description'] });
@@ -209,6 +244,44 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 .then(data => this.setState({
                     foodPortionDtos: data, apiUpdated: true, portions: [], usdaQuantity: 1.0, selectedFdcId: fdcId
                 })).catch(error => console.log(error))
+        }
+    }
+
+    handleFoodSearchChange = (e: any, data: any) => {
+        this.setState({ loading: true });
+        fetch('api/tracker/' + this.props.client.id + '/macrosguide/search?keyword=' + data['value'])
+            .then(response => response.json() as Promise<IMealDto[]>)
+            .then(data => {
+                let results: IMealDesc[] = [];
+                data.forEach(x => results.push({ id: x.id.toString(), description: x.food }));
+                this.setState({
+                    searchFoodResults: data, loading: false, dropDownString: results
+                })
+            }).catch(error => console.log(error));
+
+        this.setState({ searchFoodText: data['value'] });
+    }
+
+    handleFoodSelectResult = (e: any, data: any) => {
+        this.setState({ status: 'Updating Data .......' });
+        var sel = data['result'];
+        if (!isNullOrUndefined(sel)) {
+            this.setState({ selectedFoodValue: sel['description'] });
+            var id = sel['id'];
+            var meal = this.state.searchFoodResults.find(x => x.id === parseInt(id));
+            if (meal != null) {
+                var imageUploadStatus = '';
+                console.log(meal);
+                if (meal.photo !== '') {
+                    imageUploadStatus = 'Uploaded';
+                }
+                this.setState({
+                    meal: {
+                        id: 0, food: meal.food, carb: meal.carb, protein: meal.protein,
+                        fat: meal.fat, fv: meal.fv, check: false, remove: false, photo: meal.photo
+                    }, updated: true, imageUploadStatus: imageUploadStatus, status: 'Pending add to the list'
+                });
+            }
         }
     }
 
@@ -237,7 +310,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.fv = this.state.usdaQuantity;
         }
 
-        this.setState({ meal: this.state.meal, status: 'Pending to add', updated: true });
+        this.setState({ meal: this.state.meal, status: 'Pending add to the list', updated: true });
     }
 
     handleImageChange = (event: any) => {
@@ -321,11 +394,12 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
 
         return (<div>
-            <Message color='blue' attached='top'>
+            <Segment attached='top'>
+                <Label color='blue' ribbon>Search Option 1</Label>
+                <span>USDA Food Database</span>
                 <Grid centered>
                     <Grid.Row stretched textAlign='left'>
                         <Grid.Column textAlign='center' width={16}>
-                            <h3>Food Search</h3>
                             <Search
                                 fluid
                                 size='small'
@@ -364,24 +438,41 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
-            </Message>
+            </Segment>
+            <Segment attached='top'>
+                <Label color='red' ribbon>Search Option 2</Label>
+                <span>Previous Meals Entries</span>
+                <Grid centered>
+                    <Grid.Row stretched textAlign='left'>
+                        <Grid.Column textAlign='center' width={16}>
+                            <div style={divLabelStyle3}>
+                                <a style={divLabelStyle3}>Copy your own meals entered since last 5 days</a>
+                            </div>
+                            <Search
+                                fluid
+                                size='small'
+                                loading={this.state.loading}
+                                onSearchChange={this.handleFoodSearchChange}
+                                onResultSelect={this.handleFoodSelectResult}
+                                results={this.state.dropDownString}
+                                value={this.state.searchFoodText}
+                            />
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+            </Segment>
             <div style={divLabelStyle}>
                 <a>{this.state.status}</a>
             </div>
-            <Divider horizontal>
-                <Header as='h4'>
-                    <Icon name='food' />
-                    Meal
-                </Header>
-            </Divider>
-            <Message attached='bottom'>
+            <Segment attached='top'>
+                <Label color='orange' ribbon>Meal Entry</Label>
                 <Grid centered>
                     <Grid.Row stretched>
                         <Grid.Column as='a' width={6} textAlign='left'>
                             <h5>Foods or Drinks</h5>
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
+                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
                         </Grid.Column>
                         <Grid.Column as='a' width={6} textAlign='left'>
                             <h5>Carb (g)</h5>
@@ -440,7 +531,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         {this.getItems()}
                     </List>
                 </div>
-            </Message>
+            </Segment>
         </div>);
     }
 }

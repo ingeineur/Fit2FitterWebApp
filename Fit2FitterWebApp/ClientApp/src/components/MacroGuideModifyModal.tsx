@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header } from 'semantic-ui-react'
+import { Button, Grid, Segment } from 'semantic-ui-react'
 import ChartistGraph from 'react-chartist';
 import MacroTable from './MacroTable'
 import { isNullOrUndefined } from 'util';
@@ -28,7 +28,8 @@ interface IState {
     prevMeal: IMealDetails;
     dirty: boolean;
     updated: boolean;
-    status: string
+    status: string;
+    imageUploadStatus: string;
 }
 
 class MacroGuideModifyModal extends React.Component<IProps, IState> {
@@ -39,7 +40,7 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
             dirty: false,
             meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo: '', check: false, remove: false },
             prevMeal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo: '', check: false, remove: false },
-            updated: false, status:''
+            updated: false, status: '', imageUploadStatus: 'No Image'
         };
     }
 
@@ -49,6 +50,9 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
 
             var mealSource = meals[0];
             this.setState({ meal: { id: mealSource.id, food: mealSource.food, carb: mealSource.carb, protein: mealSource.protein, fat: mealSource.fat, fv: mealSource.fv, photo: mealSource.photo, check: mealSource.check, remove: mealSource.remove } });
+            if (mealSource.photo != '') {
+                this.setState({ imageUploadStatus: 'Uploaded' });
+            }
         }
     }
 
@@ -97,6 +101,7 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         const formData = new FormData()
         formData.append('Filename', event.target.files[0]['name'])
         formData.append('FormFile', event.target.files[0])
+        this.setState({ imageUploadStatus: 'Uploading..' });
 
         fetch('api/Utilities/image/meal/upload',
             {
@@ -107,11 +112,23 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
             .then(uploadedFilename => {
                 console.log(uploadedFilename)
                 this.state.meal.photo = uploadedFilename;
-                this.setState({ meal: this.state.meal, updated: true, status: 'Require Update' });
+                this.setState({ meal: this.state.meal, updated: true, status: 'Require Update', imageUploadStatus: 'Uploaded' });
             })
             .catch(error => {
                 console.error(error)
             })
+    }
+
+    getUploadImageColour = () => {
+        if (this.state.imageUploadStatus.includes('Uploading')) {
+            return 'orange';
+        }
+
+        if (this.state.imageUploadStatus.includes('No Image')) {
+            return 'black';
+        }
+
+        return 'green';
     }
 
     update = () => {
@@ -140,6 +157,13 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         return 'red';
     }
 
+    getPhoto = () => {
+        if (this.state.meal.photo != '') {
+            return (<Segment size='tiny' attached='top' textAlign='center'><img src={'/images/meals/' + this.state.meal.photo} width='300' height='200' /></Segment>);
+        }
+        return;
+    }
+
     render() {
         var divLabelStyle = {
             color: '#fffafa',
@@ -149,6 +173,14 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         var divLabelStyle1 = {
             color: '#fffafa',
             backgroundColor: 'Black'
+        };
+
+        var divUploadImageStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getUploadImageColour()
         };
 
         if (this.state.dirty !== this.props.update) {
@@ -172,69 +204,72 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         }
 
         return (<div>
-            <Grid centered>
-                <Grid.Row stretched>
-                    <Grid.Column as='a' width={4} textAlign='left'>
-                        <h5>Food</h5>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={4} textAlign='left'>
-                        <h5>Carb (g)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={4} textAlign='left'>
-                        <h5>Protein (g)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={4} textAlign='left'>
-                        <h5>Fat (g)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={4} textAlign='left'>
-                        <h5>Fruit/Veg (serv)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Image</h5>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <div>
-                            <a>{this.state.meal.photo}</a>
-                            <input
-                                type='file'
-                                accept="image/*"
-                                onChange={this.handleImageChange}
-                            />
-                        </div>
-                    </Grid.Column>
-                </Grid.Row>
-                <Grid.Row>
-                    <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
-                        <div style={divLabelStyle}>
-                            <a>{this.state.status}</a>
-                        </div>
-                    </Grid.Column>
-                </Grid.Row>
-                <Grid.Row columns={3}>
-                    <Grid.Column width={8} textAlign='left' floated='left'>
-                        <div>
-                            <Button floated='left' size='tiny' onClick={this.update} primary>Update</Button>
-                        </div>
-                    </Grid.Column>
-                    <Grid.Column verticalAlign='middle' width={8} textAlign='left' floated='left'>
-                    </Grid.Column>
-                </Grid.Row>
-            </Grid>
+            {this.getPhoto()}
+            <Segment attached='bottom'>
+                <Grid centered>
+                    <Grid.Row stretched>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Food</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Carb (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Protein (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Fat (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Fruit/Veg (serv)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Image</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <div>
+                                <div style={divUploadImageStyle}>
+                                    <a>{this.state.imageUploadStatus}</a>
+                                </div>
+                                <input
+                                    type='file'
+                                    accept="image/*"
+                                    onChange={this.handleImageChange}
+                                />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
+                            <div style={divLabelStyle}>
+                                <a>{this.state.status}</a>
+                            </div>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row columns={3}>
+                        <Grid.Column width={8} textAlign='left' floated='left'>
+                            <div>
+                                <Button floated='left' size='tiny' onClick={this.update} primary>Update</Button>
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column verticalAlign='middle' width={8} textAlign='left' floated='left'>
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+            </Segment>
         </div>);
     }
 }

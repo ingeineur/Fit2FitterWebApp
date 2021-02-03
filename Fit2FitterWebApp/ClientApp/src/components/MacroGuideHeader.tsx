@@ -151,8 +151,8 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
                         <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
                     </Grid.Column>
                     <Grid.Column color={this.getColour2(totalVeg / this.props.guides.fruits)} textAlign='center'>
-                        <div><a>Serv</a></div>
-                        <div style={divLabelStyle5}><a>{totalRemVeg}</a></div>
+                        <div><a>FV(Serv)</a></div>
+                        <div style={divLabelStyle5}><a>{totalVeg}</a></div>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

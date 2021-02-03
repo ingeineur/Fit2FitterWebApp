@@ -327,7 +327,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.state.measurements.thigh = measurement.thigh;
             this.state.measurements.weight = measurement.weight;
             this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated });
+            this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
         }
         else {
             this.state.measurements.neck = 0;
@@ -338,7 +338,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.state.measurements.thigh = 0;
             this.state.measurements.weight = 0;
             this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated });
+            this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
         }
 
         this.setGraphValues();
@@ -477,6 +477,9 @@ class Measurements extends React.Component<LoginProps, IState> {
         var type2 = 'Line'
 
         var divLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
         };
@@ -517,7 +520,10 @@ class Measurements extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Segment textAlign='center'>
+                            <div style={divLabelStyle}>
+                                <a>{this.state.savingStatus}</a>
+                            </div>
+                            <Segment textAlign='center' attached='bottom'>
                                 <MeasurementsHeader targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
@@ -535,13 +541,6 @@ class Measurements extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 {this.getComponent()}
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column verticalAlign='middle' width={16} textAlign='center' floated='left'>
-                            <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
-                            </div>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row columns={4}>

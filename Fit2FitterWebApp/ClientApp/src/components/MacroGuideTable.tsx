@@ -2,9 +2,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Label, Icon, Segment, Checkbox, Modal, Radio } from 'semantic-ui-react'
+import { Button, Popup, Form, Input, Grid, Label, Icon, Segment, Checkbox, Modal, Radio } from 'semantic-ui-react'
 import MacroGuideModal from './MacroGuideModal'
 import MacroGuideModifyModal from './MacroGuideModifyModal'
+import { isNullOrUndefined } from 'util';
 
 interface IProps {
     meals: IMealDetails[] 
@@ -52,6 +53,20 @@ interface IState {
 interface IUpdateMeal {
     meal: IMealDetails;
     index: number;
+}
+
+interface IMealDto {
+    id: number;
+    mealType: string;
+    food: string;
+    carb: number;
+    protein: number;
+    fat: number;
+    fv: number;
+    photo: string;
+    updated: string;
+    created: string;
+    clientId: number;
 }
 
 class MacroGuideTable extends React.Component<IProps, IState> {
@@ -106,11 +121,11 @@ class MacroGuideTable extends React.Component<IProps, IState> {
     }
 
     getPhotoIndicator = (photo: string, index: number) => {
-        if (photo === '') {
-            return;
+        if (isNullOrUndefined(photo) || photo === '') {
+            return(<div/>);
         }
-        return (<Label size='tiny' key={index} as='a' corner='right'>
-            <Icon key={index} color='blue' size='tiny' name='camera' />
+        return (<Label size='tiny' key={this.props.mealType + index + 100} as='a' corner='right'>
+            <Icon key={this.props.mealType + index + 100} color='blue' size='tiny' name='camera' />
         </Label>);
     }
 
@@ -118,25 +133,25 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         var arr = this.state.meals.filter(x => x.remove !== true);
         return (
             arr.map((item, index) =>
-                <Grid.Row className={'row'} key={index} columns={3} stretched>
+                <Grid.Row className={'row'} key={this.props.mealType + index} columns={3} stretched>
                     {this.getPhotoIndicator(item.photo, index)}
-                    <Grid.Column className={'col_checkbox'} key={index} width={2} verticalAlign='middle' textAlign='center'>
+                    <Grid.Column className={'col_checkbox'} key={this.props.mealType + index} width={2} verticalAlign='middle' textAlign='center'>
                         <Radio className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
-                    <Grid.Column className={'col_food'} key={index + 1} width={6}>
-                        <a key={index + 1}>{item.food}</a>
+                    <Grid.Column className={'col_food'} key={this.props.mealType + index + 1} width={6}>
+                        <a key={this.props.mealType + index + 1}>{item.food}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
+                    <Grid.Column className={'col_carb'} key={this.props.mealType + index + 2} width={2}>
+                        <a key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
+                    <Grid.Column className={'col_protein'} key={this.props.mealType + index + 3} width={2}>
+                        <a key={this.props.mealType + index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
+                    <Grid.Column className={'col_fat'} key={this.props.mealType + index + 4} width={2}>
+                        <a key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_fv'} key={index + 5} width={2}>
-                        <a key={index + 5}>{item.fv}</a>
+                    <Grid.Column className={'col_fv'} key={this.props.mealType + index + 5} width={2}>
+                        <a key={this.props.mealType + index + 5}>{item.fv}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -194,6 +209,38 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         this.setState({ updateMeal: open });
     }
 
+    getMealType = (type: string) => {
+        if (type == 'Lunch') {
+            return 1;
+        }
+        if (type == 'Dinner') {
+            return 2;
+        }
+        if (type == 'Snack') {
+            return 3;
+        }
+
+        return 0;
+    }
+
+    autoPopulateFromYesterday = () => {
+        var date = new Date();
+        date.setDate(date.getDate() - 1);
+        date.setHours(0, 0, 0, 0);
+
+        //get all meals
+        fetch('api/tracker/' + this.props.client.id + '/macrosguide?date=' + date.toISOString())
+            .then(response => response.json() as Promise<IMealDto[]>)
+            .then(data => {
+                data.forEach(meal => {
+                    if (this.getMealType(meal.mealType) === this.props.mealType) {
+                        this.state.meals.push({ id: 0, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+                    }
+                    this.setState({ meals: this.state.meals, updated: true });
+                });
+            }).catch(error => console.log(error));
+    }
+
     render() {
 
         if (this.state.mealType !== this.props.mealType)
@@ -221,6 +268,11 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <Grid centered>
                             <Grid.Row columns={4}>
                                 <Grid.Column floated='left'>
+                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' color='orange' fluid icon onClick={this.autoPopulateFromYesterday}>
+                                        Auto
+                                    </Button>} />
+                                </Grid.Column>
+                                <Grid.Column floated='left'>
                                     <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
                                         <Icon name='minus' />
                                     </Button>
@@ -236,7 +288,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         <Modal.Header>Add Your Meal</Modal.Header>
                                         <Modal.Content scrolling>
                                             <Modal.Description>
-                                                <MacroGuideModal addMeal={this.addMeal} update={this.state.updated} />
+                                                <MacroGuideModal client={this.props.client} addMeal={this.addMeal} update={this.state.updated} />
                                             </Modal.Description>
                                         </Modal.Content>
                                         <Modal.Actions>
@@ -249,15 +301,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         </Modal.Actions>
                                     </Modal>
                                 </Grid.Column>
-                                <Grid.Column>
-                                </Grid.Column>
                                 <Grid.Column floated='right'>
                                     <Modal
                                         open={this.state.updateMeal}
                                         onClose={() => this.handleUpdateOpen(false)}
                                         onOpen={() => this.handleUpdateOpen(true)}
                                         trigger={<Button size='tiny' color='black' fluid icon>
-                                            Update
+                                            Modify
                                         </Button>}>
                                         <Modal.Header>Update Your Meal</Modal.Header>
                                         <Modal.Content scrolling>

@@ -72,30 +72,21 @@ class PersonalHeader extends React.Component<IProps, IState> {
     render() {
 
         var divLabelStyle1 = {
-            color: '#fffafa',
-            backgroundColor: 'Green'
+            color: 'black'
         };
 
         var divLabelStyle2 = {
-            color: '#0a0212',
-            backgroundColor: 'Yellow'
+            color: 'black'
         };
 
         var divLabelStyle3 = {
-            color: '#fffafa',
-            backgroundColor:'Red'
+            color: 'black'
         };
 
         var divLabelStyle4 = {
-            color: '#fffafa',
-            fontSize: '20px'
+            color: 'black',
+            fontSize: '15px'
         };
-
-        //if (this.state.updated !== this.props.update)
-        //{
-            //console.log('updating total values');
-            //this.setState({ updated: this.props.update });
-        //}
 
         const bmr = (10 * this.props.personal.weight) + (6.25 * this.props.personal.height) - (5 * this.props.personal.age) - 161;
         const totalCalories = this.getActivityLevel() * bmr;
@@ -106,23 +97,16 @@ class PersonalHeader extends React.Component<IProps, IState> {
 
         return (
             <Grid centered>
-                <Grid.Row divided color='pink' textAlign='center'>
-                    <Grid.Column color='pink' textAlign='center'>
-                        <div style={divLabelStyle4}>
-                            <a>Macros Calculation</a>
-                        </div>
-                    </Grid.Column>
-                </Grid.Row>
-                <Grid.Row columns={3} textAlign='center'>
-                    <Grid.Column color='black' textAlign='center'>
+                <Grid.Row divided columns={3} textAlign='center'>
+                    <Grid.Column color='yellow' textAlign='center'>
                         <div><a>Carb(g)</a></div>
                         <div style={divLabelStyle1}><a>{carb}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color='yellow' textAlign='center'>
                         <div><a>Protein(g)</a></div>
                         <div style={divLabelStyle2}><a>{protein}</a></div>
                     </Grid.Column>
-                    <Grid.Column color='black' textAlign='center'>
+                    <Grid.Column color='yellow' textAlign='center'>
                         <div><a>Fat(g)</a></div>
                         <div style={divLabelStyle3}><a>{fat}</a></div>
                     </Grid.Column>

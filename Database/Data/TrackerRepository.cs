@@ -136,12 +136,19 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, string keyword)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.MacrosGuides.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(x.Created, DateTime.Today) <= 6 && x.Food.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async System.Threading.Tasks.Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword)
         {
-            string[] notRelevantCategories = {"3", "21", "10", "25", "23", "24", "19", "18"};
+            //string[] notRelevantCategories = {"3", "21", "10", "25", "23", "24", "19", "18"};
 
             return await this.databaseContext.FoodLegacy.Where(x =>
-                x.Description.Contains(keyword) && !notRelevantCategories.Contains(x.Category)).ToArrayAsync().ConfigureAwait(false);
+                x.Description.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId)
