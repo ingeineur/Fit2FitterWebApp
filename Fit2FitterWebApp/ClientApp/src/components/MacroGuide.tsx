@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Menu, Label, Modal, Icon } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -466,6 +466,12 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         this.setState({ savingStatus: 'Saved' });
     }
 
+    showProgressBar = () => {
+        if (this.state.savingStatus == 'Saving in progress') {
+            return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'} />);
+        }
+    }
+
     render() {
         var divLabelStyle = {
             display: 'flex',
@@ -578,6 +584,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
+                    {this.showProgressBar()}
                 </div>);
         }
         return (<Redirect to="/" />);

@@ -34,6 +34,8 @@ namespace Fit2Fitter.Services.Contracts
         Task<IEnumerable<LoginDto>> GetLogin(string username, string password);
 
         Task<IEnumerable<LoginDto>> GetLogin(int clientId);
+        
+        Task<bool> ResetLogin(string username);
 
         Task<IEnumerable<MacrosPlanDto>> GetMacrosPlan(int clientId);
 

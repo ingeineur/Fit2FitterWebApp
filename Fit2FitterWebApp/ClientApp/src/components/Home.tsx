@@ -2,9 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu, Dropdown } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
+import { IVersion, UpdateVersionText, DivRequireUpdateLabelStyle, CurrentVersion } from '../models/version';
+import { requireVersionUpdate } from '../services/utilities'
+import AdminResetPwd from './AdminResetPwd'
 
 interface IProps {
 }
@@ -28,7 +31,11 @@ interface IState {
     clients: IClient[];
     toClientId: number;
     checkClients: boolean;
-    loginDtos: LoginDto[] 
+    loginDtos: LoginDto[];
+    versionDto: IVersion;
+    version: IVersion;
+    apiVersionUpdate: boolean;
+    openResetPwd: boolean;
 }
 
 interface LoginDto {
@@ -96,6 +103,12 @@ class Home extends React.Component<LoginProps, IState > {
     }
 
     public componentDidMount() {
+        fetch('api/Utilities/app/version')
+            .then(response => response.json() as Promise<IVersion>)
+            .then(data => this.setState({
+                versionDto: data, apiVersionUpdate: true
+            })).catch(error => console.log(error));
+
         this.props.getLogin();
 
         if (this.props.logins.length > 0) {
@@ -122,6 +135,14 @@ class Home extends React.Component<LoginProps, IState > {
         }
     }
 
+    public displayUpdate = () => {
+        if (requireVersionUpdate(this.state.version)) {
+            return (<div style={DivRequireUpdateLabelStyle}>
+                <a>{UpdateVersionText}</a>
+            </div>)
+        }
+    }
+
     onSubmit = () => {
         this.setState({ username: '', password:'' });
     }
@@ -140,7 +161,10 @@ class Home extends React.Component<LoginProps, IState > {
             username: '', password: '', activeItem: '', error: '', login: '',
             messageDtos: [], checkMail: false, unReadMessage: 0, unReadMessageMeals:0, apiUpdate: false,
             clientDtos: [], clientList: [], clients: [], toClientId: 2, checkClients: false,
-            loginDtos: [], messageMealsDtos: [], messageMeasurementsDtos: [], unReadMessageMeasurements: 0
+            loginDtos: [], messageMealsDtos: [], messageMeasurementsDtos: [], unReadMessageMeasurements: 0,
+            version: { major: 0, minor: 0, build: 0 },
+            versionDto: { major: 0, minor: 0, build: 0 },
+            apiVersionUpdate: false, openResetPwd: false
         };
     }
 
@@ -233,6 +257,10 @@ class Home extends React.Component<LoginProps, IState > {
             .then(data => this.setState({ loginDtos: data, username: data[0].username, password: data[0].password })).catch(error => console.log(error));
     }
 
+    handleOpen = (open: boolean) => {
+        this.setState({ openResetPwd: open });
+    }
+
     render() {
         var divStyle = {
             fontSize: '15px'
@@ -241,7 +269,11 @@ class Home extends React.Component<LoginProps, IState > {
             color: 'pink',
             fontStyle: 'italic'
         };
-        
+
+        if (this.state.apiVersionUpdate === true) {
+            this.setState({ version: this.state.versionDto, apiVersionUpdate: false });
+        }
+
         if (this.state.login==='logging' && !this.props.isLoading && this.props.logins.length < 1) {
             if (this.state.error !== 'Please Check Username or Password') {
                 this.setState({ error: 'Please Check Username or Password' });
@@ -272,8 +304,8 @@ class Home extends React.Component<LoginProps, IState > {
             }
 
             if (this.state.apiUpdate === true) {
-                var miscMsg = this.state.messageDtos.filter(x => x.mealsRef === '0');
-                this.setState({ unReadMessage: miscMsg.length, apiUpdate: false });
+
+                this.setState({ unReadMessage: this.state.messageDtos.length, apiUpdate: false });
 
                 var unreadMsg = this.state.messageMealsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
                 this.setState({ unReadMessageMeals: unreadMsg.length });
@@ -355,6 +387,7 @@ class Home extends React.Component<LoginProps, IState > {
             //if (true) {
             return (
                 <div>
+                    {this.displayUpdate()}
                     <Grid centered>
                         <Grid.Row columns={2}>
                             <Grid.Column width={8}>
@@ -495,10 +528,30 @@ class Home extends React.Component<LoginProps, IState > {
                     </Form.Field>
                     <div>
                         <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
+                        <Modal
+                            open={this.state.openResetPwd}
+                            onClose={() => this.handleOpen(false)}
+                            onOpen={() => this.handleOpen(true)}
+                            trigger={<Button color='red' type='submit'>Reset</Button>}>
+                            <Modal.Header> <div style={divLabelStyle2}>
+                                <h1>Reset Password</h1>
+                            </div></Modal.Header>
+                            <Modal.Content scrolling>
+                                <Modal.Description>
+                                    <AdminResetPwd username={this.state.username} />
+                                </Modal.Description>
+                            </Modal.Content>
+                            <Modal.Actions>
+                                <Button onClick={() => this.handleOpen(false)} primary>
+                                    Close <Icon name='chevron right' />
+                                </Button>
+                            </Modal.Actions>
+                        </Modal>
                         <a>{this.state.error}</a>
                     </div>
                 </Form>
-                <footer> <small>&copy; Copyright 2020, Fit2Fitter by Ida</small> </footer> 
+                {this.displayUpdate()}
+                <footer> <small>&copy; Copyright 2021, Fit2Fitter by Ida v.{CurrentVersion.major}.{CurrentVersion.minor}.{CurrentVersion.build}</small> </footer> 
             </div>
             );
     }

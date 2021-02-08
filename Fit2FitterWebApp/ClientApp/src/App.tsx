@@ -18,6 +18,7 @@ import Personal from './components/Personal';
 import EBook from './components/EBook';
 import PhotoCapture from './components/PhotoCapture';
 import Admin from './components/Admin';
+import AdminResetPwd from './components/AdminResetPwd';
 import Master from './components/Master';
 import Messages from './components/Messages';
 import MessagesMeals from './components/MessagesMeals';
@@ -43,6 +44,7 @@ export default () => (
         <Route path='/personal' component={Personal} />
         <Route path='/ebook' component={EBook} />
         <Route path='/admin' component={Admin} />
+        <Route path='/adminresetpwd' component={AdminResetPwd} />
         <Route path='/master' component={Master} />
         <Route path='/messages' component={Messages} />
         <Route path='/messagesmeals' component={MessagesMeals} />

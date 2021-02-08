@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Input, Icon, Dropdown, Modal } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Input, Icon, Progress, Modal } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -10,7 +10,6 @@ import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MeasurementsTable from './MeasurementsTable'
 import MeasurementsHeader from './MeasurementsHeader';
 import MeasurementsReviewModal from './MeasurementsReviewModal'
-import ChartistGraph from 'react-chartist';
 
 interface IProps {
 }
@@ -461,6 +460,12 @@ class Measurements extends React.Component<LoginProps, IState> {
         this.setState({ openReview: open });
     }
 
+    showProgressBar = () => {
+        if (this.state.savingStatus == 'Saving in progress') {
+            return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'} />);
+        }
+    }
+
     render() {
         var data = {
             labels: this.state.weightLabel,
@@ -573,6 +578,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
+                {this.showProgressBar()}
             </div>);
         }
         return (<Redirect to="/" />);

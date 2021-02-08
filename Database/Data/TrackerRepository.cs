@@ -74,11 +74,11 @@ namespace Fit2Fitter.Database.Data
             if(sent == true)
             {
                 return await this.databaseContext.Comments.Where(x =>
-                x.FromId == clientId && x.MealsRef == mealsRef).ToArrayAsync().ConfigureAwait(false);
+                x.FromId == clientId && x.MealsRef == 0 && x.MeasurementRef == 0 && x.ActivitiesRef == 0).ToArrayAsync().ConfigureAwait(false);
             }
 
             return await this.databaseContext.Comments.Where(x =>
-                x.ClientId == clientId && x.MealsRef == mealsRef).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && x.MealsRef == 0 && x.MeasurementRef == 0 && x.ActivitiesRef == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId)
@@ -119,7 +119,7 @@ namespace Fit2Fitter.Database.Data
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Comments.Where(x =>
-                x.ClientId == clientId && x.ReadStatus == readStatus).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && x.ReadStatus == readStatus && x.MealsRef == 0 && x.MeasurementRef == 0 && x.ActivitiesRef == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, DateTime date)

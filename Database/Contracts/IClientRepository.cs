@@ -71,6 +71,14 @@ namespace Fit2Fitter.Database.Contracts
         Task AddLogin(Login login);
 
         /// <summary>
+        /// Reset password
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="defaultPassword"></param>
+        /// <returns></returns>
+        Task ResetLogin(string username, string defaultPassword);
+
+        /// <summary>
         /// Delete a client.
         /// </summary>
         /// <param name="clientId"></param>

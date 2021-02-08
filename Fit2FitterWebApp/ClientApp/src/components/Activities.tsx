@@ -2,14 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Menu, Label, Input, Icon } from 'semantic-ui-react'
+import { Button, Segment, Grid, Progress, Label, Input, Icon } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import ActivityWorkoutTable from './ActivityWorkoutTable'
 import ActivityHeader from './ActivityHeader'
-import { isNull, isNullOrUndefined } from 'util';
 
 interface IProps {
 }
@@ -154,7 +153,7 @@ class Activities extends React.Component<LoginProps, IState> {
             username: '', password: '',
             selectedDate: new Date(),
             prevDate: new Date(),
-            guides: { calories: 150, steps: 10000 },
+            guides: { calories: 300, steps: 10000 },
             totalActivities: { calories: 0, steps: 0 },
             activities: [],
             removedActivities: [],
@@ -228,7 +227,6 @@ class Activities extends React.Component<LoginProps, IState> {
             return;
         }
 
-        this.setState({ savingStatus: 'Deleting in progress' })
         var fetchStr = 'api/tracker/' + this.props.logins[0].clientId + '/activity/delete';
         fetch(fetchStr, {
             method: 'DELETE',
@@ -246,7 +244,6 @@ class Activities extends React.Component<LoginProps, IState> {
             return;
         }
 
-        this.setState({ savingStatus: 'Saving in progress' })
         var fetchStr = 'api/tracker/activity?date=' + this.state.selectedDate.toISOString();
 
         console.log(this.state.activities);
@@ -279,6 +276,8 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     onSave = () => {
+        this.setState({ savingStatus: 'Saving in progress' })
+
         // delete rows
         this.deleteActivitiesByIds();
 
@@ -386,6 +385,12 @@ class Activities extends React.Component<LoginProps, IState> {
         }
         else {
             this.setState({ status: 'No max heartrate detected!!' });
+        }
+    }
+
+    showProgressBar = () => {
+        if (this.state.savingStatus == 'Saving in progress') {
+            return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'}/>);
         }
     }
 
@@ -517,13 +522,12 @@ class Activities extends React.Component<LoginProps, IState> {
                         <Grid.Column width={4} textAlign='left' floated='left'>
                             <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                         </Grid.Column>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
+                        <Grid.Column width={12} textAlign='left' verticalAlign='bottom' floated='left'>
                             <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' width={8} textAlign='left' floated='left'>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
+                {this.showProgressBar()}
             </div>);
         }
         return (<Redirect to="/" />);

@@ -7,6 +7,8 @@ using Fit2Fitter.Database.Contracts;
 using Fit2Fitter.Database.Models;
 using Fit2Fitter.Dto;
 using Fit2Fitter.Services.Contracts;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace Fit2Fitter.Services.Implementation
 {
@@ -105,6 +107,50 @@ namespace Fit2Fitter.Services.Implementation
                     LastLogin = DateTime.Now,
                     ClientId = login.ClientId
                 }).ConfigureAwait(false);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public string CreatePassword(int length)
+        {
+            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(valid[rnd.Next(valid.Length)]);
+            }
+            return res.ToString();
+        }
+
+        public async Task<bool> ResetLogin(string username)
+        {
+            try
+            {
+                var password = CreatePassword(6);
+                await this.clientRepository.ResetLogin(username, password).ConfigureAwait(false);
+
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress("postmaster@idafit2fitter.com"));
+                mimeMessage.To.Add(new MailboxAddress(username));
+                mimeMessage.Subject = "Fit2Fitter Web App Password Reset";
+                mimeMessage.Body = new TextPart(MimeKit.Text.TextFormat.Text)
+                { Text = "Your temporary password is: " + password };
+
+                using (SmtpClient smtpClient = new SmtpClient())
+                {
+                    await smtpClient.ConnectAsync("mail.idafit2fitter.com",
+                    8889, false);
+                    await smtpClient.AuthenticateAsync("postmaster@idafit2fitter.com",
+                    "B3@tl3s15011981");
+                    await smtpClient.SendAsync(mimeMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
 
                 return true;
             }

@@ -22,6 +22,19 @@ namespace Fit2FitterWebApp.Controllers
         {   
         }
 
+        [HttpGet("app/version")]
+        public ActionResult GetFrontendVersion()
+        {
+            try
+            {
+                return this.Ok(new FrontendVersion());
+            }
+            catch (Exception ex)
+            {
+                return this.Ok(false);
+            }
+        }
+
         [HttpPost("image/ftp/upload")]
         public async Task<IActionResult> FtpUploadImage([FromBody, Required] byte[] imageData)
         {

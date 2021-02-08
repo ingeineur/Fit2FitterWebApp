@@ -114,6 +114,16 @@ namespace Fit2Fitter.Database.Data
             }
         }
 
+        public async Task ResetLogin(string username, string defaultPassword)
+        {
+            var result = await this.databaseContext.Logins.Where(x => x.Username == username).SingleOrDefaultAsync().ConfigureAwait(false);
+            if (result != null)
+            {
+                result.Password = defaultPassword;
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
         public async Task DeleteClient(int clientId)
         {
             var client = await this.FindClientById(clientId).ConfigureAwait(false);

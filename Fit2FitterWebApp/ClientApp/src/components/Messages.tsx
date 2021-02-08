@@ -301,6 +301,14 @@ class Messages extends React.Component<LoginProps, IState> {
         this.updateMessageRead(this.state.messages[parseInt(value['className'])].id, value['checked']);
     }
 
+    getColor = (read: boolean) => {
+        if (read) {
+            return 'grey';
+        }
+
+        return 'teal';
+    }
+
     getMessagesNew = () => {
         if (this.state.clients.length < 1) {
             return;
@@ -315,7 +323,7 @@ class Messages extends React.Component<LoginProps, IState> {
         return (
             this.state.messages.map((item, index) =>
                 <div key={index}>
-                    <Message key={index} color='grey'>
+                    <Message key={index} color={this.getColor(item.readStatus)}>
                         <Message.Header key={index}>
                             <div style={divHeaderStyle}>
                                 Received: {new Date(item.created).toLocaleDateString()}
@@ -359,7 +367,7 @@ class Messages extends React.Component<LoginProps, IState> {
         return (
             this.state.sentMessages.map((item, index) =>
                 <div key={index}>
-                    <Message key={index} color='grey'>
+                    <Message key={index} color={this.getColor(item.readStatus)}>
                         <Message.Header key={index}>
                             <div style={divHeaderStyle}>
                                 Received: {new Date(item.created).toLocaleDateString()}
@@ -494,29 +502,43 @@ class Messages extends React.Component<LoginProps, IState> {
 
     getReplyOption = () => {
         if (this.props.logins[0].clientId == 2) {
-            return (<Form reply>
-                <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
-                <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
-                <div>
-                    <a>{this.state.numChar} characters (max: 255)</a>
-                </div>
-                <div>
-                    <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
-                    <a>{this.state.status}</a>
-                </div>
-            </Form>);
+            return (
+            <Segment>
+                <Header as='h3'>
+                    <Icon name='comment' />
+                    <Header.Content>Comments</Header.Content>
+                </Header>
+                    <Form reply>
+                        <a>Select Recipient:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
+                        <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
+                        <div>
+                            <a>{this.state.numChar} characters (max: 255)</a>
+                        </div>
+                        <div>
+                            <Button content='Add Your Comment' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                            <a>{this.state.status}</a>
+                        </div>
+                    </Form>
+            </Segment>);
         }
 
-        return (<Form reply>
-            <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
-            <div>
-                <a>{this.state.numChar} characters (max: 255)</a>
-            </div>
-            <div>
-                <Button content='Drop Your Comment to Ida' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
-                <a>{this.state.status}</a>
-            </div>
-        </Form>);
+        return (
+            <Segment>
+                <Header as='h3'>
+                    <Icon name='comment' />
+                    <Header.Content>Comments</Header.Content>
+                </Header>
+                <Form reply>
+                    <Form.TextArea value={this.state.typedMessage} onChange={this.updateMessage} />
+                    <div>
+                        <a>{this.state.numChar} characters (max: 255)</a>
+                    </div>
+                    <div>
+                        <Button content='Drop Your Comment to Ida' labelPosition='left' icon='edit' primary onClick={this.AddComment} />
+                        <a>{this.state.status}</a>
+                    </div>
+                </Form>
+            </Segment>);
     }
 
     render() {
@@ -536,16 +558,15 @@ class Messages extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
+                    <Grid.Row >
                         <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
                             <Label size='large' as='a' color='pink' basic circular>Messages</Label>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={2} textAlign='left'>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
+                    <Grid.Row textAlign='left'>
+                        <Grid.Column textAlign='left' floated='left'>
                             {this.getReplyOption()}
                         </Grid.Column>
-                        <Grid.Column/>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>

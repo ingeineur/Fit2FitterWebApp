@@ -1,7 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect, Link } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
 import { Button, Segment, Grid, Form, Comment, Dropdown } from 'semantic-ui-react'
 
 interface IProps {
@@ -129,30 +127,6 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
             numChar: 0,
             status: 'Ready'
         };
-    }
-
-    getActivityLevel = (activityLevel: string) => {
-        if (activityLevel == 'Sedentary') {
-            return 1.2;
-        }
-
-        if (activityLevel == 'Lightly Active') {
-            return 1.375;
-        }
-
-        if (activityLevel == 'Moderately Active') {
-            return 1.55;
-        }
-
-        if (activityLevel == 'Very Active') {
-            return 1.725;
-        }
-
-        if (activityLevel == 'Extra Active') {
-            return 1.9;
-        }
-
-        return 0;
     }
 
     updateMessage = (event: any) => {

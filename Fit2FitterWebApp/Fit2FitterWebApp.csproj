@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
+    <None Remove="ClientApp\src\models\version.ts" />
+    <None Remove="ClientApp\src\services\utilities.tsx" />
     <None Remove="ClientApp\src\store\Client.ts" />
     <None Remove="ClientApp\src\store\MacroPlan.ts" />
   </ItemGroup>
@@ -33,6 +35,11 @@
     <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\Dto\Dto.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\models\version.ts" />
+    <TypeScriptCompile Include="ClientApp\src\services\utilities.tsx" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

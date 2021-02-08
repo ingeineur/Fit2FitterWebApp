@@ -42,5 +42,12 @@ namespace Fit2FitterWebApp.Controllers
             var result = await this.clientService.AddLogin(login).ConfigureAwait(false);
             return this.Ok(result);
         }
+
+        [HttpPost("reset")]
+        public async Task<IActionResult> Post([FromQuery, Required] string username)
+        {
+            var result = await this.clientService.ResetLogin(username).ConfigureAwait(false);
+            return this.Ok(result);
+        }
     }
 }
