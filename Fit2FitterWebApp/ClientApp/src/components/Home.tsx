@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { IVersion, UpdateVersionText, DivRequireUpdateLabelStyle, CurrentVersion } from '../models/version';
@@ -200,8 +200,11 @@ class Home extends React.Component<LoginProps, IState > {
                 <Menu.Item
                     name='Meals Logger (Admin)'
                     onClick={this.handleItemClick}>
-                    <Icon color='violet' name='clipboard outline' />
-                    Meals Logger ({this.state.unReadMessageMeals})
+                    <Icon name='clipboard outline' color='red' />
+                    Meals Logs
+                    <Label color='red' floating>
+                        {this.state.unReadMessageMeals}
+                    </Label>
                     </Menu.Item>);
         }
 
@@ -209,8 +212,11 @@ class Home extends React.Component<LoginProps, IState > {
             <Menu.Item
                 name='Meals Logger'
                 onClick={this.handleItemClick}>
-                <Icon color='violet' name='clipboard outline' />
-                Meals Logger ({this.state.unReadMessageMeals})
+                <Icon name='clipboard outline' color='red' />
+                Meals Logs
+                <Label color='red' floating>
+                    {this.state.unReadMessageMeals}
+                </Label>
                 </Menu.Item>
         );
     }
@@ -221,8 +227,11 @@ class Home extends React.Component<LoginProps, IState > {
                 <Menu.Item
                     name='Measurements Logger Admin'
                     onClick={this.handleItemClick}>
-                    <Icon color='brown' name='clipboard outline' />
-                    Measurements Logger ({this.state.unReadMessageMeasurements})
+                    <Icon name='clipboard outline' color='blue' />
+                    Measurements Logs
+                    <Label color='red' floating>
+                        {this.state.unReadMessageMeasurements}
+                    </Label>
                     </Menu.Item>);
         }
 
@@ -230,8 +239,11 @@ class Home extends React.Component<LoginProps, IState > {
             <Menu.Item
                 name='Measurements Logger'
                 onClick={this.handleItemClick}>
-                <Icon color='brown' name='clipboard outline' />
-                Measurements Logger ({this.state.unReadMessageMeasurements})
+                <Icon name='clipboard outline' color='blue'/>
+                Measurements Logs
+                <Label color='red' floating>
+                    {this.state.unReadMessageMeasurements}
+                </Label>
                 </Menu.Item>
         );
     }
@@ -239,12 +251,17 @@ class Home extends React.Component<LoginProps, IState > {
     getMealsReviewByDate = () => {
         if (this.props.logins[0].username === 'admin') {
             return (
-                <Menu.Item
-                    name='Meals Logger by Date (Admin)'
-                    onClick={this.handleItemClick}>
-                    <Icon color='violet' name='clipboard outline' />
-                    Logged Meals by Date ({this.state.unReadMessageMeals})
-                    </Menu.Item>);
+                <Menu fluid vertical icon='labeled'>
+                    <Menu.Item
+                        name='Meals Logger by Date (Admin)'
+                        onClick={this.handleItemClick}>
+                        <Icon name='clipboard outline' color='red' />
+                        Logged Meals by Date
+                        <Label color='red' floating>
+                            {this.state.unReadMessageMeals}
+                        </Label>
+                    </Menu.Item>
+                </Menu>);
         }
     }
 
@@ -393,82 +410,102 @@ class Home extends React.Component<LoginProps, IState > {
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
                                     <Menu.Item
-                                        name='Messages'
-                                        onClick={this.handleItemClick}>
-                                        <Icon color='blue' name='mail' />
-                                        Messages ({this.state.unReadMessage})
-                                    </Menu.Item>
-                                    <Menu.Item
                                         name='New Meal'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='red' name='food' />
+                                        <Icon name='food' color='red' />
                                         Meals Tracker
                                     </Menu.Item>
+                                </Menu>
+                                <Menu fluid vertical icon='labeled'>
+                                    <Menu.Item
+                                        name='Body'
+                                        onClick={this.handleItemClick}>
+                                        <Icon name='calculator' color='blue' />
+                                        Measurement Tracker
+                                    </Menu.Item>
+                                </Menu>
+                                <Menu fluid vertical icon='labeled' >
                                     <Menu.Item
                                         name='Activity'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='orange' name='child' />
+                                        <Icon name='child' color='orange' />
                                         Activities Tracker
                                     </Menu.Item>
+                                </Menu>
+                                <Menu fluid vertical icon='labeled'>
                                     <Menu.Item
                                         name='Dashboard'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='pink' name='chart bar' />
+                                        <Icon name='chart bar' color='pink'  />
                                         Leaderboards
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>
+                                    {this.getMealsReview()}
+                                </Menu>
+                                {this.getMealsReviewByDate()}
+                                <Menu fluid vertical icon='labeled'>
+                                    {this.getMeasurementsReview()}
+                                </Menu>
+                                <Menu fluid vertical icon='labeled'>
                                     <Menu.Item
-                                        name='Macro'
+                                        name='Messages'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='olive' name='balance scale' />
-                                        Macro Calculation
+                                        <Icon name='mail' color='blue' />
+                                        Messages
+                                        <Label color='red' floating>
+                                            {this.state.unReadMessage}
+                                        </Label>
                                     </Menu.Item>
-                                    <Menu.Item
-                                        name='Body'
-                                        onClick={this.handleItemClick}>
-                                        <Icon color='blue' name='calculator' />
-                                        Body Assessments
-                                    </Menu.Item>
+                                </Menu>
+
+                                <Menu fluid vertical icon='labeled'>
                                     <Menu.Item
                                         name='EBook'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='purple' name='book' />
+                                        <Icon name='book' color='purple' />
                                         E-Books
-                                    </Menu.Item>
-                                    <Menu.Item
-                                        name='Admin'
-                                        onClick={this.handleItemClick}>
-                                        <Icon color='red' name='user' />
-                                        Admin
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
                         </Grid.Row>
                         <Grid.Row>
                             <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
+                                <Menu fluid vertical icon='labeled' color='green' inverted>
                                     <Menu.Item
                                         name='Nutrients Lookup'
                                         onClick={this.handleItemClick}>
-                                        <Icon color='green' name='search' />
+                                        <Icon name='search' />
                                         Nutrients Lookup
                                     </Menu.Item>
+                                </Menu>
+                                <Menu fluid vertical icon='labeled' color='black' inverted>
                                     <Menu.Item
                                         name='Logout'
                                         onClick={this.clearCredentials}>
-                                        <Icon color='black' name='power off' />
+                                        <Icon name='power off' />
                                         Logout
                                     </Menu.Item>
                                 </Menu>
                             </Grid.Column>
                             <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
-                                    {this.getMealsReview()}
-                                    {this.getMealsReviewByDate()}
-                                    {this.getMeasurementsReview()}
+                                <Menu fluid vertical icon='labeled' color='olive' inverted>
+                                    <Menu.Item
+                                        name='Macro'
+                                        onClick={this.handleItemClick}>
+                                        <Icon name='balance scale' />
+                                        Macro Calculation
+                                    </Menu.Item>
+                                </Menu>
+                                <Menu fluid vertical icon='labeled' color='red' inverted>
+                                    <Menu.Item
+                                        name='Admin'
+                                        onClick={this.handleItemClick}>
+                                        <Icon name='user outline' />
+                                        Admin
+                                    </Menu.Item>
                                 </Menu>
                             </Grid.Column>
                         </Grid.Row>

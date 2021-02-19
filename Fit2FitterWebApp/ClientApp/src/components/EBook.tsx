@@ -119,22 +119,32 @@ class EBook extends React.Component<LoginProps, IState> {
                                 </div>
                                 <div>
                                     <Label basic color='green'>
-                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>September Recipes</a>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/IdaFit2FitterSeptemberRecipepack.pdf&amp;embedded=true' target='_blank'>Sep 2020</a>
                                     </Label>
                                 </div>
                                 <div>
                                     <Label basic color='green'>
-                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>October Recipes</a>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/october-2020-recipe-pack1.pdf&amp;embedded=true' target='_blank'>Oct 2020</a>
                                     </Label>
                                 </div>
                                 <div>
                                     <Label basic color='green'>
-                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>November Recipes</a>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/november-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>Nov 2020</a>
                                     </Label>
                                 </div>
                                 <div>
                                     <Label basic color='green'>
-                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/december-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>December Recipes</a>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/december-2020-recipe-pack.pdf&amp;embedded=true' target='_blank'>Dec 2020</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/january-2021-recipe-pack.pdf&amp;embedded=true' target='_blank'>Jan 2021</a>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label basic color='green'>
+                                        <a href='https://docs.google.com/gview?embedded=true&url=http://idafit2fitter.com/february-2021-recipe-pack.pdf&amp;embedded=true' target='_blank'>Feb 2021</a>
                                     </Label>
                                 </div>
                             </Grid.Column>

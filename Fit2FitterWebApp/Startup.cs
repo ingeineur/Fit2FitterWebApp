@@ -44,20 +44,22 @@ namespace Fit2FitterWebApp
                 options => options.UseSqlServer(this.Configuration.GetConnectionString("DB_Connection_String")), ServiceLifetime.Transient);
 
             this.AddFrameworkServices(services);
-            services.AddCors(options =>
-            {
-                options.AddPolicy("Policy1", builder =>
-                {
-                    builder.WithOrigins("http://localhost:3000")
-                    .WithMethods("POST", "GET", "PUT", "DELETE")
-                    .WithHeaders(HeaderNames.ContentType);
-                });
-            });
+            
+            services.AddCors();
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("Policy1", builder =>
+            //    {
+            //        builder.WithOrigins("https://localhost:3000")
+            //        .WithMethods("POST", "GET", "PUT", "DELETE")
+            //        .WithHeaders(HeaderNames.ContentType);
+            //    });
+            //});
             //services.AddCors(options =>
             //{
             //    options.AddPolicy("Policy2", builder =>
             //    {
-            //        builder.WithOrigins("http://idafit2fitter.com/")
+            //        builder.WithOrigins("https://idafit2fitter.com/")
             //        .WithMethods("POST", "GET", "PUT", "DELETE")
             //        .WithHeaders(HeaderNames.ContentType);
             //    });
@@ -90,8 +92,13 @@ namespace Fit2FitterWebApp
                 app.UseHsts();
             }
 
-            app.UseCors("Policy1");
-            //app.UseCors("Policy2");
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
