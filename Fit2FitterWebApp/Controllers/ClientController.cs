@@ -105,9 +105,9 @@ namespace Fit2FitterWebApp.Controllers
         }
 
         [HttpGet("{clientId}/all/measurements")]
-        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, [FromQuery, Required] string date)
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, [FromQuery, Required] string fromDate, [FromQuery, Required] string date)
         {
-            var data = await this.clientService.GetMeasurements(clientId, DateTime.Parse(date)).ConfigureAwait(false);
+            var data = await this.clientService.GetMeasurements(clientId, DateTime.Parse(fromDate), DateTime.Parse(date)).ConfigureAwait(false);
             return data.ToArray();
         }
 

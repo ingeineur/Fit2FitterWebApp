@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label, Image } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { IVersion, UpdateVersionText, DivRequireUpdateLabelStyle, CurrentVersion } from '../models/version';
@@ -61,6 +61,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IOption {
@@ -278,6 +279,29 @@ class Home extends React.Component<LoginProps, IState > {
         this.setState({ openResetPwd: open });
     }
 
+    getUserInfo = () => {
+        var name = ""
+        if (this.state.clientDtos.length > 0) {
+            var clients = this.state.clientDtos.filter(x => x.id == this.props.logins[0].clientId)
+            var name = clients[0].firstName;
+        }
+
+        var lastSeen = new Date(this.props.logins[0].lastLogin);
+        return name + ', last login: ' + lastSeen.toLocaleDateString();
+    }
+
+    getPhoto = () => {
+        if (this.state.clientDtos.length > 0) {
+            var clients = this.state.clientDtos.filter(x => x.id == this.props.logins[0].clientId)
+            var img = clients[0].avatar;
+            if (img != '') {
+                return '/images/avatars/' + img;
+            }
+        }
+
+        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    }
+
     render() {
         var divStyle = {
             fontSize: '15px'
@@ -406,6 +430,12 @@ class Home extends React.Component<LoginProps, IState > {
                 <div>
                     {this.displayUpdate()}
                     <Grid centered>
+                        <Grid.Row>
+                            <Grid.Column textAlign='right'>
+                                <Image avatar src={this.getPhoto()} />
+                                <a>{this.getUserInfo()}</a>
+                            </Grid.Column>
+                        </Grid.Row>
                         <Grid.Row columns={2}>
                             <Grid.Column width={8}>
                                 <Menu fluid vertical icon='labeled'>

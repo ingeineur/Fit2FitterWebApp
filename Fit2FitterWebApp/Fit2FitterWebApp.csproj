@@ -25,6 +25,10 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
+    <None Remove="ClientApp\src\models\activities.ts" />
+    <None Remove="ClientApp\src\models\clients.ts" />
+    <None Remove="ClientApp\src\models\macros.ts" />
+    <None Remove="ClientApp\src\models\meals.ts" />
     <None Remove="ClientApp\src\models\version.ts" />
     <None Remove="ClientApp\src\services\utilities.tsx" />
     <None Remove="ClientApp\src\store\Client.ts" />
@@ -38,6 +42,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\models\meals.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\activities.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\clients.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\macros.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\version.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\utilities.tsx" />
   </ItemGroup>

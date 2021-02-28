@@ -27,11 +27,11 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
-        public async System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId, DateTime date)
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Measurement>> FindMeasurements(int clientId, DateTime fromDate, DateTime date)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Measurements.Where(x =>
-                x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
+                x.ClientId == clientId && DbF.DateDiffDay(fromDate, x.Created) >= 0 && DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<Models.Measurement> FindMeasurementClosest(int clientId, DateTime date)

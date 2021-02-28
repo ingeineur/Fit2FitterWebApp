@@ -5,6 +5,9 @@ import { RouteComponentProps } from 'react-router';
 import { Button, Segment, Grid, Form, Comment, Dropdown } from 'semantic-ui-react'
 
 interface IProps {
+    mealRef: number;
+    measurementRef: number;
+    activityRef: number;
     created: string;
     clientId: number;
     toClientId: number;
@@ -18,8 +21,9 @@ interface IState {
     apiUpdate: boolean;
     clients: IClient[];
     clientDtos: IClientDto[];
-    mealsMessageDtos: IMessageDto[];
-    mealsMessages: IMessage[];
+    messageDtos: IMessageDto[];
+    sentMessageDtos: IMessageDto[];
+    messages: IMessage[];
     typedMessage: string;
     clientList: IOption[],
     toClientId: number;
@@ -38,7 +42,6 @@ interface IClient {
     name: string;
     age: number;
     city: string;
-    avatar: string;
 }
 
 interface IClientDto {
@@ -49,7 +52,6 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
-    avatar: string;
 }
 
 interface IMessage {
@@ -78,7 +80,7 @@ interface IMessageDto {
     clientId: number;
 }
 
-class MeasurementsChat extends React.Component<IProps, IState> {
+class MessagesChatStyle extends React.Component<IProps, IState> {
     public componentDidMount() {
         if (this.props.clientId === 2) {
             this.setState({ toClientId: this.props.toClientId });
@@ -91,11 +93,7 @@ class MeasurementsChat extends React.Component<IProps, IState> {
                     clientDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/tracker/' + this.props.clientId + '/comments/measurements?dateString=' + this.props.created)
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    mealsMessageDtos: data, apiUpdate: true
-                })).catch(error => console.log(error));
+            this.getAllMessages();
         }
     }
 
@@ -109,7 +107,7 @@ class MeasurementsChat extends React.Component<IProps, IState> {
         }
 
         this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, avatar: client.avatar, name: client.firstName, age: client.age, city: client.city });
+            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
         });
 
         this.setState({ clients: this.state.clients });
@@ -126,35 +124,12 @@ class MeasurementsChat extends React.Component<IProps, IState> {
             typedMessage: '',
             clientList: [],
             toClientId: 2,
-            mealsMessageDtos: [],
-            mealsMessages: [],
+            messageDtos: [],
+            sentMessageDtos: [],
+            messages: [],
             numChar: 0,
             status: 'Ready'
         };
-    }
-
-    getActivityLevel = (activityLevel: string) => {
-        if (activityLevel == 'Sedentary') {
-            return 1.2;
-        }
-
-        if (activityLevel == 'Lightly Active') {
-            return 1.375;
-        }
-
-        if (activityLevel == 'Moderately Active') {
-            return 1.55;
-        }
-
-        if (activityLevel == 'Very Active') {
-            return 1.725;
-        }
-
-        if (activityLevel == 'Extra Active') {
-            return 1.9;
-        }
-
-        return 0;
     }
 
     updateMessage = (event: any) => {
@@ -170,55 +145,77 @@ class MeasurementsChat extends React.Component<IProps, IState> {
     }
 
     setMessages = () => {
-        if (this.state.mealsMessageDtos.length > 0) {
+        if (this.state.messageDtos.length > 0) {
             if (this.props.clientId === 2) {
-                var arr = this.state.mealsMessageDtos.filter(x => x.fromId === parseInt(this.props.toClientId.toString()) ||
+                var arr = this.state.messageDtos.filter(x => x.fromId === parseInt(this.props.toClientId.toString()) ||
                     x.clientId === parseInt(this.props.toClientId.toString()));
                 console.log(this.props.toClientId);
                 console.log(arr);
-                if (this.state.mealsMessages.length !== arr.length) {
+                if (this.state.messages.length !== arr.length) {
                     arr.forEach(msg => {
-                        this.state.mealsMessages.push({
+                        this.state.messages.push({
                             id: msg.id, measurementRef: msg.measurementRef, mealsRef: msg.mealsRef,
                             activitiesRef: msg.activitiesRef, message: msg.message, fromId: msg.fromId,
                             clientId: msg.clientId, updated: msg.updated, created: msg.updated, readStatus: msg.readStatus
                         });
                     })
 
-                    this.setState({ mealsMessages: this.state.mealsMessages });
+                    this.setState({ messages: this.state.messages });
                 }
             }
             else {
-                if (this.state.mealsMessages.length !== this.state.mealsMessageDtos.length) {
-                    this.state.mealsMessageDtos.forEach(msg => {
-                        this.state.mealsMessages.push({
+                if (this.state.messages.length !== this.state.messageDtos.length) {
+                    this.state.messageDtos.forEach(msg => {
+                        this.state.messages.push({
                             id: msg.id, measurementRef: msg.measurementRef, mealsRef: msg.mealsRef,
                             activitiesRef: msg.activitiesRef, message: msg.message, fromId: msg.fromId,
                             clientId: msg.clientId, updated: msg.updated, created: msg.updated, readStatus: msg.readStatus
                         });
                     })
 
-                    this.setState({ mealsMessages: this.state.mealsMessages });
+                    this.setState({ messages: this.state.messages });
                 }
             }
         }
     }
 
     getAllMessages = () => {
-        fetch('api/tracker/' + this.props.clientId + '/comments/measurements?dateString=' + this.props.created)
-            .then(response => response.json() as Promise<IMessageDto[]>)
-            .then(data => this.setState({
-                mealsMessageDtos: data, apiUpdate: true
-            })).catch(error => console.log(error));
+        if (this.props.measurementRef) {
+            fetch('api/tracker/' + this.props.clientId + '/comments/measurements?dateString=' + this.props.created)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+        }
+        else if (this.props.mealRef) {
+            fetch('api/tracker/' + this.props.clientId + '/comments/measurements?dateString=' + this.props.created)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+        }
+        else {
+            fetch('api/tracker/' + this.props.clientId + '/all/comments?sent=' + false + '&mealsRef=0')
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+
+            fetch('api/tracker/' + this.props.clientId + '/all/comments?sent=' + true + '&mealsRef=0')
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    sentMessageDtos: data, apiUpdate: true
+                })).catch(error => console.log(error));
+        }
     }
 
     resetMessages = () => {
-        while (this.state.mealsMessages.length > 0) {
-            this.state.mealsMessages.pop();
+        while (this.state.messages.length > 0) {
+            this.state.messages.pop();
         }
 
         this.setState({
-            mealsMessages: this.state.mealsMessages
+            messages: this.state.messages
         });
     }
 
@@ -232,9 +229,9 @@ class MeasurementsChat extends React.Component<IProps, IState> {
             },
             body: JSON.stringify({
                 id: 0,
-                measurementRef: 1,
-                mealsRef: 0,
-                activitiesRef: 0,
+                measurementRef: this.props.measurementRef,
+                mealsRef: this.props.mealRef,
+                activitiesRef: this.props.activityRef,
                 readStatus: false,
                 message: this.state.typedMessage,
                 updated: new Date(),
@@ -287,15 +284,7 @@ class MeasurementsChat extends React.Component<IProps, IState> {
             return 'ida_avatar.jpg';
         }
 
-        var client = this.state.clients[this.state.clients.findIndex(x => x.id === id)];
-        if (client !== null) {
-            if (client.avatar != '') {
-                return '/images/avatars/' + client.avatar;
-            }
-            else {
-                return 'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'
-            }
-        }
+        return 'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'
     }
 
     getComments = () => {
@@ -303,9 +292,8 @@ class MeasurementsChat extends React.Component<IProps, IState> {
             return;
         }
 
-        this.state.mealsMessages.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
         return (
-            this.state.mealsMessages.map((item, index) =>
+            this.state.messages.map((item, index) =>
                 <Comment key={index}>
                     <Comment.Avatar src={this.getAvatar(item.fromId)} />
                     <Comment.Content key={index}>
@@ -336,11 +324,6 @@ class MeasurementsChat extends React.Component<IProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row textAlign='left'>
-                        <Grid.Column textAlign='left' floated='left'>
-                            {this.getReplyOption()}
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
@@ -350,9 +333,14 @@ class MeasurementsChat extends React.Component<IProps, IState> {
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
+                    <Grid.Row textAlign='left'>
+                        <Grid.Column textAlign='left' floated='left'>
+                            {this.getReplyOption()}
+                        </Grid.Column>
+                    </Grid.Row>
                 </Grid>
             </div>);
     }
 }
 
-export default connect()(MeasurementsChat);
+export default connect()(MessagesChatStyle);

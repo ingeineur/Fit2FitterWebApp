@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Button, Grid, Segment } from 'semantic-ui-react'
-import ChartistGraph from 'react-chartist';
-import MacroTable from './MacroTable'
 import { isNullOrUndefined } from 'util';
 
 interface IProps {

@@ -6,66 +6,15 @@ import MacroGuideHeader from './MacroGuideHeader';
 import MessagesMealsChat from './MessagesMealsChat';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
+import ActivityHeader from './ActivityHeader'
+import { IMacroGuides, IMealDto, IMeals, IMealDetails, IMacrosPlanDto } from '../models/meals'
+import { IActivityGuides, IActivity, IActivityDto } from '../models/activities'
 
 interface IProps {
     update: boolean;
     clientId: number;
     senderId: number;
     mealDate: string;
-}
-
-interface IMacroGuides {
-    carb: number;
-    protein: number;
-    fat: number;
-    fruits: number;
-}
-
-interface IMealDto {
-    id: number;
-    mealType: string;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    updated: string;
-    created: string;
-    clientId: number;
-}
-
-interface IMeals {
-    0: IMealDetails[];
-    1: IMealDetails[];
-    2: IMealDetails[];
-    3: IMealDetails[];
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    check: boolean;
-    remove: boolean;
-}
-
-interface IMacrosPlanDto {
-    id: number,
-    height: number,
-    weight: number,
-    macroType: string;
-    activityLevel: string;
-    carbPercent: number,
-    proteinPercent: number,
-    fatPercent: number,
-    updated: string;
-    created: string;
-    clientId: number;
 }
 
 interface IClientDto {
@@ -93,6 +42,11 @@ interface IState {
     lunchImages: GalleryImage[];
     dinnerImages: GalleryImage[];
     snackImages: GalleryImage[];
+    activityGuides: IActivityGuides;
+    activities: IActivity[];
+    activityDtos: IActivityDto[];
+    steps: number;
+    sleeps: number;
 }
 
 interface GalleryImage {
@@ -100,6 +54,14 @@ interface GalleryImage {
     thumbnail: string,
     sizes: string
 }
+
+var divLabelStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'black',
+    backgroundColor: '#feb8c6'
+};
 
 class MacroGuideReviewModal extends React.Component<IProps, IState> {
 
@@ -116,7 +78,12 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             macrosPlanDtos: [],
             clientDtos: [],
             guides: { carb: 0, protein: 0, fat: 0, fruits: 0 },
-            breakfastImages: [], lunchImages: [], dinnerImages: [], snackImages: []
+            breakfastImages: [], lunchImages: [], dinnerImages: [], snackImages: [],
+            activityGuides: { calories: 300, steps: 10000 },
+            activities: [],
+            activityDtos: [],
+            sleeps: 0,
+            steps: 0,
         };
     }
 
@@ -145,6 +112,54 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             .then(data => this.setState({
                 mealDtos: data, apiUpdate: true, updated: !this.state.updated
             })).catch(error => console.log(error));
+
+        //get all activities
+        fetch('api/tracker/' + this.props.clientId + '/activity?date=' + this.props.mealDate)
+            .then(response => response.json() as Promise<IActivityDto[]>)
+            .then(data => this.setState({
+                activityDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+    }
+
+    setActivities = () => {
+        if (this.state.activityDtos.length > 0) {
+
+            if ((this.state.activities.filter(x => x.id > 0)).length === this.state.activityDtos.length) {
+                return;
+            }
+
+            var activities: IActivity[] = [];
+            var steps: number = 0;
+            var sleeps: number = 0.0;
+
+            var index = this.state.activityDtos.findIndex(x => x.description === 'steps')
+            if (index >= 0) {
+                var stepsActivity = this.state.activityDtos[index];
+                steps = stepsActivity.steps;
+                activities.push({ id: stepsActivity.id, activityDesc: stepsActivity.description, calories: stepsActivity.calories, steps: stepsActivity.steps, maxHr: stepsActivity.maxHr, duration: stepsActivity.duration, check: false });
+            }
+
+            index = this.state.activityDtos.findIndex(x => x.description === 'sleeps')
+            if (index >= 0) {
+                var sleepsActivity = this.state.activityDtos[index];
+                sleeps = sleepsActivity.duration;
+                activities.push({ id: sleepsActivity.id, activityDesc: sleepsActivity.description, calories: sleepsActivity.calories, steps: sleepsActivity.steps, maxHr: sleepsActivity.maxHr, duration: sleepsActivity.duration, check: false });
+            }
+
+            this.state.activityDtos.forEach(activity => {
+                if (activity.description !== 'sleeps' && activity.description !== 'steps') {
+                    activities.push({ id: activity.id, activityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, duration: activity.duration, check: false });
+                }
+            })
+
+            this.setState({ activities: activities, steps: steps, sleeps: sleeps });
+        }
+        else {
+            var activities: IActivity[] = [];
+            activities.push({ id: 0, activityDesc: 'steps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
+            activities.push({ id: 0, activityDesc: 'sleeps', calories: 0, steps: 0, maxHr: 0, duration: 0.0, check: false });
+            this.setState({ steps: 0, sleeps: 0.0, activities: activities });
+        }
     }
 
     getActivityLevel = (activityLevel: string) => {
@@ -460,6 +475,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             this.setMealGalleryImages(1);
             this.setMealGalleryImages(2);
             this.setMealGalleryImages(3);
+            this.setActivities();
             this.setState({ updated: !this.state.updated });
         }
 
@@ -587,33 +603,50 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             seriesBarDistance: 10
         };
 
+        var age = 0;
+        if (this.state.clientDtos.length > 0) {
+            age = this.state.clientDtos[0].age;
+        }
+
         return (<div>
             <Grid centered>
                 <Grid.Row>
                     <Grid.Column>
+                        <div style={divLabelStyle}>
+                            <a>Macros Balance Summary</a>
+                        </div>
                         <Segment textAlign='center' attached='bottom'>
                             <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
+                        </Segment>
+                        <div style={divLabelStyle}>
+                            <a>Activities Summary</a>
+                        </div>
+                        <Segment attached='bottom' textAlign='center'>
+                            <ActivityHeader age={age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.activityGuides} update={this.state.updated} />
                         </Segment>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <div>
-                            <a>Total Macros Consumptions</a>
-                            <ChartistGraph data={data} options={lineChartOptions} type={type} />
-                            <div style={divLabelStyle3}><a>Total Macros: [Carbs: {totalC.toFixed(2)}g] [Protein: {totalP.toFixed(2)}g] [Fat: {totalF.toFixed(2)}g]</a></div>
+                        <div style={divLabelStyle}>
+                            <a>Total Macros Consumptions (unit gram)</a>
                         </div>
+                        <Segment attached='bottom' textAlign='center'>
+                            <ChartistGraph data={data} options={lineChartOptions} type={type} />
+                        </Segment>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <div>
-                            <a>Breakdown (%) of Macros Consumptions</a>
+                        <div style={divLabelStyle}>
+                            <a>Breakdown of Macros Consumptions (%)</a>
                         </div>
-                        <div>
-                            <ChartistGraph data={data2} options={options} type='Bar' />
-                            <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
-                        </div>
+                        <Segment attached='bottom' textAlign='center'>
+                            <div>
+                                <ChartistGraph data={data2} options={options} type='Bar' />
+                                <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
+                            </div>
+                        </Segment>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>

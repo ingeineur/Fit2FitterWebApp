@@ -4,9 +4,9 @@
     build: number;
 }
 
-export const CurrentVersion: IVersion = { major: 1, minor: 0, build: 2 };
+export const CurrentVersion: IVersion = { major: 1, minor: 0, build: 3 };
 
-export const UpdateVersionText: string = 'App Requires Update: Please Reload The Web Page';
+export const UpdateVersionText: string = 'New Version Detected: Please Re-Open App in a New Web Browser';
 
 export const DivRequireUpdateLabelStyle = {
     display: 'flex',

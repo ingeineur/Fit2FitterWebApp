@@ -2,13 +2,14 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Progress, Label, Input, Icon } from 'semantic-ui-react'
+import { Button, Segment, Grid, Progress, Label, Input, Icon, Image } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import ActivityWorkoutTable from './ActivityWorkoutTable'
-import ActivityHeader from './ActivityHeader'
+import ActivityWorkoutTable from './ActivityWorkoutTable';
+import ActivityHeader from './ActivityHeader';
+import { IActivityGuides, ITotalDailyActivity, IActivity, IActivityDto } from '../models/activities'
 
 interface IProps {
 }
@@ -38,39 +39,6 @@ interface IState {
     savingDone: boolean;
 }
 
-interface IActivityGuides {
-    calories: number;
-    steps: number;
-}
-
-interface ITotalDailyActivity {
-    calories: number;
-    steps: number;
-}
-
-interface IActivity {
-    id: number,
-    calories: number;
-    steps: number;
-    maxHr: number;
-    activityDesc: string;
-    duration: number;
-    check: boolean;
-}
-
-interface IActivityDto {
-    id: number,
-    calories: number;
-    steps: number;
-    maxHr: number;
-    duration: number;
-    description: string;
-    check: boolean;
-    updated: string;
-    created: string;
-    clientId: number;
-}
-
 interface IClient {
     id: number,
     lastName: string;
@@ -79,6 +47,7 @@ interface IClient {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 // At runtime, Redux will merge together...
@@ -322,6 +291,14 @@ class Activities extends React.Component<LoginProps, IState> {
         return 'green';
     }
 
+    getSaveIcon = () => {
+        if (this.state.savingStatus === 'Not Saved') {
+            return 'edit outline';
+        }
+
+        return 'save';
+    }
+
     getStepsStatus = (steps: number) => {
         var status = 'Keep Moving';
         if (steps >= this.state.guides.steps) {
@@ -394,6 +371,85 @@ class Activities extends React.Component<LoginProps, IState> {
         }
     }
 
+    getUserInfo = () => {
+        var name = ""
+        if (this.state.clients.length > 0) {
+            var name = this.state.clients[0].firstName;
+        }
+
+        var lastSeen = new Date(this.props.logins[0].lastLogin);
+        return name + ', last login: ' + lastSeen.toLocaleDateString();
+    }
+
+    getPhoto = () => {
+        if (this.state.clients.length > 0) {
+            var img = this.state.clients[0].avatar;
+            if (img != '') {
+                return '/images/avatars/' + img;
+            }
+        }
+
+        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    }
+
+    handlePrevDate = (e: any) => {
+        var prevDate = new Date(this.state.selectedDate);
+        var date = new Date(this.state.selectedDate);
+        var day = this.state.selectedDate.getDate();
+        var month = this.state.selectedDate.getMonth();
+        var year = this.state.selectedDate.getFullYear();
+
+        date.setDate(day - 1);
+        date.setHours(0, 0, 0, 0);
+
+        //console.log('selected: ' + this.state.selectedDate.toDateString())
+        //console.log('selected: ' + day + ',' + month + ',' + year)
+
+        //console.log('adjusted: ' + date.toDateString())
+        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+
+        if (date.getDate() > day) {
+            date.setMonth(month - 1);
+            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        if (date.getMonth() > month) {
+            date.setFullYear(year - 1);
+            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+    }
+
+    handleNextDate = (e: any) => {
+        var prevDate = new Date(this.state.selectedDate);
+        var date = new Date(this.state.selectedDate);
+        var day = this.state.selectedDate.getDate();
+        var month = this.state.selectedDate.getMonth();
+        var year = this.state.selectedDate.getFullYear();
+
+        date.setDate(day + 1);
+        date.setHours(0, 0, 0, 0);
+
+        //console.log('selected: ' + this.state.selectedDate.toDateString())
+        //console.log('selected: ' + day + ',' + month + ',' + year)
+
+        //console.log('adjusted: ' + date.toDateString())
+        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+
+        if (date.getDate() < day) {
+            date.setMonth(month + 1);
+            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        if (date.getMonth() < month) {
+            date.setFullYear(year + 1);
+            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+    }
+
     render() {
         if (this.props.logins.length > 0) {
             if (this.state.savingDone === true) {
@@ -440,25 +496,42 @@ class Activities extends React.Component<LoginProps, IState> {
                 color: '#fffafa',
                 backgroundColor: this.getColour()
             };
+
+            var divDateStyle = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            };
+
         return (
             <div>
                 <Grid centered>
                     <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
+                        <Grid.Column width={6}>
                             <Label size='large' as='a' color='pink' basic circular>Daily Activities Tracker</Label>
                         </Grid.Column>
-                        <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
-                            <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                        <Grid.Column width={10} textAlign='right'>
+                            <Image avatar src={this.getPhoto()} />
+                            <a>{this.getUserInfo()}</a>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row>
+                        <Grid.Column verticalAlign='middle'>
+                            <Segment color='grey' inverted attached='top'>
+                                <div style={divDateStyle}>
+                                    <Button color='grey' className='prev' onClick={this.handlePrevDate} inverted attached='left' basic icon='chevron left' />
+                                    <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                                    <Button color='grey' className='next' onClick={this.handleNextDate} inverted attached='right' basic icon='chevron right' />
+                                </div>
+                                <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
+                            </Segment>
+                            <Segment textAlign='center' attached='bottom'>
+                                <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
+                            </Segment>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
-                            </div>
-                            <Segment attached='bottom' textAlign='center'>
-                                <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
-                            </Segment>
                             <div style={divStatusLabelStyle}>
                                 <a>{this.state.status}</a>
                             </div>
@@ -518,12 +591,12 @@ class Activities extends React.Component<LoginProps, IState> {
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={3}>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                        </Grid.Column>
-                        <Grid.Column width={12} textAlign='left' verticalAlign='bottom' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                    <Grid.Row>
+                        <Grid.Column textAlign='left' floated='left'>
+                            <Button.Group floated='left' fluid>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
+                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                            </Button.Group>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

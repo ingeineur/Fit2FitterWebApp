@@ -1,27 +1,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Form, Input, Grid, Dropdown } from 'semantic-ui-react';
-import Meals from './Meals';
+import { Segment, Input, Grid, Dropdown } from 'semantic-ui-react';
 import RangeSlider from 'react-bootstrap-range-slider';
+import { IPersonal } from '../models/clients'
 
 interface IProps {
     personal: IPersonal;
     update: boolean;
     type: string;
     updatePersonal: Function
-}
-
-interface IPersonal {
-    name: string;
-    age: number;
-    height: number;
-    weight: number;
-    targetWeight: number;
-    activityLevel: number;
-    macroType: number;
-    carbPercent: number;
-    proteinPercent: number;
-    fatPercent: number;
 }
 
 interface IState {
@@ -39,6 +26,8 @@ interface IState {
     carbPercent: number;
     proteinPercent: number;
     fatPercent: number;
+    imageUploadStatus: string;
+    photo: string;
 }
 
 const activityTypes = [
@@ -94,18 +83,59 @@ class PersonalTable extends React.Component<IProps, IState> {
         this.state = {
             username: '', password: '', updated: false, name: '', age: 0,
             height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 'Sedentary', macroType: 'Lose Weight',
-            carbPercent: 10.0, proteinPercent: 40.0, fatPercent: 30.0, dirty: false
+            carbPercent: 10.0, proteinPercent: 40.0, fatPercent: 30.0, dirty: false, imageUploadStatus: 'No Image',
+            photo: ''
         };
     }
 
     public componentDidMount() {
+        var imageStatus = '';
+        if (this.props.personal.avatar != '') {
+            console.log('saddddddddddddddd');
+            imageStatus = 'Uploaded'
+        }
+
         this.setState({
+            imageUploadStatus: imageStatus,
             name: this.props.personal.name,
             age: this.props.personal.age,
             height: this.props.personal.height,
             activityLevel: this.getActivityLevelText(this.props.personal.activityLevel),
             macroType: this.getMacroTypeText(this.props.personal.macroType)
         });
+    }
+
+    handleImageChange = (event: any) => {
+        const formData = new FormData()
+        formData.append('Filename', event.target.files[0]['name'])
+        formData.append('FormFile', event.target.files[0])
+        this.setState({ imageUploadStatus: 'Uploading..' });
+
+        fetch('api/Utilities/image/avatar/upload',
+            {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(uploadedFilename => {
+                console.log(uploadedFilename)
+                this.setState({ photo: uploadedFilename, updated: true, imageUploadStatus: 'Uploaded' });
+            })
+            .catch(error => {
+                console.error(error)
+            })
+    }
+
+    getUploadImageColour = () => {
+        if (this.state.imageUploadStatus.includes('Uploading')) {
+            return 'orange';
+        }
+
+        if (this.state.imageUploadStatus.includes('No Image')) {
+            return 'black';
+        }
+
+        return 'green';
     }
 
     updateName = (event: any) => {
@@ -355,11 +385,32 @@ class PersonalTable extends React.Component<IProps, IState> {
         return 'green';
     }
 
+    getPhoto = () => {
+        if (this.state.photo != '') {
+            return (<Segment size='tiny' attached='top' textAlign='center'><img src={'/images/avatars/' + this.state.photo} width='200' height='150' /></Segment>);
+        }
+        return;
+    }
+
     render() {
+        var divUploadImageStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getUploadImageColour()
+        };
+
         if (this.props.update !== this.state.dirty)
         {
+            var imageStatus = '';
+            if (this.props.personal.avatar != '') {
+                imageStatus = 'Uploaded'
+            }
             console.log('updating total values');
             this.setState({
+                imageUploadStatus: imageStatus,
+                photo: this.props.personal.avatar,
                 name: this.props.personal.name,
                 age: this.props.personal.age,
                 height: this.props.personal.height,
@@ -377,7 +428,7 @@ class PersonalTable extends React.Component<IProps, IState> {
         if (this.state.updated === true) {
             this.setState({ updated: false });
             this.props.updatePersonal({
-                name: this.state.name, age: this.state.age,
+                avatar: this.state.photo, name: this.state.name, age: this.state.age,
                 height: this.state.height, weight: this.state.weight, targetWeight: this.state.targetWeight,
                 activityLevel: this.getActivityLevel(this.state.activityLevel),
                 macroType: this.getMacroType(this.state.macroType), carbPercent: this.state.carbPercent,
@@ -395,7 +446,29 @@ class PersonalTable extends React.Component<IProps, IState> {
             <Grid centered>
                 <Grid.Row columns={2} stretched>
                     <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
-                        <a>Name:</a>
+                    </Grid.Column>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        {this.getPhoto()}
+                    </Grid.Column>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                        <div>
+                            <a>Photo</a>
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        <div>
+                            <div style={divUploadImageStyle}>
+                                <a>{this.state.imageUploadStatus}</a>
+                            </div>
+                            <input
+                                type='file'
+                                accept="image/*"
+                                onChange={this.handleImageChange}
+                            />
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                        <a>Name</a>
                     </Grid.Column>
                     <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
                         <Input as='a' size='mini' value={this.state.name} placeholder='Name' onChange={this.updateName} />
@@ -437,7 +510,7 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <Dropdown id='plans' value={this.state.macroType} selection options={mealPlan} onChange={this.setMacroType} />
                     </Grid.Column>
                     <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Carb:</a>
+                        <a>Carb</a>
                     </Grid.Column>
                     <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
                         <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['carb']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['carb']['max']}%]</a>
@@ -457,7 +530,7 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <a>{this.state.carbPercent}%</a>
                     </Grid.Column>
                     <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Protein:</a>
+                        <a>Protein</a>
                     </Grid.Column>
                     <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
                         <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['protein']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['protein']['max']}%]</a>
@@ -477,7 +550,7 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <a>{this.state.proteinPercent}%</a>
                     </Grid.Column>
                     <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Fat:</a>
+                        <a>Fat</a>
                     </Grid.Column>
                     <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
                         <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['fat']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['fat']['max']}%]</a>

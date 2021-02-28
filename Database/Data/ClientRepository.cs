@@ -86,6 +86,7 @@ namespace Fit2Fitter.Database.Data
                 result.Age = client.Age;
                 result.Address = client.Address;
                 result.City = client.City;
+                result.Avatar = client.Avatar;
             }
             else
             {

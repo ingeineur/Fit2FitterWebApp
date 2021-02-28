@@ -267,17 +267,12 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                     <Segment attached='top'>
                         <Grid centered>
                             <Grid.Row columns={4}>
-                                <Grid.Column floated='left'>
-                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' color='orange' fluid icon onClick={this.autoPopulateFromYesterday}>
-                                        Auto
-                                    </Button>} />
-                                </Grid.Column>
-                                <Grid.Column floated='left'>
+                                <Grid.Column width={3} floated='left'>
                                     <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
                                         <Icon name='minus' />
                                     </Button>
                                 </Grid.Column>
-                                <Grid.Column floated='right'>
+                                <Grid.Column width={3} floated='left'>
                                     <Modal
                                         open={this.state.openAddMeal}
                                         onClose={() => this.handleOpen(false)}
@@ -301,12 +296,17 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         </Modal.Actions>
                                     </Modal>
                                 </Grid.Column>
-                                <Grid.Column floated='right'>
+                                <Grid.Column width={5} floated='left'>
+                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' basic color='pink' fluid icon onClick={this.autoPopulateFromYesterday}>
+                                        Auto
+                                    </Button>} />
+                                </Grid.Column>
+                                <Grid.Column width={5} floated='right'>
                                     <Modal
                                         open={this.state.updateMeal}
                                         onClose={() => this.handleUpdateOpen(false)}
                                         onOpen={() => this.handleUpdateOpen(true)}
-                                        trigger={<Button size='tiny' color='black' fluid icon>
+                                        trigger={<Button size='tiny' basic color='pink' fluid icon>
                                             Modify
                                         </Button>}>
                                         <Modal.Header>Update Your Meal</Modal.Header>

@@ -23,7 +23,6 @@ interface IState {
     macroGuides: IMacroGuides;
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
-    allMeasurementDtos: IMeasurementDto[];
     graphs: IGraphMeasurements;
     graphsData: [IMeta[]];
     weightLabel: string[];
@@ -174,12 +173,6 @@ class Measurements extends React.Component<LoginProps, IState> {
                     measurementDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?date=' + (date).toISOString())
-                .then(response => response.json() as Promise<IMeasurementDto[]>)
-                .then(data => this.setState({
-                    allMeasurementDtos: data, apiUpdate: true
-                })).catch(error => console.log(error));
-
             fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
                 .then(response => response.json() as Promise<IMacrosPlan[]>)
                 .then(data => this.setState({
@@ -222,7 +215,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
             measurements: { neck: 0.0, upperArm:0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
-            allMeasurementDtos: [],
             clients: [],
             macrosPlans: [],
             updated: false,
@@ -260,51 +252,6 @@ class Measurements extends React.Component<LoginProps, IState> {
         }
     }
 
-    setGraphValues = () => {
-        while (this.state.graphsData.length > 0) {
-            this.state.graphsData.pop()
-        }
-
-        while (this.state.weightLabel.length > 0) {
-            this.state.weightLabel.pop()
-        }
-        
-        this.state.graphs.chest = [];
-        this.state.graphs.neck = [];
-        this.state.graphs.upperArm = [];
-        this.state.graphs.waist = [];
-        this.state.graphs.hips = [];
-        this.state.graphs.thigh = [];
-        this.state.graphs.weight = [];
-
-        var index: number = 0;
-        var arr = this.state.allMeasurementDtos.sort((a: IMeasurementDto, b: IMeasurementDto) => {
-            return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
-
-        });
-        arr.forEach(m => {
-            var values: IMeta[] = [];
-            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0,5));
-            this.state.graphs.chest.push(m.chest);
-            values.push({ 'meta': 'chest', 'value': m.chest});
-            this.state.graphs.neck.push(m.neck);
-            values.push({ 'meta': 'chest', 'value': m.chest });
-            this.state.graphs.upperArm.push(m.upperArm);
-            values.push({ 'meta': 'upperArm', 'value': m.upperArm });
-            this.state.graphs.waist.push(m.waist);
-            values.push({ 'meta': 'waist', 'value': m.waist });
-            this.state.graphs.hips.push(m.hips);
-            values.push({ 'meta': 'hips', 'value': m.hips });
-            this.state.graphs.thigh.push(m.thigh);
-            values.push({ 'meta': 'thigh', 'value': m.thigh });
-            this.state.graphs.weight.push(m.weight);
-            this.state.graphsData.push(values);
-            index++;
-        });
-
-        this.setState({ graphs: this.state.graphs, graphsData: this.state.graphsData, weightLabel: this.state.weightLabel });
-    }
-
     setValuesFromDto = () => {
         if (this.state.clients.length > 0) {
             const client = this.state.clients[0];
@@ -339,8 +286,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.setState({ measurements: this.state.measurements });
             this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
         }
-
-        this.setGraphValues();
     }
 
     onCancel = () => {
@@ -499,12 +444,6 @@ class Measurements extends React.Component<LoginProps, IState> {
                         .then(data => this.setState({
                             measurementDtos: data, apiUpdate: true
                         })).catch(error => console.log(error));
-
-                    fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?date=' + this.state.selectedDate.toISOString())
-                        .then(response => response.json() as Promise<IMeasurementDto[]>)
-                        .then(data => this.setState({
-                            allMeasurementDtos: data, apiUpdate: true
-                        })).catch(error => console.log(error));
                 }
             }
 
@@ -548,33 +487,29 @@ class Measurements extends React.Component<LoginProps, IState> {
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={4}>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                        </Grid.Column>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' width={2} textAlign='left' floated='left'>
-                        </Grid.Column>
-                        <Grid.Column width={6} textAlign='right' floated='right'>
-                            <Modal
-                                open={this.state.openReview}
-                                onClose={() => this.handleOpen(false)}
-                                onOpen={() => this.handleOpen(true)}
-                                trigger={<Button size='tiny' primary>Review Progress</Button>}>
-                                <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
-                                <Modal.Content scrolling>
-                                    <Modal.Description>
-                                        <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
-                                    </Modal.Description>
-                                </Modal.Content>
-                                <Modal.Actions>
-                                    <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                        Close <Icon name='chevron right' />
-                                    </Button>
-                                </Modal.Actions>
-                            </Modal>
+                    <Grid.Row>
+                        <Grid.Column textAlign='left' floated='left'>
+                            <Button.Group floated='left' fluid>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
+                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                <Modal
+                                    open={this.state.openReview}
+                                    onClose={() => this.handleOpen(false)}
+                                    onOpen={() => this.handleOpen(true)}
+                                    trigger={<Button size='tiny' basic color='pink'>Review</Button>}>
+                                    <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
+                                    <Modal.Content scrolling>
+                                        <Modal.Description>
+                                            <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
+                                        </Modal.Description>
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
+                                            Close <Icon name='chevron right' />
+                                        </Button>
+                                    </Modal.Actions>
+                                </Modal>
+                            </Button.Group>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

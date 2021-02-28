@@ -36,6 +36,7 @@ interface IClient {
     name: string;
     age: number;
     city: string;
+    avatar: string;
 }
 
 interface IClientDto {
@@ -46,6 +47,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IMessage {
@@ -105,7 +107,7 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
         }
 
         this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
+            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city, avatar: client.avatar });
         });
 
         this.setState({ clients: this.state.clients });
@@ -259,7 +261,15 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
             return 'ida_avatar.jpg';
         }
 
-        return 'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'
+        var client = this.state.clients[this.state.clients.findIndex(x => x.id === id)];
+        if (client !== null) {
+            if (client.avatar != '') {
+                return '/images/avatars/' + client.avatar;
+            }
+            else {
+                return 'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'
+            }
+        }
     }
 
     getComments = () => {
@@ -267,6 +277,7 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
             return;
         }
 
+        this.state.mealsMessages.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
         return (
             this.state.mealsMessages.map((item, index) =>
                 <Comment key={index}>
@@ -299,6 +310,11 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
         return (
             <div>
                 <Grid centered>
+                    <Grid.Row textAlign='left'>
+                        <Grid.Column textAlign='left' floated='left'>
+                            {this.getReplyOption()}
+                        </Grid.Column>
+                    </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
@@ -306,11 +322,6 @@ class MessagesMealsChat extends React.Component<IProps, IState> {
                                     {this.getComments()}
                                 </Comment.Group>
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row textAlign='left'>
-                        <Grid.Column textAlign='left' floated='left'>
-                            {this.getReplyOption()}
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

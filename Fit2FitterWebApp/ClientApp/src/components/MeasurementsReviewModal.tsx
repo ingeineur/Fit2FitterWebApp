@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Button, Icon, Input, Grid, Message, Header, Segment } from 'semantic-ui-react';
 import ChartistGraph from 'react-chartist';
 import MeasurementsChat from './MeasurementsChat';
+import SemanticDatepicker from 'react-semantic-ui-datepickers';
 
 interface IProps {
     update: boolean;
@@ -23,6 +24,9 @@ interface IState {
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
     allMeasurementDtos: IMeasurementDto[];
+    selectedDate: Date;
+    prevDate: Date;
+    dateChanged: boolean,
 }
 
 interface IMeta {
@@ -89,18 +93,26 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             weightLabel: [],
             measurements: { neck: 0.0, upperArm: 0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
-            allMeasurementDtos: []
+            allMeasurementDtos: [],
+            selectedDate: new Date(),
+            prevDate: new Date(),
+            dateChanged: false
         };
     }
 
     public componentDidMount() {
+        var date = new Date();
+        date.setDate(date.getDate() - 15);
+        date.setHours(0, 0, 0, 0);
+        this.setState({ selectedDate: date });
+
         fetch('api/client/' + this.props.clientId + '/measurements/closest?date=' + this.props.date)
             .then(response => response.json() as Promise<IMeasurementDto[]>)
             .then(data => this.setState({
                 measurementDtos: data, apiUpdate: true
             })).catch(error => console.log(error));
 
-        fetch('api/client/' + this.props.clientId + '/all/measurements?date=' + this.props.date)
+        fetch('api/client/' + this.props.clientId + '/all/measurements?fromDate=' + date.toISOString() + '&date=' + this.props.date)
             .then(response => response.json() as Promise<IMeasurementDto[]>)
             .then(data => this.setState({
                 allMeasurementDtos: data, apiUpdate: true
@@ -373,6 +385,23 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         this.setGraphValues();
     }
 
+    handleDateChange = (event: any, field: any) => {
+        var newDate = new Date(field['value']);
+        var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+        if (dayDiff < 356) {
+            this.setState({ prevDate: this.state.selectedDate });
+            this.setState({ selectedDate: new Date(field['value']), dateChanged: true })
+        }
+    }
+
+    getAllMeasurements = () => {
+        fetch('api/client/' + this.props.clientId + '/all/measurements?fromDate=' + this.state.selectedDate.toISOString() + '&date=' + this.props.date)
+            .then(response => response.json() as Promise<IMeasurementDto[]>)
+            .then(data => this.setState({
+                allMeasurementDtos: data, apiUpdate: true
+            })).catch(error => console.log(error));
+    }
+
     render() {
         const bodyFatPercent = (((parseFloat(this.state.measurements.waist.toString()) + parseFloat(this.state.measurements.hips.toString())) - parseFloat(this.state.measurements.neck.toString())) / 2);
         const level = this.getBodyFatIndicator(this.props.age, bodyFatPercent);
@@ -384,6 +413,11 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
 
         if (this.state.dirty !== this.props.update) {
             this.setState({ dirty: this.props.update });
+        }
+
+        if (this.state.dateChanged === true) {
+            this.setState({ dateChanged: false });
+            this.getAllMeasurements();
         }
 
         if (this.state.apiUpdate === true) {
@@ -406,9 +440,19 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         return (<div>
             <Grid centered>
                 <a>Weight and Body Measurements Review</a>
+                <Grid.Row columns={2}>
+                    <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
+                        <div>
+                            <a>Measure From Date:</a>
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
+                        <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                    </Grid.Column>
+                </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <a>Weight Progress: : {(this.state.graphs.weight[0] - this.state.measurements.weight).toFixed(2)}kg from start weight</a>
+                        <a>Weight Progress: : {(this.state.measurements.weight - this.state.graphs.weight[0]).toFixed(2)}kg from start weight</a>
                         <div>
                             <ChartistGraph data={data2} type={type} options={lineChartOptions} />
                         </div>

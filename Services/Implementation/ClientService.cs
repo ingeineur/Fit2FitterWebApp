@@ -35,7 +35,8 @@ namespace Fit2Fitter.Services.Implementation
                 City = client.City,
                 Age = client.Age,
                 Grp = client.Grp,
-                Created = client.Created
+                Created = client.Created,
+                Avatar = client.Avatar
             });
         }
 
@@ -51,7 +52,8 @@ namespace Fit2Fitter.Services.Implementation
                 City = client.City,
                 Age = client.Age,
                 Grp = client.Grp,
-                Created = client.Created
+                Created = client.Created,
+                Avatar = client.Avatar
             });
         }
 
@@ -67,7 +69,8 @@ namespace Fit2Fitter.Services.Implementation
                 City = client.City,
                 Age = client.Age,
                 Grp = client.Grp,
-                Created = client.Created
+                Created = client.Created,
+                Avatar = client.Avatar
             });
         }
 
@@ -84,6 +87,7 @@ namespace Fit2Fitter.Services.Implementation
                     City = client.City,
                     Age = client.Age,
                     Grp = client.Grp,
+                    Avatar = client.Avatar,
                     Created = DateTime.Now
                 }).ConfigureAwait(false);
 
@@ -294,9 +298,9 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
-        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime date)
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime fromDate, DateTime date)
         {
-            var measurements = await this.trackerRepository.FindMeasurements(clientId, date).ConfigureAwait(false);
+            var measurements = await this.trackerRepository.FindMeasurements(clientId, fromDate, date).ConfigureAwait(false);
             return measurements.Select(measurement => new MeasurementDto
             {
                 Id = measurement.Id,

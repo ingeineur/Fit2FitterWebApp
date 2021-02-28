@@ -85,6 +85,27 @@ namespace Fit2FitterWebApp.Controllers
             return Ok(new { count = files.Count, size });
         }
 
+        [HttpPost("image/avatar/upload")]
+        public async Task<ActionResult> UploadAvatarImage([FromForm] FileModel file)
+        {
+            try
+            {
+                var filename = Guid.NewGuid().ToString() + Path.GetExtension(file.Filename);
+                string path = Path.Combine(Directory.GetCurrentDirectory(), @"clientapp/build/images/avatars", filename);
+
+                using (Stream stream = new FileStream(path, FileMode.Create))
+                {
+                    await file.FormFile.CopyToAsync(stream).ConfigureAwait(false);
+                }
+
+                return this.Ok(filename);
+            }
+            catch (Exception ex)
+            {
+                return this.Ok(string.Empty);
+            }
+        }
+
         [HttpPost("image/meal/upload")]
         public async Task<ActionResult> UploadImage([FromForm] FileModel file)
         {

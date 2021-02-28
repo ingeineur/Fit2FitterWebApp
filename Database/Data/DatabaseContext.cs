@@ -100,6 +100,10 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.Created)
                     .IsRequired()
                     .HasMaxLength(8);
+
+                entity.Property(e => e.Avatar)
+                    .IsRequired()
+                    .HasMaxLength(255);
             });
 
             modelBuilder.Entity<Models.Login>(entity =>

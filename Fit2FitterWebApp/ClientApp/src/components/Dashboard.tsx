@@ -35,6 +35,7 @@ interface IClient {
     age: number;
     city: string;
     grp: string;
+    img: string;
 }
 
 interface IActivityGuides {
@@ -49,6 +50,7 @@ interface ITotalDailyActivity {
 
 interface IActivity {
     name: string,
+    img: string,
     calories: number;
     steps: number;
     ActivityDesc: string;
@@ -63,6 +65,7 @@ interface IClientDto {
     age: number;
     grp: string;
     created: string;
+    avatar: string;
 }
 
 interface IActivityDto {
@@ -122,7 +125,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
     }
 
     addActivity = (event: any) => {
-        this.state.activities.push({ name: '', ActivityDesc: 'test', steps: 1, calories: 100 });
+        this.state.activities.push({ name: '', img: '', ActivityDesc: 'test', steps: 1, calories: 100 });
         this.setState({ updated: !this.state.updated });
         console.log(this.state.activities);
     }
@@ -133,7 +136,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
         }
 
         this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city, grp: client.grp });
+            this.state.clients.push({ id: client.id, img: client.avatar, name: client.firstName, age: client.age, city: client.city, grp: client.grp });
         });
 
 
@@ -188,6 +191,14 @@ class Dashboard extends React.Component<LoginProps, IState> {
         }
     }
 
+    getPhoto = (img: string) => {
+        if (img != '') {
+            return '/images/avatars/' + img;
+        }
+
+        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    }
+
     getRows = (type: string) => {
         var sorted = this.state.activities.sort((a, b) => (a.steps > b.steps ? -1 : 1));
         if (type === 'TCB') {
@@ -196,7 +207,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
         return (
             sorted.map((item, index) =>
                 <List.Item key={index}>
-                    <Image key={index} avatar src='https://react.semantic-ui.com/images/avatar/small/rachel.png' />
+                    <Image key={index} avatar src={this.getPhoto(item.img)} />
                     <List.Content key={index + 1}>
                         <List.Header key={index} as='a'>{item.name} {this.getFlag(item.ActivityDesc)}</List.Header>
                         <List.Description key={index + 1}>
@@ -228,7 +239,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
             this.state.activityDtos.forEach(activity => {
                 var clientActivity = this.state.clients[this.state.clients.findIndex(x => x.id === activity.clientId)];
                 if (clientActivity !== null && this.state.group === clientActivity.grp) {
-                    this.state.activities.push({ name: clientActivity.name, ActivityDesc: clientActivity.city, calories: activity.calories, steps: activity.steps });
+                    this.state.activities.push({ name: clientActivity.name, img: clientActivity.img, ActivityDesc: clientActivity.city, calories: activity.calories, steps: activity.steps });
                 }
             })
         }

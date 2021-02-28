@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress, Flag, Image } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -74,6 +74,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IMealDto {
@@ -428,6 +429,64 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }
     }
 
+    handlePrevDate = (e: any) => {
+        var prevDate = new Date(this.state.selectedDate);
+        var date = new Date(this.state.selectedDate);
+        var day = this.state.selectedDate.getDate();
+        var month = this.state.selectedDate.getMonth();
+        var year = this.state.selectedDate.getFullYear();
+        
+        date.setDate(day - 1);
+        date.setHours(0, 0, 0, 0);
+
+        //console.log('selected: ' + this.state.selectedDate.toDateString())
+        //console.log('selected: ' + day + ',' + month + ',' + year)
+
+        //console.log('adjusted: ' + date.toDateString())
+        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+
+        if (date.getDate() > day) {
+            date.setMonth(month - 1);
+            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        if (date.getMonth() > month) {
+            date.setFullYear(year - 1);
+            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        this.setState({ selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+    }
+
+    handleNextDate = (e: any) => {
+        var prevDate = new Date(this.state.selectedDate);
+        var date = new Date(this.state.selectedDate);
+        var day = this.state.selectedDate.getDate();
+        var month = this.state.selectedDate.getMonth();
+        var year = this.state.selectedDate.getFullYear();
+
+        date.setDate(day + 1);
+        date.setHours(0, 0, 0, 0);
+
+        //console.log('selected: ' + this.state.selectedDate.toDateString())
+        //console.log('selected: ' + day + ',' + month + ',' + year)
+
+        //console.log('adjusted: ' + date.toDateString())
+        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        
+        if (date.getDate() < day) {
+            date.setMonth(month + 1);
+            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        if (date.getMonth() < month) {
+            date.setFullYear(year + 1);
+            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
+        }
+
+        this.setState({ selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+    }
+
     handleOpen = (open: boolean) => {
         this.setState({ openReview: open });
     }
@@ -438,6 +497,14 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }
 
         return 'green';
+    }
+
+    getSaveIcon = () => {
+        if (this.state.savingStatus === 'Not Saved') {
+            return 'edit outline';
+        }
+
+        return 'save';
     }
 
     setMeals = () => {
@@ -472,6 +539,52 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }
     }
 
+    getFlag = () => {
+        if (this.state.clientDtos.length > 0) {
+            var country = this.state.clientDtos[0].city;
+            if (country === 'au') {
+                return (<Flag name='au' />)
+            }
+
+            if (country === 'jp') {
+                return (<Flag name='jp' />)
+            }
+
+            if (country === 'my') {
+                return (<Flag name='my' />)
+            }
+
+            if (country === 'us') {
+                return (<Flag name='us' />)
+            }
+
+            if (country === 'ie') {
+                return (<Flag name='ie' />)
+            }
+        }
+    }
+
+    getUserInfo = () => {
+        var name = ""
+        if (this.state.clientDtos.length > 0) {
+            var name = this.state.clientDtos[0].firstName;
+        }
+
+        var lastSeen = new Date(this.props.logins[0].lastLogin);
+        return name + ', last login: ' + lastSeen.toLocaleDateString();
+    }
+
+    getPhoto = () => {
+        if (this.state.clientDtos.length > 0) {
+            var img = this.state.clientDtos[0].avatar;
+            if (img != '') {
+                return '/images/avatars/' + img;
+            }
+        }
+
+        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    }
+
     render() {
         var divLabelStyle = {
             display: 'flex',
@@ -479,6 +592,20 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
+        };
+
+        var divTitleStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'black',
+            backgroundColor: 'pink'
+        };
+
+        var divDateStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
         };
 
         const activeItem = this.state.activeItem;
@@ -505,18 +632,24 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                 <div>
                     <Grid centered>
                         <Grid.Row columns={2}>
-                            <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
+                            <Grid.Column width={6}>
                                 <Label size='large' as='a' color='pink' basic circular>Daily Meals Tracker</Label>
                             </Grid.Column>
-                            <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
-                                <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                            <Grid.Column width={10} textAlign='right'>
+                                <Image avatar src={this.getPhoto()} />
+                                <a>{this.getUserInfo()}</a>
                             </Grid.Column>
                         </Grid.Row>
                         <Grid.Row>
-                            <Grid.Column>
-                                <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
-                            </div>
+                            <Grid.Column verticalAlign='middle'>
+                                <Segment color='grey' inverted attached='top'>
+                                    <div style={divDateStyle}>
+                                        <Button color='grey' className='prev' onClick={this.handlePrevDate} inverted attached='left' basic icon='chevron left'/>
+                                            <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                                        <Button color='grey' className='next' onClick={this.handleNextDate} inverted attached='right' basic icon='chevron right'/>
+                                    </div>
+                                    <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
+                                </Segment>
                                 <Segment textAlign='center' attached='bottom'>
                                     <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                                 </Segment>
@@ -554,33 +687,29 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                 </Segment>
                             </Grid.Column>
                         </Grid.Row>
-                        <Grid.Row columns={3}>
-                            <Grid.Column width={4} textAlign='left' floated='left'>
-                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                            </Grid.Column>
-                            <Grid.Column width={4} textAlign='left' floated='left'>
-                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
-                            </Grid.Column>
-                            <Grid.Column verticalAlign='middle' width={4} textAlign='left' floated='left'>
-                            </Grid.Column>
-                            <Grid.Column width={4} textAlign='right' floated='right'>
-                                <Modal
-                                    open={this.state.openReview}
-                                    onClose={() => this.handleOpen(false)}
-                                    onOpen={() => this.handleOpen(true)}
-                                    trigger={<Button size='tiny' primary>Review</Button>}>
-                                    <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
-                                    <Modal.Content scrolling>
-                                        <Modal.Description>
-                                            <MacroGuideReviewModal senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
-                                        </Modal.Description>
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                            Close <Icon name='chevron right' />
-                                        </Button>
-                                    </Modal.Actions>
-                                </Modal>
+                        <Grid.Row>
+                            <Grid.Column textAlign='left' floated='left'>
+                                <Button.Group floated='left' fluid>
+                                    <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
+                                    <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                    <Modal
+                                        open={this.state.openReview}
+                                        onClose={() => this.handleOpen(false)}
+                                        onOpen={() => this.handleOpen(true)}
+                                        trigger={<Button basic color='pink' size='tiny'>Review</Button>}>
+                                        <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
+                                        <Modal.Content scrolling>
+                                            <Modal.Description>
+                                                <MacroGuideReviewModal senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
+                                            </Modal.Description>
+                                        </Modal.Content>
+                                        <Modal.Actions>
+                                            <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
+                                                Close <Icon name='chevron right' />
+                                            </Button>
+                                        </Modal.Actions>
+                                    </Modal>
+                                </Button.Group>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>

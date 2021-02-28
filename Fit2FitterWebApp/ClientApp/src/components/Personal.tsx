@@ -8,6 +8,8 @@ import * as LoginStore from '../store/Login';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MeasurementsPersonalTable from './PersonalTable'
 import PersonalHeader from './PersonalHeader'
+import { IClient, IPersonal } from '../models/clients'
+import { IMacroGuides, IMacrosPlan } from '../models/macros'
 
 interface IProps {
 }
@@ -24,52 +26,6 @@ interface IState {
     updated: boolean;
     apiUpdate: boolean;
     savingStatus: string;
-}
-
-interface IMacroGuides {
-    carb: number;
-    protein: number;
-    fat: number;
-    veg: number;
-    bodyFat: number;
-}
-
-interface IPersonal {
-    name: string;
-    age: number;
-    height: number;
-    weight: number;
-    targetWeight: number,
-    activityLevel: number;
-    macroType: number;
-    carbPercent: number;
-    proteinPercent: number;
-    fatPercent: number;
-}
-
-interface IClient {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-}
-
-interface IMacrosPlan {
-    id: number,
-    height: number,
-    weight: number,
-    targetWeight: number,
-    macroType: string;
-    activityLevel: string;
-    carbPercent: number,
-    proteinPercent: number,
-    fatPercent: number,
-    updated: string;
-    created: string;
-    clientId: number;
 }
 
 // At runtime, Redux will merge together...
@@ -210,6 +166,7 @@ class Personal extends React.Component<LoginProps, IState> {
                 city: this.state.clients[0].city,
                 age: this.state.personal.age,
                 created: this.state.clients[0].created,
+                avatar: this.state.personal.avatar,
             })
         }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
 
@@ -245,7 +202,7 @@ class Personal extends React.Component<LoginProps, IState> {
     }
 
     getComponent = () => {
-        if (this.state.activeItem == 'Macro') {
+        if (this.state.activeItem == 'Profile') {
             return (<MeasurementsPersonalTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
         }
     }
@@ -253,7 +210,7 @@ class Personal extends React.Component<LoginProps, IState> {
     updatePersonal = (input: IPersonal) => {
         this.setState({
             personal: {
-                name: input.name, age: input.age, height: input.height, weight: input.weight, targetWeight: input.targetWeight, activityLevel: input.activityLevel, macroType: input.macroType,
+                avatar: input.avatar, name: input.name, age: input.age, height: input.height, weight: input.weight, targetWeight: input.targetWeight, activityLevel: input.activityLevel, macroType: input.macroType,
                 carbPercent: input.carbPercent, proteinPercent: input.proteinPercent, fatPercent: input.fatPercent
             }
         });
@@ -265,10 +222,10 @@ class Personal extends React.Component<LoginProps, IState> {
         this.updatePersonal = this.updatePersonal.bind(this);
         this.state = {
             username: '', password: '',
-            activeItem: 'Macro',
+            activeItem: 'Profile',
             selectedDate: new Date(),
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
-            personal: { name: '', age: 0, height: 0.0, weight: 0.0, targetWeight:0.0, activityLevel: 0, macroType: 0, carbPercent: 25.0, proteinPercent: 35.0, fatPercent: 20.0 },
+            personal: { avatar: '', name: '', age: 0, height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 0, macroType: 0, carbPercent: 25.0, proteinPercent: 35.0, fatPercent: 20.0 },
             clients: [],
             macrosPlans: [],
             updated: false,
@@ -282,10 +239,10 @@ class Personal extends React.Component<LoginProps, IState> {
     setValuesFromDto = () => {
         if (this.state.clients.length > 0) {
             const client = this.state.clients[0];
+            this.state.personal.avatar = client.avatar;
             this.state.personal.name = client.firstName + ' ' + client.lastName;
             this.state.personal.age = client.age;
-            this.setState({ personal: this.state.personal });
-            this.setState({ apiUpdate: false, updated: !this.state.updated });
+            this.setState({ personal: this.state.personal, apiUpdate: false, updated: !this.state.updated });
         }
 
         if (this.state.macrosPlans.length > 0) {
@@ -370,8 +327,8 @@ class Personal extends React.Component<LoginProps, IState> {
                         <Grid.Column width={16}>
                             <Menu attached='top' tabular compact>
                                 <Menu.Item
-                                    name='Macro'
-                                    active={activeItem === 'Macro'}
+                                    name='Profile'
+                                    active={activeItem === 'Profile'}
                                     onClick={this.handleItemClick}
                                 />
                             </Menu>
