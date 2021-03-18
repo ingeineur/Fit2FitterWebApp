@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
 import { Button, Popup, Form, Input, Grid, Label, Icon, Segment, Checkbox, Modal, Radio } from 'semantic-ui-react'
 import MacroGuideModal from './MacroGuideModal'
 import MacroGuideModifyModal from './MacroGuideModifyModal'
 import { isNullOrUndefined } from 'util';
+import { IMealDto, IMealDetails } from '../models/meals';
+import { IClientDto } from '../models/clients';
 
 interface IProps {
     meals: IMealDetails[] 
@@ -13,28 +13,6 @@ interface IProps {
     mealType: number;
     updateMeals: Function;
     client: IClientDto;
-}
-
-interface IClientDto {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    check: boolean;
-    remove: boolean;
 }
 
 interface IState {
@@ -53,20 +31,6 @@ interface IState {
 interface IUpdateMeal {
     meal: IMealDetails;
     index: number;
-}
-
-interface IMealDto {
-    id: number;
-    mealType: string;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    updated: string;
-    created: string;
-    clientId: number;
 }
 
 class MacroGuideTable extends React.Component<IProps, IState> {

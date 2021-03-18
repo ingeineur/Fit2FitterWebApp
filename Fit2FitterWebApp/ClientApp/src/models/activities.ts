@@ -31,3 +31,27 @@ export interface IActivityDto {
     created: string;
     clientId: number;
 }
+
+export function getActivityLevel(activityLevel: string) {
+    if (activityLevel == 'Sedentary') {
+        return 1.2;
+    }
+
+    if (activityLevel == 'Lightly Active') {
+        return 1.375;
+    }
+
+    if (activityLevel == 'Moderately Active') {
+        return 1.55;
+    }
+
+    if (activityLevel == 'Very Active') {
+        return 1.725;
+    }
+
+    if (activityLevel == 'Extra Active') {
+        return 1.9;
+    }
+
+    return 0;
+}

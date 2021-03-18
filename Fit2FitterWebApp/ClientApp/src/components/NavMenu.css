@@ -11,3 +11,16 @@ html { font-size: 14px; }
 }
 
 .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+.text-app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fa93a8;
+    font-family: 'Arial Rounded MT';
+    font-size: 20px;
+}
+
+.navbar-bg {
+    background-color: #382c2d;
+}

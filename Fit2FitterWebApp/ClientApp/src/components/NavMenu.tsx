@@ -10,20 +10,35 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
     };
 
     public render() {
-        var divStyle = {
+        var divStyle2 = {
             fontStyle: 'italic',
             fontFamily: 'Comic Sans MS',
-            fontSize:'13px'
+            fontSize: '13px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
         };
+
+        var divLabelStyle2 = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fa93a8',
+            fontStyle: 'italic',
+            fontFamily: 'Arial Rounded MT'
+        };
+
         return (
             <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" light>
+                <Navbar className="navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3 navbar-bg" light>
                     <Container>
                         <NavbarBrand tag={Link} to="/">
                             <Grid>
                                 <Grid.Column>
-                                    <div id='logo'><Image src="fit2fitter_small_logo_2.jpg" size='small' /></div>
-                                    <div id='text' style={divStyle}>
+                                    <div>
+                                        <h3 className="text-app">Health & Fitness Tracker</h3>
+                                    </div>
+                                    <div id='text' style={divStyle2}>
                                         <a>by Ida</a>
                                     </div>
                                 </Grid.Column>
@@ -33,22 +48,22 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                         <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={this.state.isOpen} navbar>
                             <ul className="navbar-nav flex-grow">
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/">Home</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/personal">Macro</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/personal">Macro</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/measurements">Measurements</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/measurements">Measurements</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/macroguide">Meals</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/macroguide">Meals</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/activities">Activities</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/activities">Activities</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/dashboard">Dashboards</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/dashboard">Dashboards</NavLink>
                                 </NavItem>
                             </ul>
                         </Collapse>

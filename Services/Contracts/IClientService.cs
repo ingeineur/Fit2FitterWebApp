@@ -26,6 +26,8 @@ namespace Fit2Fitter.Services.Contracts
         Task<IEnumerable<MeasurementDto>> GetMeasurement(int clientId, DateTime date);
 
         Task<IEnumerable<MeasurementDto>> GetMeasurements(int clientId, DateTime fromDate, DateTime date);
+        
+        Task<IEnumerable<MeasurementDto>> GetMeasurementsSlice(int clientId, DateTime fromDate, DateTime toDate);
 
         Task<IEnumerable<MeasurementDto>> GetMeasurementsClosest(int clientId, DateTime date);
 

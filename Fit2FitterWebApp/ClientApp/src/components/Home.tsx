@@ -2,12 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label, Image } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label, Image, Loader, Dimmer, Divider, Segment } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { IVersion, UpdateVersionText, DivRequireUpdateLabelStyle, CurrentVersion } from '../models/version';
 import { requireVersionUpdate } from '../services/utilities'
-import AdminResetPwd from './AdminResetPwd'
+import AdminResetPwd from './AdminResetPwd';
+import './signin.css';
 
 interface IProps {
 }
@@ -36,6 +37,8 @@ interface IState {
     version: IVersion;
     apiVersionUpdate: boolean;
     openResetPwd: boolean;
+    messagesDownloaded: boolean;
+    mealsMessagesDownloaded: boolean;
 }
 
 interface LoginDto {
@@ -83,6 +86,27 @@ interface IMessageDto {
     clientId: number;
 }
 
+var divLabelStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+};
+
+var divWarningLabelStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'red'
+};
+
+var divFooterStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: '#FFFFFF',
+    backgroundColor: '#382c2d'
+};
+
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -123,13 +147,13 @@ class Home extends React.Component<LoginProps, IState > {
             fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    messageDtos: data, apiUpdate: true
+                    messageDtos: data, apiUpdate: true, messagesDownloaded: true
                 })).catch(error => console.log(error));
 
             fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    messageMealsDtos: data, apiUpdate: true
+                    messageMealsDtos: data, apiUpdate: true, mealsMessagesDownloaded: true
                 })).catch(error => console.log(error));
 
             this.getAllMeasurementsMessages();
@@ -165,7 +189,7 @@ class Home extends React.Component<LoginProps, IState > {
             loginDtos: [], messageMealsDtos: [], messageMeasurementsDtos: [], unReadMessageMeasurements: 0,
             version: { major: 0, minor: 0, build: 0 },
             versionDto: { major: 0, minor: 0, build: 0 },
-            apiVersionUpdate: false, openResetPwd: false
+            apiVersionUpdate: false, openResetPwd: false, messagesDownloaded: false, mealsMessagesDownloaded: false
         };
     }
 
@@ -201,8 +225,8 @@ class Home extends React.Component<LoginProps, IState > {
                 <Menu.Item
                     name='Meals Logger (Admin)'
                     onClick={this.handleItemClick}>
-                    <Icon name='clipboard outline' color='red' />
-                    Meals Logs
+                    <Icon name='clipboard outline'/>
+                    <div>Meals</div><div>Logs</div>
                     <Label color='red' floating>
                         {this.state.unReadMessageMeals}
                     </Label>
@@ -213,8 +237,8 @@ class Home extends React.Component<LoginProps, IState > {
             <Menu.Item
                 name='Meals Logger'
                 onClick={this.handleItemClick}>
-                <Icon name='clipboard outline' color='red' />
-                Meals Logs
+                <Icon name='clipboard outline'/>
+                <div>Meals</div><div>Logs</div>
                 <Label color='red' floating>
                     {this.state.unReadMessageMeals}
                 </Label>
@@ -228,8 +252,8 @@ class Home extends React.Component<LoginProps, IState > {
                 <Menu.Item
                     name='Measurements Logger Admin'
                     onClick={this.handleItemClick}>
-                    <Icon name='clipboard outline' color='blue' />
-                    Measurements Logs
+                    <Icon name='clipboard outline'/>
+                    <div>Measurements</div><div>Logs</div>
                     <Label color='red' floating>
                         {this.state.unReadMessageMeasurements}
                     </Label>
@@ -240,8 +264,8 @@ class Home extends React.Component<LoginProps, IState > {
             <Menu.Item
                 name='Measurements Logger'
                 onClick={this.handleItemClick}>
-                <Icon name='clipboard outline' color='blue'/>
-                Measurements Logs
+                <Icon name='clipboard outline'/>
+                <div>Measurements</div><div>Logs</div>
                 <Label color='red' floating>
                     {this.state.unReadMessageMeasurements}
                 </Label>
@@ -252,11 +276,11 @@ class Home extends React.Component<LoginProps, IState > {
     getMealsReviewByDate = () => {
         if (this.props.logins[0].username === 'admin') {
             return (
-                <Menu fluid vertical icon='labeled'>
+                <Menu fluid vertical icon='labeled' color='teal' inverted>
                     <Menu.Item
                         name='Meals Logger by Date (Admin)'
                         onClick={this.handleItemClick}>
-                        <Icon name='clipboard outline' color='red' />
+                        <Icon name='clipboard outline'/>
                         Logged Meals by Date
                         <Label color='red' floating>
                             {this.state.unReadMessageMeals}
@@ -280,14 +304,12 @@ class Home extends React.Component<LoginProps, IState > {
     }
 
     getUserInfo = () => {
-        var name = ""
         if (this.state.clientDtos.length > 0) {
             var clients = this.state.clientDtos.filter(x => x.id == this.props.logins[0].clientId)
             var name = clients[0].firstName;
+            var lastSeen = new Date(this.props.logins[0].lastLogin);
+            return name + ', last login: ' + lastSeen.toLocaleDateString();
         }
-
-        var lastSeen = new Date(this.props.logins[0].lastLogin);
-        return name + ', last login: ' + lastSeen.toLocaleDateString();
     }
 
     getPhoto = () => {
@@ -297,22 +319,64 @@ class Home extends React.Component<LoginProps, IState > {
             if (img != '') {
                 return '/images/avatars/' + img;
             }
+            else {
+                return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+            }
         }
+    }
 
-        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    getInfoRow = () => {
+        if (this.state.clientDtos.length > 0) {
+            return (<Grid.Row>
+                <Grid.Column textAlign='right'>
+                    <Image avatar src={this.getPhoto()} />
+                    <a>{this.getUserInfo()}</a>
+                </Grid.Column>
+            </Grid.Row>);
+        }
     }
 
     render() {
         var divStyle = {
             fontSize: '15px'
         };
+
+        var divStyle2 = {
+            fontStyle: 'italic',
+            fontFamily: 'Comic Sans MS',
+            fontSize: '13px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         var divLabelStyle2 = {
-            color: 'pink',
-            fontStyle: 'italic'
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
+        var divLogoStyle = {
+            display: 'flex',
+            justifyContent: 'right',
+            alignItems: 'right'
         };
 
         if (this.state.apiVersionUpdate === true) {
             this.setState({ version: this.state.versionDto, apiVersionUpdate: false });
+        }
+        else if ((this.state.apiVersionUpdate == false && this.state.version.major == 0)) {
+            return (<div style={divLoaderStyle}>
+                <Dimmer active inverted>
+                    <Loader content='Loading' />
+                </Dimmer>
+            </div>);
         }
 
         if (this.state.login==='logging' && !this.props.isLoading && this.props.logins.length < 1) {
@@ -331,13 +395,13 @@ class Home extends React.Component<LoginProps, IState > {
                     fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
                         .then(response => response.json() as Promise<IMessageDto[]>)
                         .then(data => this.setState({
-                            messageDtos: data, checkMail: true, apiUpdate: true
+                            messageDtos: data, checkMail: true, apiUpdate: true, messagesDownloaded: true
                         })).catch(error => console.log(error));
 
                     fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
                         .then(response => response.json() as Promise<IMessageDto[]>)
                         .then(data => this.setState({
-                            messageMealsDtos: data, apiUpdate: true
+                            messageMealsDtos: data, apiUpdate: true, mealsMessagesDownloaded: true
                         })).catch(error => console.log(error));
 
                     this.getAllMeasurementsMessages();
@@ -425,122 +489,127 @@ class Home extends React.Component<LoginProps, IState > {
             if (this.state.activeItem === 'Nutrients Lookup') {
                 return (<Redirect to="/macroguidesearch" />);
             }
-            //if (true) {
-            return (
-                <div>
-                    {this.displayUpdate()}
-                    <Grid centered>
-                        <Grid.Row>
-                            <Grid.Column textAlign='right'>
-                                <Image avatar src={this.getPhoto()} />
-                                <a>{this.getUserInfo()}</a>
-                            </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row columns={2}>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='New Meal'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='food' color='red' />
-                                        Meals Tracker
-                                    </Menu.Item>
-                                </Menu>
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='Body'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='calculator' color='blue' />
-                                        Measurement Tracker
-                                    </Menu.Item>
-                                </Menu>
-                                <Menu fluid vertical icon='labeled' >
-                                    <Menu.Item
-                                        name='Activity'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='child' color='orange' />
-                                        Activities Tracker
-                                    </Menu.Item>
-                                </Menu>
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='Dashboard'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='chart bar' color='pink'  />
-                                        Leaderboards
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled'>
-                                    {this.getMealsReview()}
-                                </Menu>
-                                {this.getMealsReviewByDate()}
-                                <Menu fluid vertical icon='labeled'>
-                                    {this.getMeasurementsReview()}
-                                </Menu>
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='Messages'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='mail' color='blue' />
-                                        Messages
-                                        <Label color='red' floating>
-                                            {this.state.unReadMessage}
-                                        </Label>
-                                    </Menu.Item>
-                                </Menu>
 
-                                <Menu fluid vertical icon='labeled'>
-                                    <Menu.Item
-                                        name='EBook'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='book' color='purple' />
-                                        E-Books
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled' color='green' inverted>
-                                    <Menu.Item
-                                        name='Nutrients Lookup'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='search' />
-                                        Nutrients Lookup
-                                    </Menu.Item>
-                                </Menu>
-                                <Menu fluid vertical icon='labeled' color='black' inverted>
-                                    <Menu.Item
-                                        name='Logout'
-                                        onClick={this.clearCredentials}>
-                                        <Icon name='power off' />
-                                        Logout
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                            <Grid.Column width={8}>
-                                <Menu fluid vertical icon='labeled' color='olive' inverted>
-                                    <Menu.Item
-                                        name='Macro'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='balance scale' />
-                                        Macro Calculation
-                                    </Menu.Item>
-                                </Menu>
-                                <Menu fluid vertical icon='labeled' color='red' inverted>
-                                    <Menu.Item
-                                        name='Admin'
-                                        onClick={this.handleItemClick}>
-                                        <Icon name='user outline' />
-                                        Admin
-                                    </Menu.Item>
-                                </Menu>
-                            </Grid.Column>
-                        </Grid.Row>
-                    </Grid>
+            if (!this.state.messagesDownloaded ||
+                !this.state.mealsMessagesDownloaded) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
                 </div>);
+            }
+            else {
+                return (
+                    <div>
+                        {this.displayUpdate()}
+                        <Grid centered>
+                            {this.getInfoRow()}
+                            <Grid.Row columns={3}>
+                                <Grid.Column>
+                                    <Menu fluid vertical icon='labeled' color='olive' inverted>
+                                        <Menu.Item
+                                            name='Macro'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='balance scale' />
+                                            <div>Macro</div><div>Calculation</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='green' inverted>
+                                        <Menu.Item
+                                            name='Nutrients Lookup'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='search' />
+                                            <div>Nutrients</div><div>Lookup</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='red' inverted>
+                                        <Menu.Item
+                                            name='Admin'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='user outline' />
+                                            <div>Admin</div><div>Features</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='black' inverted>
+                                        <Menu.Item
+                                            name='Logout'
+                                            onClick={this.clearCredentials}>
+                                            <Icon name='power off' />
+                                            <div>Logout</div><div>App</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                </Grid.Column>
+                                <Grid.Column>
+                                    <Menu fluid vertical icon='labeled' color='red' inverted>
+                                        <Menu.Item
+                                            name='New Meal'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='food' />
+                                            <div>
+                                                Meals
+                                        </div>
+                                            <div>
+                                                Tracker
+                                        </div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='blue' inverted>
+                                        <Menu.Item
+                                            name='Body'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='calculator' />
+                                            <div>Measurement</div><div>Tracker</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='orange' inverted>
+                                        <Menu.Item
+                                            name='Activity'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='child' />
+                                            <div>Activities</div><div>Tracker</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='pink' inverted>
+                                        <Menu.Item
+                                            name='Dashboard'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='chart bar' />
+                                            <div>Dashboards</div><div>Leaderboards</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                </Grid.Column>
+                                <Grid.Column>
+                                    <Menu fluid vertical icon='labeled' color='green' inverted>
+                                        {this.getMealsReview()}
+                                    </Menu>
+                                    {this.getMealsReviewByDate()}
+                                    <Menu fluid vertical icon='labeled' color='teal' inverted>
+                                        {this.getMeasurementsReview()}
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='blue' inverted>
+                                        <Menu.Item
+                                            name='Messages'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='mail' />
+                                            <div>Messages</div><div>Inbox</div>
+                                            <Label color='red' floating>
+                                                {this.state.unReadMessage}
+                                            </Label>
+                                        </Menu.Item>
+                                    </Menu>
+                                    <Menu fluid vertical icon='labeled' color='purple' inverted>
+                                        <Menu.Item
+                                            name='EBook'
+                                            onClick={this.handleItemClick}>
+                                            <Icon name='book' />
+                                            <div>E-Books</div><div>Access</div>
+                                        </Menu.Item>
+                                    </Menu>
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
+                    </div>)
+            };
         }
         else if (this.props.logins.length > 0 && this.props.logins[0].username === 'admin2') {
 
@@ -580,45 +649,85 @@ class Home extends React.Component<LoginProps, IState > {
 
         return (
             <div>
-                <div style={divLabelStyle2}>
-                    <h1>My Health & Fitness Tracker</h1>
-                </div>
-                
-                <Form size="small">
-                    <Form.Field>
-                        <label>Username </label>
-                        <Input type="username" value={this.state.username} placeholder='Username' onChange={this.updateInput} />
-                    </Form.Field>
-                    <Form.Field>
-                        <label>Password </label>
-                        <Input type="password" value={this.state.password} placeholder='Password' onChange={this.updateInput2} />
-                    </Form.Field>
-                    <div>
-                        <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
-                        <Modal
-                            open={this.state.openResetPwd}
-                            onClose={() => this.handleOpen(false)}
-                            onOpen={() => this.handleOpen(true)}
-                            trigger={<Button color='red' type='submit'>Reset</Button>}>
-                            <Modal.Header> <div style={divLabelStyle2}>
-                                <h1>Reset Password</h1>
-                            </div></Modal.Header>
-                            <Modal.Content scrolling>
-                                <Modal.Description>
-                                    <AdminResetPwd username={this.state.username} />
-                                </Modal.Description>
-                            </Modal.Content>
-                            <Modal.Actions>
-                                <Button onClick={() => this.handleOpen(false)} primary>
-                                    Close <Icon name='chevron right' />
-                                </Button>
-                            </Modal.Actions>
-                        </Modal>
-                        <a>{this.state.error}</a>
+                <Segment attached='top'>
+                    <div style={divLabelStyle2}>
+                        <Grid>
+                            <Grid.Column>
+                                <div id='logo'><Image src="fit2fitter_small_logo_2.jpg" size='small' /></div>
+                                <div id='text' style={divStyle2}>
+                                    <a>by Ida</a>
+                                </div>
+                            </Grid.Column>
+                        </Grid>
                     </div>
-                </Form>
+                    <div style={divLabelStyle2}>
+                        <Grid centered>
+                            <Grid.Row textAlign='center'></Grid.Row>
+                            <Grid.Row textAlign='center'>
+                                <Grid.Column textAlign='center' width={2}/>
+                                <Grid.Column textAlign='center' width={12}>
+                                    <h3 className="text-signin">Please sign in</h3>
+                                </Grid.Column>
+                                <Grid.Column textAlign='center' width={2} />
+                                <Grid.Column textAlign='center' width={2} />
+                                <Grid.Column textAlign='center' width={12}>
+                                    <Form size="small">
+                                        <Form.Field>
+                                            <Input type="username" value={this.state.username} placeholder='Username' onChange={this.updateInput} />
+                                            <Input type="password" value={this.state.password} placeholder='Password' onChange={this.updateInput2} />
+                                        </Form.Field>
+                                        <div>
+                                            <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
+                                            <Modal
+                                                open={this.state.openResetPwd}
+                                                onClose={() => this.handleOpen(false)}
+                                                onOpen={() => this.handleOpen(true)}
+                                                trigger={<Button color='red' type='submit'>Reset</Button>}>
+                                                <Modal.Header> <div style={divLabelStyle2}>
+                                                    <h1>Reset Password</h1>
+                                                </div></Modal.Header>
+                                                <Modal.Content scrolling>
+                                                    <Modal.Description>
+                                                        <AdminResetPwd username={this.state.username} />
+                                                    </Modal.Description>
+                                                </Modal.Content>
+                                                <Modal.Actions>
+                                                    <Button onClick={() => this.handleOpen(false)} primary>
+                                                        Close <Icon name='chevron right' />
+                                                    </Button>
+                                                </Modal.Actions>
+                                            </Modal>
+                                        </div>
+                                    </Form>
+                                </Grid.Column>
+                                <Grid.Column textAlign='center' width={2}/>
+                            </Grid.Row>
+                        </Grid>
+                    </div>
+                    <div style={divWarningLabelStyle}><a>{this.state.error}</a></div>
+                </Segment>
                 {this.displayUpdate()}
-                <footer> <small>&copy; Copyright 2021, Fit2Fitter by Ida v.{CurrentVersion.major}.{CurrentVersion.minor}.{CurrentVersion.build}</small> </footer> 
+                <Grid centered>
+                    <Grid.Row />
+                    <Grid.Row>
+                        <Grid.Column>
+                            <div style={divLabelStyle}>Food compositions standards are provided by:</div>
+                            <Segment attached='bottom'>
+                                <Grid centered>
+                                    <Grid.Row columns={2}>
+                                        <Grid.Column>
+                                            <Image size='small' src='FSANZLogo.jpg' href='https://www.foodstandards.gov.au/' target='_blank' /><div>Food Standards Australia New Zealand</div>
+                                        </Grid.Column>
+                                        <Grid.Column>
+                                            <Image size='tiny' src='USDALogo.jfif' href='https://www.usda.gov/topics/food-and-nutrition' target='_blank' /><div>United States Department of Agriculture</div>
+                                        </Grid.Column>
+                                    </Grid.Row>
+                                </Grid>
+                            </Segment>
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+                <footer style={divFooterStyle}> <small>&copy; Copyright 2021, Fit2Fitter by Ida v.{CurrentVersion.major}.{CurrentVersion.minor}.{CurrentVersion.build}</small> </footer>
             </div>
             );
     }
@@ -632,7 +741,7 @@ class Home extends React.Component<LoginProps, IState > {
         this.setState({ login: 'logging' });
         this.props.requestLogout(this.state.username, this.state.password);
         this.props.requestLogins(this.state.username, this.state.password);
-        this.setState({ checkMail: false });
+        this.setState({ checkMail: false, messagesDownloaded: false, mealsMessagesDownloaded: false });
     }
 
     private clearCredentials = () => {

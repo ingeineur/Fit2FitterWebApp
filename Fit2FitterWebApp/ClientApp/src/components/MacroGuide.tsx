@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress, Flag, Image } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress, Flag, Image, Loader, Dimmer } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -10,6 +10,8 @@ import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MacroGuideHeader from './MacroGuideHeader'
 import MacroGuideReviewModal from './MacroGuideReviewModal'
 import MacroGuideTable from './MacroGuideTable'
+import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
+import { IClientDto } from '../models/clients';
 
 interface IProps {
 }
@@ -31,91 +33,7 @@ interface IState {
     dateChanged: boolean;
     openReview: boolean;
     savingDone: boolean;
-}
-
-interface IMacroGuides {
-    carb: number;
-    protein: number;
-    fat: number;
-    fruits: number;
-}
-
-interface ITotalDailyMacro {
-    carb: number;
-    protein: number;
-    fat: number;
-    fruits: number;
-}
-
-interface IMeals {
-    0: IMealDetails[];
-    1: IMealDetails[];
-    2: IMealDetails[];
-    3: IMealDetails[];
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    check: boolean;
-    remove: boolean;
-}
-
-interface IClientDto {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-    avatar: string;
-}
-
-interface IMealDto {
-    id: number;
-    mealType: string;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    updated: string;
-    created: string;
-    clientId: number;
-}
-
-interface IMacrosPlanDto {
-    id: number,
-    height: number,
-    weight: number,
-    macroType: string;
-    activityLevel: string;
-    carbPercent: number,
-    proteinPercent: number,
-    fatPercent: number,
-    updated: string;
-    created: string;
-    clientId: number;
-}
-
-interface IMessageDto {
-    id: number,
-    measurementRef: string;
-    mealsRef: string;
-    activitiesRef: string;
-    message: string;
-    readStatus: boolean;
-    updated: string;
-    created: string;
-    fromId: number;
-    clientId: number;
+    mealsDownloaded: boolean;
 }
 
 // At runtime, Redux will merge together...
@@ -152,7 +70,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + date.toISOString())
                 .then(response => response.json() as Promise<IMealDto[]>)
                 .then(data => this.setState({
-                    mealDtos: data, apiUpdate: true
+                    mealDtos: data, apiUpdate: true, mealsDownloaded: true
                 })).catch(error => console.log(error));
         }
     }
@@ -192,7 +110,8 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             savingStatus: 'Saved',
             dateChanged: false,
             openReview: false,
-            savingDone: false
+            savingDone: false,
+            mealsDownloaded: false
         };
     }
 
@@ -408,10 +327,11 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     getMeals = () => {
+        this.setState({ mealsDownloaded: false });
         fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IMealDto[]>)
             .then(data => this.setState({
-                mealDtos: data, apiUpdate: true
+                mealDtos: data, apiUpdate: true, mealsDownloaded: true
             })).catch(error => console.log(error));
     }
 
@@ -585,6 +505,15 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
     }
 
+    isLoadingData = () => {
+        if (this.state.clientDtos.length < 1 || this.state.macrosPlanDtos.length < 1 ||
+            this.state.mealsDownloaded === false) {
+            return true;
+        }
+
+        return false;
+    }
+
     render() {
         var divLabelStyle = {
             display: 'flex',
@@ -603,6 +532,12 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         };
 
         var divDateStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
+        var divLoaderStyle = {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'
@@ -628,6 +563,13 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                 this.setMeals();
             }
 
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
+                </div>);
+            }
             return (
                 <div>
                     <Grid centered>

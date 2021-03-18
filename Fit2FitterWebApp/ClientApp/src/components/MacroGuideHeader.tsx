@@ -1,39 +1,12 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Label, Icon, Card, Header } from 'semantic-ui-react'
+import { Grid } from 'semantic-ui-react'
+import { IMacroGuides, IMeals } from '../models/meals';
 
 interface IProps {
     meals: IMeals;
     guides: IMacroGuides;
     update: boolean;
-}
-
-interface IMacroGuides {
-    carb: number;
-    protein: number;
-    fat: number;
-    fruits: number;
-}
-
-interface IMeals {
-    0: IMealDetails[];
-    1: IMealDetails[];
-    2: IMealDetails[];
-    3: IMealDetails[];
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    check: boolean;
-    remove: boolean;
 }
 
 interface IState {

@@ -1,0 +1,8 @@
+.text-signin {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fa93a8;
+    font-family: 'Arial Rounded MT';
+    font-size: 30px;
+}

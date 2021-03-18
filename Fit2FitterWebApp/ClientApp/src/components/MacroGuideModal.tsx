@@ -1,34 +1,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider, Segment, Label } from 'semantic-ui-react'
+import { Button, Icon, Input, Grid, Image, List, Search, Dropdown, Menu, Segment, Label, Divider } from 'semantic-ui-react'
 import { isNullOrUndefined } from 'util';
+import { IMealDto, IMealDetails } from '../models/meals';
+import { IClientDto } from '../models/clients';
 
 interface IProps {
     client: IClientDto;
     update: boolean;
     addMeal: Function;
-}
-
-interface IClientDto {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    check: boolean;
-    photo: string;
-    remove: boolean;
 }
 
 interface IFoodLegacyDto {
@@ -79,21 +59,25 @@ interface IState {
     dropDownString: IMealDesc[],
     searchFoodText: string,
     selectedFoodValue: string,
+    activeItem: string;
+    anzQuantity: number,
+    selectedFdcIdAnz: string,
+    anzUpdated: boolean,
+    loadingAnz: boolean,
+    searchResultsAnz: IFoodLegacyDto[],
+    searchTextAnz: string,
+    selectedValueAnz: string,
+    portionsAnz: IOption[],
+    selectedPortionAnz: string,
+    foodPortionDtosAnz: IFoodPortionDto[],
+    apiUpdatedAnz: boolean,
 }
 
-interface IMealDto {
-    id: number;
-    mealType: string;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    updated: string;
-    created: string;
-    clientId: number;
-}
+var divFoodLogoStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+};
 
 class MacroGuideModal extends React.Component<IProps, IState> {
 
@@ -105,8 +89,43 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus: 'No Image', searchFoodResults: [],
-            searchFoodText: '', selectedFoodValue: '', dropDownString:[]
+            searchFoodText: '', selectedFoodValue: '', dropDownString: [], activeItem: 'ANZ',
+            loadingAnz: false, searchResultsAnz: [], selectedValueAnz: 'No Selection',
+            portionsAnz: [], selectedPortionAnz: '', foodPortionDtosAnz:[], anzQuantity: 1.0, selectedFdcIdAnz: '', searchTextAnz: '',
+            anzUpdated: false, apiUpdatedAnz: false
         };
+    }
+
+    getDivLabelStyle2 = () => {
+        return ({
+            color: 'black'
+        });
+    }
+
+    getDivLabelStyle3 = () => {
+        return ({
+            color: 'red'
+        });
+    }
+
+    getDivLabelStyle = () => {
+        return ({
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getColour()
+        });
+    }
+
+    getDivUploadImageStyle = () => {
+        return ({
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getUploadImageColour()
+        });
     }
 
     public componentDidMount() {
@@ -168,6 +187,13 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
     }
 
+    updateAnzQuantity = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            this.setState({ anzQuantity: event.target.value, anzUpdated: true });
+        }
+    }
+
     removeLastAddedMeal = () => {
         if (this.state.meals.length > 0) {
             this.state.meals.pop();
@@ -223,7 +249,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     handleSearchChange = (e: any, data: any) => {
         this.setState({ loading: true });
 
-        fetch('api/tracker/' + data['value'] + '/foods')
+        fetch('api/food/' + data['value'] + '/foods')
             .then(response => response.json() as Promise<IFoodLegacyDto[]>)
             .then(data => this.setState({
                 searchResults: data, loading: false
@@ -239,7 +265,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.setState({ selectedValue: sel['description'] });
             var fdcId = sel['fdcId'];
             
-            fetch('api/tracker/' + fdcId + '/food/portions')
+            fetch('api/food/' + fdcId + '/food/portions')
                 .then(response => response.json() as Promise<IFoodPortionDto[]>)
                 .then(data => this.setState({
                     foodPortionDtos: data, apiUpdated: true, portions: [], usdaQuantity: 1.0, selectedFdcId: fdcId
@@ -297,7 +323,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     this.state.meal.carb = parseFloat((this.state.usdaQuantity * x.carbValue * x.gramWeight).toFixed(2));
                     this.state.meal.protein = parseFloat((this.state.usdaQuantity * x.proteinValue * x.gramWeight).toFixed(2));
                     this.state.meal.fat = parseFloat((this.state.usdaQuantity * x.fatValue * x.gramWeight).toFixed(2));
-
                     var totalWeight = this.state.usdaQuantity * x.gramWeight;
                     this.state.meal.food = this.state.selectedValue + ' (' + totalWeight.toFixed(2) + 'g)';
                 }
@@ -334,32 +359,204 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             })
     }
 
+    handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
+
+    getUsda = () => {
+        return (<Segment attached='top'>
+            <div style={divFoodLogoStyle}>
+                <Image circular size='tiny' src='USDALogo.jfif' href='https://www.usda.gov/topics/food-and-nutrition' target='_blank' />
+            </div>
+            <Grid centered>
+                <Grid.Row stretched textAlign='left'>
+                    <Grid.Column textAlign='center' width={16}>
+                        <Search
+                            fluid
+                            size='small'
+                            loading={this.state.loading}
+                            onSearchChange={this.handleSearchChange}
+                            onResultSelect={this.handleSelectResult}
+                            results={this.state.searchResults}
+                            value={this.state.searchText}
+                        />
+                    </Grid.Column>
+                    <Grid.Column verticalAlign='middle' as='a' width={16} textAlign='center'>
+                        <div style={this.getDivLabelStyle3()}>
+                            <a style={this.getDivLabelStyle3()} href={'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients'} target='_blank'>source link: {this.state.selectedValue}</a>
+                        </div>
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row columns={3} stretched textAlign='left'>
+                    <Grid.Column width={4} textAlign='left'>
+                        <a style={this.getDivLabelStyle2()}>Quantity:</a>
+                    </Grid.Column>
+                    <Grid.Column width={2} textAlign='left'>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='left' floated='left'>
+                        <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
+                    </Grid.Column>
+                    <Grid.Column width={4} textAlign='left'>
+                        <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
+                    </Grid.Column>
+                    <Grid.Column width={2} textAlign='center'>
+                        <div style={this.getDivLabelStyle2()}>
+                            <h3>x</h3>
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='left'>
+                        <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>);
+    }
+
+    handleSearchChangeAnz = (e: any, data: any) => {
+        this.setState({ loadingAnz: true });
+
+        fetch('api/food/' + data['value'] + '/anz/foods')
+            .then(response => response.json() as Promise<IFoodLegacyDto[]>)
+            .then(data => this.setState({
+                searchResultsAnz: data, loadingAnz: false
+            })).catch(error => console.log(error))
+
+        this.setState({ searchTextAnz: data['value'] });
+    }
+
+    handleSelectResultAnz = (e: any, data: any) => {
+        this.setState({ status: 'Updating Data From FSANZ.......' });
+        var sel = data['result'];
+        if (!isNullOrUndefined(sel)) {
+            this.setState({ selectedValueAnz: sel['description'] });
+            var fdcId = sel['fdcId'];
+
+            fetch('api/food/' + fdcId + '/anz/food/portions')
+                .then(response => response.json() as Promise<IFoodPortionDto[]>)
+                .then(data => this.setState({
+                    foodPortionDtosAnz: data, apiUpdatedAnz: true, portionsAnz: [], anzQuantity: 1.0, selectedFdcIdAnz: fdcId
+                })).catch(error => console.log(error))
+        }
+    }
+
+    handleSelectPortionAnz = (event: any, data: any) => {
+        this.setState({ anzUpdated: true, selectedPortionAnz: data['value'] });
+    }
+
+    addAnz = () => {
+        this.state.meal.food = this.state.selectedValueAnz;
+        if (this.state.portionsAnz.length > 0 && this.state.foodPortionDtosAnz.length > 0) {
+            this.state.foodPortionDtosAnz.forEach(x => {
+                if (x.modifier === this.state.selectedPortionAnz) {
+                    this.state.meal.carb = parseFloat((this.state.anzQuantity * x.carbValue * x.gramWeight).toFixed(2));
+                    this.state.meal.protein = parseFloat((this.state.anzQuantity * x.proteinValue * x.gramWeight).toFixed(2));
+                    this.state.meal.fat = parseFloat((this.state.anzQuantity * x.fatValue * x.gramWeight).toFixed(2));
+                    var totalWeight = this.state.anzQuantity * x.gramWeight;
+                    this.state.meal.food = this.state.selectedValueAnz + ' (' + totalWeight.toFixed(2) + 'g)';
+
+                    if (x.modifier.includes('fruit')) {
+                        this.state.meal.fv = this.state.anzQuantity;
+                    }
+                    else {
+                        this.state.meal.fv = 0;
+                    }
+                }
+            });
+        }
+        else {
+            this.state.meal.carb = 0.0;
+            this.state.meal.protein = 0.0;
+            this.state.meal.fat = 0.0;
+            this.state.meal.fv = this.state.anzQuantity;
+        }
+
+        this.setState({ meal: this.state.meal, status: 'Pending add to the list', updated: true });
+    }
+
+    getFsanz = () => {
+        return (<Segment attached='top'>
+            <div style={divFoodLogoStyle}>
+                <Image circular size='small' src='FSANZLogo.jpg' href='https://www.foodstandards.gov.au/' target='_blank' />
+            </div>
+            <Grid centered>
+                <Grid.Row stretched textAlign='left'>
+                    <Grid.Column textAlign='center' width={16}>
+                        <Search
+                            fluid
+                            size='small'
+                            loading={this.state.loadingAnz}
+                            onSearchChange={this.handleSearchChangeAnz}
+                            onResultSelect={this.handleSelectResultAnz}
+                            results={this.state.searchResultsAnz}
+                            value={this.state.searchTextAnz}
+                        />
+                    </Grid.Column>
+                    <Grid.Column verticalAlign='middle' as='a' width={16} textAlign='center'>
+                        <div style={this.getDivLabelStyle3()}>
+                            <a style={this.getDivLabelStyle3()} href={'https://www.foodstandards.gov.au/science/monitoringnutrients/afcd/Pages/fooddetails.aspx?PFKID=' + this.state.selectedFdcIdAnz} target='_blank'>source link: {this.state.selectedValueAnz}</a>
+                        </div>
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row columns={3} stretched textAlign='left'>
+                    <Grid.Column width={4} textAlign='left'>
+                        <a style={this.getDivLabelStyle2()}>Quantity:</a>
+                    </Grid.Column>
+                    <Grid.Column width={2} textAlign='left'>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='left' floated='left'>
+                        <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
+                    </Grid.Column>
+                    <Grid.Column width={4} textAlign='left'>
+                        <Input size='small' value={this.state.anzQuantity} onChange={this.updateAnzQuantity} placeholder='Quantity' />
+                    </Grid.Column>
+                    <Grid.Column width={2} textAlign='center'>
+                        <div style={this.getDivLabelStyle2()}>
+                            <h3>x</h3>
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='left'>
+                        <Dropdown fluid id='portions' value={this.state.selectedPortionAnz} selection options={this.state.portionsAnz} onChange={this.handleSelectPortionAnz} />
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>);
+    }
+
+    getSearchOption = () => {
+        if (this.state.activeItem == 'USDA') {
+            return this.getUsda();
+        }
+        else if (this.state.activeItem == 'previous') {
+            return this.getOwnMealData();
+        }
+        else if (this.state.activeItem == 'ANZ') {
+            return this.getFsanz();
+        }
+    }
+
+    getOwnMealData = () => {
+        return (<Segment attached='top'>
+            <Grid centered>
+                <Grid.Row stretched textAlign='left'>
+                    <Grid.Column textAlign='center' width={16}>
+                        <div style={this.getDivLabelStyle3()}>
+                            <a style={this.getDivLabelStyle3()}>Copy your own meals entered since last 5 days</a>
+                        </div>
+                        <Search
+                            fluid
+                            size='small'
+                            loading={this.state.loading}
+                            onSearchChange={this.handleFoodSearchChange}
+                            onResultSelect={this.handleFoodSelectResult}
+                            results={this.state.dropDownString}
+                            value={this.state.searchFoodText}
+                        />
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>);
+    }
+
     render() {
 
-        var divLabelStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColour()
-        };
-
-        var divUploadImageStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getUploadImageColour()
-        };
-
-        var divLabelStyle2 = {
-            color: 'black'
-        };
-
-        var divLabelStyle3 = {
-            color: 'red'
-        };
-        
         if (this.state.dirty !== this.props.update) {
             while (this.state.meals.length > 0) {
                 this.state.meals.pop();
@@ -369,6 +566,11 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         if (this.state.usdaUpdated === true) {
             this.setState({ usdaUpdated: false });
             this.addUsda();
+        }
+
+        if (this.state.anzUpdated === true) {
+            this.setState({ anzUpdated: false });
+            this.addAnz();
         }
 
         if (this.state.updated === true) {
@@ -390,82 +592,56 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.setState({ usdaUpdated: true });
         }
 
+        if (this.state.apiUpdatedAnz === true) {
+            this.setState({ apiUpdatedAnz: false });
 
-        var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
+            this.state.foodPortionDtosAnz.forEach(x => {
+                this.state.portionsAnz.push({ key: x.modifier, value: x.modifier, text: x.amount + ' ' + x.modifier + ' (' + x.gramWeight + 'g)' });
+            });
 
+            if (this.state.foodPortionDtosAnz.length > 0) {
+                this.setState({ portionsAnz: this.state.portionsAnz, selectedPortionAnz: this.state.foodPortionDtosAnz[0].modifier });
+            }
+
+            this.setState({ anzUpdated: true });
+        }
+
+        const activeItem = this.state.activeItem;
         return (<div>
-            <Segment attached='top'>
-                <Label color='blue' ribbon>Search Option 1</Label>
-                <span>USDA Food Database</span>
-                <Grid centered>
-                    <Grid.Row stretched textAlign='left'>
-                        <Grid.Column textAlign='center' width={16}>
-                            <Search
-                                fluid
-                                size='small'
-                                loading={this.state.loading}
-                                onSearchChange={this.handleSearchChange}
-                                onResultSelect={this.handleSelectResult}
-                                results={this.state.searchResults}
-                                value={this.state.searchText}
-                            />
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' as='a' width={16} textAlign='center'>
-                            <div style={divLabelStyle3}>
-                                <a style={divLabelStyle3} href={linkUsda} target='_blank'>{this.state.selectedValue}</a>
-                            </div>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row columns={3} stretched textAlign='left'>
-                        <Grid.Column width={4} textAlign='left'>
-                            <a style={divLabelStyle2}>Quantity:</a>
-                        </Grid.Column>
-                        <Grid.Column width={2} textAlign='left'>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
-                            <a style={divLabelStyle2}>Meal Portions:</a>
-                        </Grid.Column>
-                        <Grid.Column width={4} textAlign='left'>
-                            <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
-                        </Grid.Column>
-                        <Grid.Column width={2} textAlign='center'>
-                            <div style={divLabelStyle2}>
-                                <h3>x</h3>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
-                        </Grid.Column>
-                    </Grid.Row>
-                </Grid>
-            </Segment>
-            <Segment attached='top'>
-                <Label color='red' ribbon>Search Option 2</Label>
-                <span>Previous Meals Entries</span>
-                <Grid centered>
-                    <Grid.Row stretched textAlign='left'>
-                        <Grid.Column textAlign='center' width={16}>
-                            <div style={divLabelStyle3}>
-                                <a style={divLabelStyle3}>Copy your own meals entered since last 5 days</a>
-                            </div>
-                            <Search
-                                fluid
-                                size='small'
-                                loading={this.state.loading}
-                                onSearchChange={this.handleFoodSearchChange}
-                                onResultSelect={this.handleFoodSelectResult}
-                                results={this.state.dropDownString}
-                                value={this.state.searchFoodText}
-                            />
-                        </Grid.Column>
-                    </Grid.Row>
-                </Grid>
-            </Segment>
-            <div style={divLabelStyle}>
+            <Menu color='pink' inverted attached='top' pointing>
+                <Menu.Item
+                    name='ANZ'
+                    active={activeItem === 'ANZ'}
+                    onClick={this.handleItemClick}
+                />
+                <Menu.Item
+                    name='USDA'
+                    active={activeItem === 'USDA'}
+                    onClick={this.handleItemClick}
+                />
+                <Menu.Item
+                    name='previous'
+                    active={activeItem === 'previous'}
+                    onClick={this.handleItemClick}
+                />
+                <Menu.Item
+                    name='manual'
+                    active={activeItem === 'manual'}
+                    onClick={this.handleItemClick}
+                />
+            </Menu>
+            {this.getSearchOption()}
+            <div style={this.getDivLabelStyle()}>
                 <a>{this.state.status}</a>
             </div>
-            <Segment attached='top'>
-                <Label color='orange' ribbon>Meal Entry</Label>
+            <Segment attached='bottom'>
+                <div style={divFoodLogoStyle}>
+                    <Button.Group fluid>
+                        <Button size='tiny' primary onClick={this.addMeal}>Add</Button>
+                        <Button size='tiny' secondary onClick={this.removeLastAddedMeal}>Undo</Button>
+                    </Button.Group>
+                </div>
+                <Divider />
                 <Grid centered>
                     <Grid.Row stretched>
                         <Grid.Column as='a' width={6} textAlign='left'>
@@ -503,7 +679,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={10} textAlign='left'>
                             <div>
-                                <div style={divUploadImageStyle}>
+                                <div style={this.getDivUploadImageStyle()}>
                                     <a>{this.state.imageUploadStatus}</a>
                                 </div>
                                 <input
@@ -512,16 +688,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                     onChange={this.handleImageChange}
                                 />
                             </div>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row columns={2}>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
-                            <div>
-                                <Button floated='left' size='tiny' primary onClick={this.addMeal}>Add</Button>
-                                <Button floated='left' size='tiny' secondary onClick={this.removeLastAddedMeal}>Undo</Button>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' width={6} textAlign='left' floated='left'>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

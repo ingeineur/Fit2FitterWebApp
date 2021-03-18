@@ -67,6 +67,8 @@ namespace Fit2Fitter.Database.Data
         public virtual DbSet<Models.FoodNutrientConversionFactor> FoodNutrientConversionFactor { get; set; }
         public virtual DbSet<Models.FoodCalorieConversionFactor> FoodCalorieConversionFactor { get; set; }
         public virtual DbSet<Models.FoodNutrient> FoodNutrients { get; set; }
+        public virtual DbSet<Models.AnzFoodNutrient> AnzFoodNutrients { get; set; }
+        public virtual DbSet<Models.AnzFoodMeasure> AnzFoodMeasures { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -541,6 +543,80 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.DerivationId)
                     .IsRequired()
                     .HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<Models.AnzFoodNutrient>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FoodKey)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.Classification)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Moisture)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Protein)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Fat)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Sugars)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Starch)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Carbs)
+                    .IsRequired()
+                    .HasMaxLength(8);
+                
+                entity.Property(e => e.SaturatedFattyAcids)
+                    .IsRequired()
+                    .HasMaxLength(8);
+            });
+
+            modelBuilder.Entity<Models.AnzFoodMeasure>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FoodKey)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.FoodSurvey)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.MeasureId)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.Quantity)
+                    .IsRequired()
+                    .HasMaxLength(4);
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Weight)
+                    .IsRequired()
+                    .HasMaxLength(8);
             });
         }
     }

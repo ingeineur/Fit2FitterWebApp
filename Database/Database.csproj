@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Contracts\ITrackerRepository.cs~RF154e707c.TMP" />
     <None Remove="Data\DatabaseContext.cs~RFd7c533a.TMP" />
   </ItemGroup>
 

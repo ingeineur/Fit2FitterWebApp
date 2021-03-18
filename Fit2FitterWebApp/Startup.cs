@@ -72,10 +72,12 @@ namespace Fit2FitterWebApp
             //repository
             services.AddTransient<Fit2Fitter.Database.Contracts.IClientRepository, Fit2Fitter.Database.Data.ClientRepository>();
             services.AddTransient<Fit2Fitter.Database.Contracts.ITrackerRepository, Fit2Fitter.Database.Data.TrackerRepository>();
+            services.AddTransient<Fit2Fitter.Database.Contracts.IFoodRepository, Fit2Fitter.Database.Data.FoodRepository>();
 
             //services
             services.AddTransient<Fit2Fitter.Services.Contracts.IClientService, Fit2Fitter.Services.Implementation.ClientService>();
             services.AddTransient<Fit2Fitter.Services.Contracts.ITrackerService, Fit2Fitter.Services.Implementation.TrackerService>();
+            services.AddTransient<Fit2Fitter.Services.Contracts.IFoodService, Fit2Fitter.Services.Implementation.FoodService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

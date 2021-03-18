@@ -164,7 +164,7 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
     handleSearchChange = (e: any, data: any) => {
         this.setState({ loading: true });
 
-        fetch('api/tracker/' + data['value'] + '/foods')
+        fetch('api/food/' + data['value'] + '/foods')
             .then(response => response.json() as Promise<IFoodLegacyDto[]>)
             .then(data => this.setState({
                 searchResults: data, loading: false
@@ -180,7 +180,7 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
             this.setState({ selectedValue: sel['description'] });
             var fdcId = sel['fdcId'];
             
-            fetch('api/tracker/' + fdcId + '/food/portions')
+            fetch('api/food/' + fdcId + '/food/portions')
                 .then(response => response.json() as Promise<IFoodPortionDto[]>)
                 .then(data => this.setState({
                     foodPortionDtos: data, apiUpdated: true, portions: [], usdaQuantity: 1.0, selectedFdcId: fdcId, status: 'data updated'

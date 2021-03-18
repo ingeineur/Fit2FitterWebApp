@@ -145,6 +145,13 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/activity/slice")]
+        public async Task<IEnumerable<ActivityDto>> GetActivitiesSlice (int clientId, [FromQuery, Required] string fromDate, [FromQuery, Required] string toDate)
+        {
+            var data = await this.trackerService.GetActivities(clientId, DateTime.Parse(fromDate), DateTime.Parse(toDate)).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("activity")]
         public async Task<IEnumerable<ActivityDto>> GetActivities([FromQuery, Required] string date)
         {
@@ -224,24 +231,18 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/macrosguide/slice")]
+        public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuidesSlice (int clientId, [FromQuery, Required] string fromDate, 
+            [FromQuery, Required] string toDate)
+        {
+            var data = await this.trackerService.GetMacrosGuides(clientId, DateTime.Parse(fromDate), DateTime.Parse(toDate)).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("{clientId}/macrosguide/search")]
         public async Task<IEnumerable<MacrosGuideDto>> SearchMacrosGuides(int clientId, [FromQuery, Required] string keyword)
         {
             var data = await this.trackerService.GetMacrosGuides(clientId, keyword).ConfigureAwait(false);
-            return data.ToArray();
-        }
-
-        [HttpGet("{keyword}/foods")]
-        public async Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword)
-        {
-            var data = await this.trackerService.GetFoods(keyword).ConfigureAwait(false);
-            return data.ToArray();
-        }
-
-        [HttpGet("{fdcId}/food/portions")]
-        public async Task<IEnumerable<FoodPortionDto>> GetFoodPortions(string fdcId)
-        {
-            var data = await this.trackerService.GetFoodPortions(fdcId).ConfigureAwait(false);
             return data.ToArray();
         }
 

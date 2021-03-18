@@ -2,23 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Button, Grid, Segment } from 'semantic-ui-react'
 import { isNullOrUndefined } from 'util';
+import { IMealDetails } from '../models/meals'
 
 interface IProps {
     meals: IMealDetails[];
     update: boolean;
     updateMeal: Function;
-}
-
-interface IMealDetails {
-    id: number;
-    food: string;
-    carb: number;
-    protein: number;
-    fat: number;
-    fv: number;
-    photo: string;
-    check: boolean;
-    remove: boolean;
 }
 
 interface IState {

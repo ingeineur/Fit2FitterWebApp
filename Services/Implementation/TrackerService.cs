@@ -176,6 +176,53 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<ActivityDto>> GetActivities(int clientId, DateTime fromDate, DateTime toDate)
+        {
+            var activities = await this.trackerRepository.FindActivities(clientId, fromDate, toDate).ConfigureAwait(false);
+
+            List<ActivityDto> results = new List<ActivityDto>();
+            var days = (toDate - fromDate).Days;
+            DateTime date = DateTime.Parse(fromDate.ToString());
+            while(date <= toDate)
+            {
+                var act = activities.Where(x => Math.Abs((x.Created - date).TotalHours) <= 12);
+                if (act.Any())
+                {
+                    results.Add(new ActivityDto
+                    {
+                        Id = 0,
+                        Calories = act.Select(x => x.Calories).Aggregate((result, item) => result + item),
+                        Steps = act.Select(x => x.Steps).Aggregate((result, item) => result + item),
+                        MaxHr = act.Select(x => x.MaxHr).Max(),
+                        Duration = act.Select(x => x.Duration).Aggregate((result, item) => result + item),
+                        Description = "Aggregation",
+                        Updated = act.First().Updated,
+                        Created = act.First().Created,
+                        ClientId = clientId
+                    });
+                }
+                else
+                {
+                    results.Add(new ActivityDto
+                    {
+                        Id = 0,
+                        Calories = 0,
+                        Steps = 0,
+                        MaxHr = 0,
+                        Duration = 0.0,
+                        Description = "Aggregation",
+                        Updated = DateTime.Now,
+                        Created = date,
+                        ClientId = clientId
+                    });
+                }
+
+                date = date.AddDays(1.0);
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<ActivityDto>> GetActivities(DateTime date)
         {
             var activities = await this.trackerRepository.FindActivities(date).ConfigureAwait(false);
@@ -383,6 +430,57 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, DateTime fromDate, DateTime toDate)
+        {
+            var macrosGuides = await this.trackerRepository.FindMacroGuides(clientId, fromDate, toDate).ConfigureAwait(false);
+
+            List<MacrosGuideDto> results = new List<MacrosGuideDto>();
+            var days = (toDate - fromDate).Days;
+            DateTime date = DateTime.Parse(fromDate.ToString());
+            while (date <= toDate)
+            {
+                var meals = macrosGuides.Where(x => Math.Abs((x.Created - date).TotalHours) <= 12);
+                if (meals.Any())
+                {
+                    results.Add(new MacrosGuideDto
+                    {
+                        Id = 0,
+                        Photo = "",
+                        Food = "Aggregation",
+                        MealType = "Aggregation",
+                        Carb = meals.Select(x => x.Carb).Aggregate((result, item) => result + item),
+                        Protein = meals.Select(x => x.Protein).Aggregate((result, item) => result + item),
+                        Fat = meals.Select(x => x.Fat).Aggregate((result, item) => result + item),
+                        FV = meals.Select(x => x.FV).Aggregate((result, item) => result + item),
+                        Updated = meals.First().Updated,
+                        Created = meals.First().Created,
+                        ClientId = clientId
+                    });
+                }
+                else
+                {
+                    results.Add(new MacrosGuideDto
+                    {
+                        Id = 0,
+                        Photo = "",
+                        Food = "Aggregation",
+                        MealType = "Aggregation",
+                        Carb = 0,
+                        Protein = 0,
+                        Fat = 0,
+                        FV = 0,
+                        Updated = DateTime.Now,
+                        Created = date,
+                        ClientId = clientId
+                    });
+                }
+
+                date = date.AddDays(1.0);
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<MacrosGuideDto>> GetMacrosGuides(int clientId, string keyword)
         {
             try
@@ -445,140 +543,6 @@ namespace Fit2Fitter.Services.Implementation
             }
 
             return nutrients.First().Amount;
-        }
-
-        public async Task<IEnumerable<FoodLegacyItemDto>> GetFoods(string keyword)
-        {
-            var results = await this.trackerRepository.FindFoods(keyword).ConfigureAwait(false);
-            //var res = results.ToList().OrderBy(y => y.Description.StartsWith(keyword, StringComparison.OrdinalIgnoreCase))
-            //  .ThenBy(x => x);
-
-            var results2 = results.Select(Value => new { Value, Index = Value.Description.IndexOf(keyword, StringComparison.InvariantCultureIgnoreCase) })
-                   .Where(pair => pair.Index >= 0)
-                   .OrderBy(pair => pair.Index)
-                   .Select(pair => pair.Value);
-
-            List<FoodLegacyItem> temp = new List<FoodLegacyItem>();
-            int i = 0;
-            foreach (var f in results2)
-            {
-                temp.Add(f);
-                if (i > 20)
-                { 
-                    break; 
-                }
-                i++;
-            }
-
-            return temp.Select( food => new FoodLegacyItemDto { 
-                FdcId = food.FdcId,
-                Description = food.Description
-            });
-        }
-
-        public async Task<IEnumerable<FoodPortionDto>> GetFoodPortions(string fdcId)
-        {
-            var portions = await this.trackerRepository.FindPortions(fdcId).ConfigureAwait(false);
-            List<FoodPortionDto> dtos = new List<FoodPortionDto>();
-            var carbs = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1005").ConfigureAwait(false));
-            var protein = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1003").ConfigureAwait(false));
-            var fat = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1004").ConfigureAwait(false));
-
-            var sugar = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1063").ConfigureAwait(false));
-            var sucrose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1010").ConfigureAwait(false));
-            var glucose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1011").ConfigureAwait(false));
-            var fruitose = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1012").ConfigureAwait(false));
-
-            var fiber = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1079").ConfigureAwait(false));
-            var water = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1051").ConfigureAwait(false));
-
-            var vA = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1105").ConfigureAwait(false));
-            var vB6 = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1175").ConfigureAwait(false));
-            var vC = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1162").ConfigureAwait(false));
-            var vD = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1110").ConfigureAwait(false));
-
-            var calcium = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1087").ConfigureAwait(false));
-            var iron = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1089").ConfigureAwait(false));
-            var potassium = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1092").ConfigureAwait(false));
-            var zinc = this.GetNutrientValue(await this.trackerRepository.FindFoodNutrients(fdcId, "1095").ConfigureAwait(false));
-
-            if (carbs == 0.0 && 
-                protein == 0.0 && 
-                fat == 0.0)
-            {
-                return dtos;
-            }
-
-            foreach (var portion in portions)
-            {
-                dtos.Add(new FoodPortionDto
-                {
-                    FdcId = fdcId,
-                    Amount = string.IsNullOrEmpty(portion.Amount) == false ? double.Parse(portion.Amount) : 1.0,
-                    Modifier = portion.Modifier,
-                    GramWeight = portion.GramWeight,
-                    CarbValue = carbs/100,
-                    ProteinValue = protein/100,
-                    FatValue = fat/100,
-                    SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
-                    FiberValue = fiber/100,
-                    WaterValue = water/100,
-                    VitaminAValue = vA/100,
-                    VitaminB6Value = vB6/100,
-                    VitaminCValue = vC/100,
-                    VitaminDValue = vD/100,
-                    CalciumValue = calcium/100,
-                    IronValue = iron/100,
-                    PotassiumValue = potassium / 100,
-                    ZincValue = zinc/100
-                });
-            }
-
-            dtos.Add(new FoodPortionDto
-            {
-                FdcId = fdcId,
-                Amount = 1.0,
-                Modifier = "one gram",
-                GramWeight = 1.0,
-                CarbValue = carbs / 100,
-                ProteinValue = protein / 100,
-                FatValue = fat / 100,
-                SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
-                FiberValue = fiber / 100,
-                WaterValue = water / 100,
-                VitaminAValue = vA / 100,
-                VitaminB6Value = vB6 / 100,
-                VitaminCValue = vC / 100,
-                VitaminDValue = vD / 100,
-                CalciumValue = calcium / 100,
-                IronValue = iron / 100,
-                PotassiumValue = potassium / 100,
-                ZincValue = zinc / 100
-            });
-
-            dtos.Add(new FoodPortionDto
-            {
-                FdcId = fdcId,
-                Amount = 1.0,
-                Modifier = "hundred gram",
-                GramWeight = 100.0,
-                CarbValue = carbs / 100,
-                ProteinValue = protein / 100,
-                FatValue = fat / 100,
-                SugarValue = (sugar / 100) + (sucrose / 100) + (fruitose / 100) + (glucose / 100),
-                FiberValue = fiber / 100,
-                WaterValue = water / 100,
-                VitaminAValue = vA / 100,
-                VitaminB6Value = vB6 / 100,
-                VitaminCValue = vC / 100,
-                VitaminDValue = vD / 100,
-                CalciumValue = calcium / 100,
-                IronValue = iron / 100,
-                PotassiumValue = potassium / 100,
-                ZincValue = zinc / 100
-            });
-
-            return dtos;
         }
 
         public async Task<bool> DeleteMeals(int clientId, DateTime date)

@@ -22,3 +22,14 @@ export interface IClient {
     created: string;
     avatar: string;
 }
+
+export interface IClientDto {
+    id: number,
+    lastName: string;
+    firstName: string;
+    address: string;
+    city: string;
+    age: number;
+    created: string;
+    avatar: string;
+}

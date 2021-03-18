@@ -406,11 +406,16 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
         return d.toDateString();
     }
 
-    getLoggedMeals = () => {
+    getLoggedMeals = (unread: boolean) => {
         this.state.loggedMeals.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
 
+        var meals = this.state.loggedMeals.filter(x => x.unreadComments < 1);
+        if (unread) {
+            meals = this.state.loggedMeals.filter(x => x.unreadComments > 0)
+        }
+
         return (
-            this.state.loggedMeals.map((item, index) =>
+            meals.map((item, index) =>
                 <div key={index}>
                     <Message key={index} color={this.getUnReadMessageColour(item.unreadComments)}>
                         <Label key={index} as='a' color={this.getUnReadMessageColour(item.unreadComments)} corner='right'>
@@ -578,7 +583,8 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
                                 <h2>Logged Meals for: {name}</h2>
-                                {this.getLoggedMeals()}
+                                {this.getLoggedMeals(true)}
+                                {this.getLoggedMeals(false)}
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>

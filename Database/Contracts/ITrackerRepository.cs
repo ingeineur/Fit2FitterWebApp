@@ -37,6 +37,14 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Activity>> FindActivities(int clientId, DateTime date);
 
         /// <summary>
+        /// Finds client measurement.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">recorded date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Activity>> FindActivities(int clientId, DateTime fromDate, DateTime toDate);
+
+        /// <summary>
         /// Find all activities by date
         /// </summary>
         /// <param name="date"></param>
@@ -124,27 +132,20 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime date);
 
         /// <summary>
+        /// Finds client measurement.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">recorded date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime fromDate, DateTime toDate);
+
+        /// <summary>
         /// Find meals by keyword
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="keyword"></param>
         /// <returns></returns>
         System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, string keyword);
-
-        /// <summary>
-        /// Find food by keyword
-        /// </summary>
-        /// <param name="keyword"></param>
-        /// <returns></returns>
-        Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword);
-
-        Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId);
-
-        Task<IEnumerable<Models.FoodNutrientConversionFactor>> FindNutrientConversionFactor(string fdcId);
-
-        Task<IEnumerable<Models.FoodCalorieConversionFactor>> FindCalorieConversionFactor(string conversionId);
-
-        Task<IEnumerable<Models.FoodNutrient>> FindFoodNutrients(string fdcId, string nutrientId);
 
         /// <summary>
         /// Add a new client measurement.

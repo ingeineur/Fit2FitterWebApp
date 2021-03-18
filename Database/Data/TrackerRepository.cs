@@ -55,6 +55,13 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Activity>> FindActivities(int clientId, DateTime fromDate, DateTime toDate)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Activities.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(fromDate, x.Created) >= 0 && DbF.DateDiffDay(x.Created, toDate) >= 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async System.Threading.Tasks.Task<IEnumerable<Models.Activity>> FindActivities(DateTime date)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
@@ -136,43 +143,18 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, DateTime fromDate, DateTime toDate)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.MacrosGuides.Where(x =>
+                x.ClientId == clientId && DbF.DateDiffDay(fromDate, x.Created) >= 0 && DbF.DateDiffDay(x.Created, toDate) >= 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async System.Threading.Tasks.Task<IEnumerable<Models.MacrosGuide>> FindMacroGuides(int clientId, string keyword)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.MacrosGuides.Where(x =>
                 x.ClientId == clientId && DbF.DateDiffDay(x.Created, DateTime.Today) <= 6 && x.Food.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
-        }
-
-        public async System.Threading.Tasks.Task<IEnumerable<Models.FoodLegacyItem>> FindFoods(string keyword)
-        {
-            //string[] notRelevantCategories = {"3", "21", "10", "25", "23", "24", "19", "18"};
-
-            return await this.databaseContext.FoodLegacy.Where(x =>
-                x.Description.Contains(keyword)).ToArrayAsync().ConfigureAwait(false);
-        }
-
-        public async System.Threading.Tasks.Task<IEnumerable<Models.FoodPortionLegacyItem>> FindPortions(string fdcId)
-        {
-            return await this.databaseContext.FoodPortionsLegacy.Where(x =>
-                x.FdcId == fdcId).ToArrayAsync().ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<Models.FoodNutrientConversionFactor>> FindNutrientConversionFactor(string fdcId)
-        {
-            return await this.databaseContext.FoodNutrientConversionFactor.Where(x =>
-                x.FdcId == fdcId).ToArrayAsync().ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<Models.FoodCalorieConversionFactor>> FindCalorieConversionFactor(string conversionId)
-        {
-            return await this.databaseContext.FoodCalorieConversionFactor.Where(x =>
-                x.FoodNutrientConversionFactorId == conversionId).ToArrayAsync().ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<Models.FoodNutrient>> FindFoodNutrients(string fdcId, string nutrientId)
-        {
-            return await this.databaseContext.FoodNutrients.Where(x =>
-                x.FdcId == fdcId && x.NutrientId == nutrientId).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async Task AddMeasurement(Measurement measurement)

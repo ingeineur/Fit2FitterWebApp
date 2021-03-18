@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, Segment } from 'semantic-ui-react';
+import { Button, Icon, Input, Grid, Message, Header, Segment, Loader, Dimmer } from 'semantic-ui-react';
 import ChartistGraph from 'react-chartist';
 import MacroGuideHeader from './MacroGuideHeader';
 import MessagesMealsChat from './MessagesMealsChat';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
 import ActivityHeader from './ActivityHeader'
-import { IMacroGuides, IMealDto, IMeals, IMealDetails, IMacrosPlanDto } from '../models/meals'
+import { IMacroGuides, IMealDto, IMeals, IMacrosPlanDto } from '../models/meals'
 import { IActivityGuides, IActivity, IActivityDto } from '../models/activities'
 
 interface IProps {
@@ -47,6 +47,8 @@ interface IState {
     activityDtos: IActivityDto[];
     steps: number;
     sleeps: number;
+    mealsDownloaded: boolean;
+    activitiesDownloaded: boolean;
 }
 
 interface GalleryImage {
@@ -84,13 +86,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             activityDtos: [],
             sleeps: 0,
             steps: 0,
+            mealsDownloaded: false,
+            activitiesDownloaded: false
         };
     }
 
     public componentDidMount() {
         this.setState({ clientId: this.props.clientId, mealDate: this.props.mealDate });
-
-        console.log(this.props.mealDate);
 
         //get client info
         fetch('api/client?clientId=' + this.props.clientId)
@@ -110,14 +112,14 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         fetch('api/tracker/' + this.props.clientId + '/macrosguide?date=' + this.props.mealDate)
             .then(response => response.json() as Promise<IMealDto[]>)
             .then(data => this.setState({
-                mealDtos: data, apiUpdate: true, updated: !this.state.updated
+                mealDtos: data, apiUpdate: true, updated: !this.state.updated, mealsDownloaded: true
             })).catch(error => console.log(error));
 
         //get all activities
         fetch('api/tracker/' + this.props.clientId + '/activity?date=' + this.props.mealDate)
             .then(response => response.json() as Promise<IActivityDto[]>)
             .then(data => this.setState({
-                activityDtos: data, apiUpdate: true
+                activityDtos: data, apiUpdate: true, activitiesDownloaded: true
             })).catch(error => console.log(error));
     }
 
@@ -454,6 +456,15 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         });
     }
 
+    isLoadingData = () => {
+        if (this.state.clientDtos.length < 1 || this.state.macrosPlanDtos.length < 1 ||
+            this.state.mealsDownloaded === false || this.state.activitiesDownloaded === false) {
+            return true;
+        }
+
+        return false;
+    }
+
     render() {
         var divLabelStyle3 = {
             color: '#fffafa',
@@ -520,6 +531,12 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var divVeg = {
             color: '#CE8B54',
             backgroundColor: '#CE8B54'
+        };
+
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
         };
 
         var carbMacros: number[] = [];
@@ -608,6 +625,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             age = this.state.clientDtos[0].age;
         }
 
+        if (this.isLoadingData()) {
+            return (<div style={divLoaderStyle}>
+                <Dimmer active inverted>
+                    <Loader content='Loading'/>
+                </Dimmer>
+            </div>);
+        }
         return (<div>
             <Grid centered>
                 <Grid.Row>

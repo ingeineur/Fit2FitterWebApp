@@ -318,6 +318,99 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<MeasurementDto>> GetMeasurementsSlice(int clientId, DateTime fromDate, DateTime toDate)
+        {
+            var measurements = await this.trackerRepository.FindMeasurements(clientId, fromDate, toDate).ConfigureAwait(false);
+            
+            List<MeasurementDto> results = new List<MeasurementDto>();
+            var days = (toDate - fromDate).Days;
+            DateTime date = DateTime.Parse(fromDate.ToString());
+            while (date <= toDate)
+            {
+                var measures = measurements.Where(x => Math.Abs((x.Created - date).TotalHours) <= 12);
+                if (measures.Any())
+                {
+                    results.Add(new MeasurementDto
+                    {
+                        Id = 0,
+                        Neck = measures.First().Neck,
+                        UpperArm = measures.First().UpperArm,
+                        Waist = measures.First().Waist,
+                        Hips = measures.First().Hips,
+                        Thigh = measures.First().Thigh,
+                        Chest = measures.First().Chest,
+                        Weight = measures.First().Weight,
+                        BodyFat = measures.First().BodyFat,
+                        Updated = measures.First().Updated,
+                        Created = measures.First().Created,
+                        ClientId = clientId
+                    });
+                }
+                else if (results.Any())
+                {
+                    results.Add(new MeasurementDto
+                    {
+                        Id = 0,
+                        Neck = results.Last().Neck,
+                        UpperArm = results.Last().UpperArm,
+                        Waist = results.Last().Waist,
+                        Hips = results.Last().Hips,
+                        Thigh = results.Last().Thigh,
+                        Chest = results.Last().Chest,
+                        Weight = results.Last().Weight,
+                        BodyFat = results.Last().BodyFat,
+                        Updated = results.Last().Updated,
+                        Created = date,
+                        ClientId = clientId
+                    });
+                }
+                else
+                {
+                    var temp = await this.trackerRepository.FindMeasurementClosest(clientId, date).ConfigureAwait(false);
+                    if (temp != null)
+                    {
+                        results.Add(new MeasurementDto
+                        {
+                            Id = 0,
+                            Neck = temp.Neck,
+                            UpperArm = temp.UpperArm,
+                            Waist = temp.Waist,
+                            Hips = temp.Hips,
+                            Thigh = temp.Thigh,
+                            Chest = temp.Chest,
+                            Weight = temp.Weight,
+                            BodyFat = temp.BodyFat,
+                            Updated = temp.Updated,
+                            Created = date,
+                            ClientId = clientId
+                        });
+                    }
+                    else
+                    {
+                        results.Add(new MeasurementDto
+                        {
+                            Id = 0,
+                            Neck = 0,
+                            UpperArm = 0,
+                            Waist = 0,
+                            Hips = 0,
+                            Thigh = 0,
+                            Chest = 0,
+                            Weight = 0,
+                            BodyFat = 0,
+                            Updated = DateTime.Now,
+                            Created = date,
+                            ClientId = clientId
+                        });
+                    }
+                }
+
+                date = date.AddDays(1.0);
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<MeasurementDto>> GetMeasurementsClosest(int clientId, DateTime date)
         {
             var measurement = await this.trackerRepository.FindMeasurementClosest(clientId, date).ConfigureAwait(false);

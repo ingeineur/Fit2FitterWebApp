@@ -2,11 +2,14 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Header, Label, Input, Icon, Image, List, Flag } from 'semantic-ui-react'
+import { Menu, Segment, Grid, Dimmer, Label, Loader, Image, List, Flag, Dropdown } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
+import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
+import { getActivityLevel } from '../models/activities';
+import ChartistGraph from 'react-chartist';
 
 interface IProps {
 }
@@ -22,11 +25,55 @@ interface IState {
     activities: IActivity[];
     updated: boolean;
     apiUpdate: boolean;
+    clientDownloaded: boolean;
     activityDtos: IActivityDto[];
+    activityDtosUpdated: boolean;
+    activityDtosDownloaded: boolean;
     dateChanged: boolean;
     clients: IClient[];
     clientDtos: IClientDto[];
     group: string;
+    macroGuides: IMacroGuides;
+    macrosPlanDtos: IMacrosPlanDto[];
+    macrosPlanDtosUpdated: boolean;
+    macrosPlanDtosDownloaded: boolean;
+    mealDtos: IMealDto[];
+    mealDtosUpdated: boolean;
+    mealDtosDownloaded: boolean;
+    activity2Dtos: IActivityDto[];
+    activity2DtosUpdated: boolean;
+    activity2DtosDownloaded: boolean;
+    fromDate: Date;
+    weightLabel: string[];
+    activityLabel: string[];
+    graphActivityValues: IGraphActivity;
+    measurementDtos: IMeasurementDto[];
+    measurementDtosUpdated: boolean;
+    measurementDtosDownloaded: boolean;
+    queryStatus: string;
+    clientList: IOption[];
+    toClientId: number;
+}
+
+interface IOption {
+    key: string,
+    text: string,
+    value: string
+}
+
+interface IMeasurementDto {
+    id: number;
+    neck: number;
+    upperArm: number;
+    waist: number;
+    hips: number;
+    thigh: number;
+    chest: number;
+    weight: number;
+    bodyFat: number;
+    updated: string;
+    created: string;
+    clientId: number;
 }
 
 interface IClient {
@@ -36,6 +83,7 @@ interface IClient {
     city: string;
     grp: string;
     img: string;
+    avatar: string;
 }
 
 interface IActivityGuides {
@@ -79,6 +127,44 @@ interface IActivityDto {
     clientId: number;
 }
 
+interface IGraphActivity {
+    steps: number[];
+    calories: number[];
+    weights: number[];
+    bodyFats: number[];
+    carbs: number[];
+    protein: number[];
+    fat: number[];
+}
+
+var type = 'Line';
+var bar = 'Bar';
+
+var lineChartOptions = {
+    reverseData: false,
+    showArea: true
+}
+
+var barChartOptions = {
+    reverseData: false,
+    seriesBarDistance: 10
+};
+
+var divCarb = {
+    color: 'red',
+    backgroundColor: 'red'
+};
+
+var divPro = {
+    color: '#FF5E13',
+    backgroundColor: '#FF5E13'
+};
+
+var divFat = {
+    color: 'yellow',
+    backgroundColor: 'yellow'
+};
+
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -89,11 +175,25 @@ type LoginProps =
 class Dashboard extends React.Component<LoginProps, IState> {
     public componentDidMount() {
         this.props.getLogin();
-        var date = new Date();
-        date.setHours(0, 0, 0, 0);
-        this.setState({ selectedDate: date, prevDate: date });
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        this.setState({ selectedDate: today });
 
+        var fromDate = new Date();
+        fromDate.setDate(fromDate.getDate() - 15);
+        fromDate.setHours(0, 0, 0, 0);
+        this.setState({ fromDate: fromDate });
+        
         if (this.props.logins.length > 0) {
+            var clientId = this.props.logins[0].clientId;
+            if (this.props.logins[0].clientId !== 2) {
+                this.setState({ toClientId: this.props.logins[0].clientId });
+            }
+            else {
+                clientId = 3;
+                this.setState({ toClientId: clientId });
+            }
+
             //get client info
             fetch('api/client/all')
                 .then(response => response.json() as Promise<IClientDto[]>)
@@ -101,12 +201,43 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     clientDtos: data, apiUpdate: true
                 })).catch(error => console.log(error));
 
-            //get all activities
-            fetch('api/tracker/activity?date=' + date.toISOString())
-                .then(response => response.json() as Promise<IActivityDto[]>)
-                .then(data => this.setState({
-                    activityDtos: data, apiUpdate: true
-                })).catch(error => console.log(error));
+            if (this.state.activeItem == 'Leaderboard') {
+                //get all activities
+                fetch('api/tracker/activity?date=' + today.toISOString())
+                    .then(response => response.json() as Promise<IActivityDto[]>)
+                    .then(data => this.setState({
+                        activityDtos: data, activityDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+            else {
+                //get all activities
+                fetch('api/tracker/' + clientId + '/activity/slice?fromDate=' + fromDate.toISOString() + '&toDate=' + today.toISOString())
+                    .then(response => response.json() as Promise<IActivityDto[]>)
+                    .then(data => this.setState({
+                        activity2Dtos: data, activity2DtosUpdated: true
+                    })).catch(error => console.log(error));
+
+                //get macros plan
+                fetch('api/client/' + this.state.toClientId + '/macrosplan')
+                    .then(response => response.json() as Promise<IMacrosPlanDto[]>)
+                    .then(data => this.setState({
+                        macrosPlanDtos: data, macrosPlanDtosUpdated: true
+                    })).catch(error => console.log(error));
+
+                //get all meals
+                fetch('api/tracker/' + clientId + '/macrosguide/slice?fromDate=' + fromDate.toISOString() + '&toDate=' + today.toISOString())
+                    .then(response => response.json() as Promise<IMealDto[]>)
+                    .then(data => this.setState({
+                        mealDtos: data, mealDtosUpdated: true
+                    })).catch(error => console.log(error));
+
+                //get all measurements
+                fetch('api/client/' + clientId + '/all/measurements/slice?fromDate=' + fromDate.toISOString() + '&toDate=' + today.toISOString())
+                    .then(response => response.json() as Promise<IMeasurementDto[]>)
+                    .then(data => this.setState({
+                        measurementDtos: data, measurementDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
         }
     }
 
@@ -127,31 +258,29 @@ class Dashboard extends React.Component<LoginProps, IState> {
     addActivity = (event: any) => {
         this.state.activities.push({ name: '', img: '', ActivityDesc: 'test', steps: 1, calories: 100 });
         this.setState({ updated: !this.state.updated });
-        console.log(this.state.activities);
+        //console.log(this.state.activities);
     }
 
-    setValuesFromDto = () => {
+    setClientsFromDto = () => {
         if (this.state.clients.length > 0) {
             return;
         }
 
         this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, img: client.avatar, name: client.firstName, age: client.age, city: client.city, grp: client.grp });
+            this.state.clients.push({ id: client.id, img: client.avatar, name: client.firstName, age: client.age, city: client.city, grp: client.grp, avatar: client.avatar });
         });
 
-
-        var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)]
+        var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.state.toClientId)]
         if (client !== undefined) {
-            this.setState({ group: client.grp })
-            this.setState({ clients: this.state.clients });
+            this.setState({ group: client.grp, clients: this.state.clients });
         }
     }
 
     constructor(props: LoginProps) {
         super(props);
-        //this.updateParentCarb = this.updateParentCarb.bind(this);
         this.state = {
-            username: '', password: '', activeItem: 'Breakfast',
+            username: '', password: '',
+            activeItem: 'Progress',
             selectedDate: new Date(),
             prevDate: new Date(),
             guides: { calories: 150, steps: 10000 },
@@ -159,15 +288,90 @@ class Dashboard extends React.Component<LoginProps, IState> {
             activities: [],
             updated: false,
             apiUpdate: false,
+            clientDownloaded: false,
             activityDtos: [],
+            activityDtosUpdated: false,
+            activityDtosDownloaded: false,
             dateChanged: false,
             clientDtos: [],
             clients: [],
-            group: ''
+            group: '',
+            macroGuides: { carb: 0, protein: 0, fat: 0, fruits: 0 },
+            macrosPlanDtos: [],
+            macrosPlanDtosUpdated: false,
+            macrosPlanDtosDownloaded: false,
+            mealDtos: [],
+            mealDtosDownloaded: false,
+            mealDtosUpdated: false,
+            activity2Dtos: [],
+            activity2DtosUpdated: false,
+            activity2DtosDownloaded: false,
+            fromDate: new Date(),
+            weightLabel: [],
+            activityLabel: [],
+            graphActivityValues: { steps: [], calories: [], weights: [], bodyFats: [], fat: [], carbs: [], protein: [] },
+            measurementDtos: [],
+            measurementDtosDownloaded: false,
+            measurementDtosUpdated: false,
+            queryStatus: 'no error',
+            clientList: [],
+            toClientId: 3
         };
     }
 
-    handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
+    getData = (activeItem: string) => {
+        if (activeItem == 'Leaderboard') {
+            if (!this.state.activityDtosUpdated) {
+                //get all activities
+                fetch('api/tracker/activity?date=' + this.state.selectedDate.toISOString())
+                    .then(response => response.json() as Promise<IActivityDto[]>)
+                    .then(data => this.setState({
+                        activityDtos: data, activityDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+        }
+        else {
+            if (!this.state.activity2DtosUpdated) {
+                //get all activities
+                fetch('api/tracker/' + this.state.toClientId + '/activity/slice?fromDate=' + this.state.fromDate.toISOString() + '&toDate=' + this.state.selectedDate.toISOString())
+                    .then(response => response.json() as Promise<IActivityDto[]>)
+                    .then(data => this.setState({
+                        activity2Dtos: data, activity2DtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+
+            if (!this.state.macrosPlanDtosUpdated) {
+                //get macros plan
+                fetch('api/client/' + this.state.toClientId + '/macrosplan')
+                    .then(response => response.json() as Promise<IMacrosPlanDto[]>)
+                    .then(data => this.setState({
+                        macrosPlanDtos: data, macrosPlanDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+
+            if (!this.state.mealDtosUpdated) {
+                //get all meals
+                fetch('api/tracker/' + this.state.toClientId + '/macrosguide/slice?fromDate=' + this.state.fromDate.toISOString() + '&toDate=' + this.state.selectedDate.toISOString())
+                    .then(response => response.json() as Promise<IMealDto[]>)
+                    .then(data => this.setState({
+                        mealDtos: data, mealDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+
+            if (!this.state.measurementDtosUpdated) {
+                fetch('api/client/' + this.state.toClientId + '/all/measurements/slice?fromDate=' + this.state.fromDate.toISOString() + '&toDate=' + this.state.selectedDate.toISOString())
+                    .then(response => response.json() as Promise<IMeasurementDto[]>)
+                    .then(data => this.setState({
+                        measurementDtos: data, measurementDtosUpdated: true
+                    })).catch(error => console.log(error));
+            }
+        }
+    }
+
+    handleItemClick = (e: any, { name }: any) => {
+        this.setState({ activeItem: name });
+        this.getData(name);
+    }
 
     getFlag = (country: string) => {
         if (country === 'au') {
@@ -220,12 +424,31 @@ class Dashboard extends React.Component<LoginProps, IState> {
 
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
-        //console.log('1 --' + Math.abs((this.state.selectedDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
-        //console.log('2 --' + Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
+        if (Math.abs((this.state.fromDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)) > 50) {
+            this.setState({ queryStatus: 'Error : Exceeded number of days' });
+            return;
+        }
+        this.setState({ queryStatus: 'OK' });
+
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
-            this.setState({ selectedDate: new Date(field['value']), activityDtos: [], dateChanged: true, apiUpdate: true })
+            this.setState({ selectedDate: new Date(field['value']), dateChanged: true })
+        }
+    }
+
+    handleFromDateChange = (event: any, field: any) => {
+        var newDate = new Date(field['value']);
+        if (Math.abs((this.state.selectedDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)) > 50) {
+            this.setState({ queryStatus: 'Error : Exceeded number of days' });
+            return;
+        }
+        this.setState({ queryStatus: 'OK' });
+
+        var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+        if (dayDiff < 356) {
+            this.setState({ prevDate: this.state.fromDate });
+            this.setState({ fromDate: new Date(field['value']), dateChanged: true })
         }
     }
 
@@ -246,13 +469,13 @@ class Dashboard extends React.Component<LoginProps, IState> {
     }
 
     getActivities = () => {
+        this.setState({ activityDtosUpdated: false });
         fetch('api/tracker/activity?date=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IActivityDto[]>)
             .then(data => {
                 this.setState({
-                    activityDtos: data, apiUpdate: true
+                    activityDtos: data, activityDtosUpdated: true
                 });
-                //this.intervalID = setTimeout(this.getActivities.bind(this), 10000);
             }).catch(error => console.log(error));
     }
 
@@ -266,49 +489,364 @@ class Dashboard extends React.Component<LoginProps, IState> {
         });
     }
 
+    getLeaderboard = () => {
+        return (<Grid centered>
+            <Grid.Row columns={2}>
+                <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
+                    <Label size='large' as='a' color='pink' basic circular>Daily Leaderboards</Label>
+                </Grid.Column>
+                <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
+                    <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                </Grid.Column>
+            </Grid.Row>
+            <Grid.Row columns={2}>
+                <Grid.Column>
+                    <Segment inverted attached='top'>
+                        <h5>Steps Leaderboard</h5>
+                    </Segment>
+                    <Segment attached='bottom'>
+                        <List>
+                            {this.getRows('TS')}
+                        </List>
+                    </Segment>
+                </Grid.Column>
+                <Grid.Column>
+                    <Segment inverted attached='top'>
+                        <h5>TCB Leaderboard</h5>
+                    </Segment>
+                    <Segment attached='bottom'>
+                        <List>
+                            {this.getRows('TCB')}
+                        </List>
+                    </Segment>
+                </Grid.Column>
+            </Grid.Row>
+        </Grid>)
+    }
+
+    getPhotoProfile = () => {
+        if (this.state.clients.length > 0) {
+            var img = this.state.clients[this.state.clients.findIndex(x => x.id == this.state.toClientId)].avatar;
+            if (img != '') {
+                return '/images/avatars/' + img;
+            }
+        }
+
+        return 'https://react.semantic-ui.com/images/avatar/small/rachel.png';
+    }
+
+    getUserInfo = () => {
+        var name = ""
+        if (this.state.clients.length > 0) {
+            var name = this.state.clients[this.state.clients.findIndex(x => x.id == this.state.toClientId)].name;
+        }
+
+        var lastSeen = new Date(this.props.logins[0].lastLogin);
+        return name + ', last login: ' + lastSeen.toLocaleDateString();
+    }
+
+    getProgress = () => {
+        return (<Grid centered>
+            <Grid.Row columns={2}>
+                <Grid.Column width={6}>
+                    <Label size='large' as='a' color='pink' basic circular>Full Progress</Label>
+                </Grid.Column>
+                <Grid.Column width={10} textAlign='right'>
+                    {this.getAllClientsOptions()}
+                    <Image avatar src={this.getPhotoProfile()} />
+                    <a>{this.getUserInfo()}</a>
+                </Grid.Column>
+                <Grid.Column width={6} verticalAlign='middle' floated='left' textAlign='left'>
+                    <div><a>From</a></div>
+                </Grid.Column>
+                <Grid.Column width={10} verticalAlign='middle' floated='left' textAlign='right'>
+                    <SemanticDatepicker value={this.state.fromDate} date={new Date()} onChange={this.handleFromDateChange} showToday />
+                </Grid.Column>
+                <Grid.Column width={6} verticalAlign='middle' floated='left' textAlign='left'>
+                    <div><a>To</a></div>
+                </Grid.Column>
+                <Grid.Column width={10} verticalAlign='middle' floated='left' textAlign='right'>
+                    <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                </Grid.Column>
+            </Grid.Row>
+            <div style={this.getDivLabelStyle()}>{this.state.queryStatus}</div>
+            <Grid.Row>
+                <Grid.Column>
+                    <span>
+                        <a>Macros Consumptions </a>
+                        <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a>
+                    </span>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('Macros')} type={bar} options={barChartOptions} />
+                    </div>
+                    <a>Steps (Count)</a>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('Steps')} type={type} options={lineChartOptions} />
+                    </div>
+                    <a>Total Burned Calories</a>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('Calories')} type={type} options={lineChartOptions} />
+                    </div>
+                    <a>Weight (Kg)</a>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('Weight')} type={type} options={lineChartOptions} />
+                    </div>
+                    <a>Body Fat</a>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
+                    </div>
+                </Grid.Column>
+            </Grid.Row>
+        </Grid>)
+    }
+
+    getDashboard = () => {
+        if (this.state.activeItem == 'Leaderboard') {
+            return this.getLeaderboard();
+        }
+        else if (this.state.activeItem == 'Progress') {
+            return this.getProgress();
+        }
+    }
+
+    isLoadingData = () => {
+        if (this.state.activeItem == 'Leaderboard') {
+            return (this.state.activityDtosDownloaded == false || this.state.clientDownloaded == false) 
+        }
+        else {
+            return (this.state.activity2DtosDownloaded == false || this.state.mealDtosDownloaded == false ||
+                this.state.measurementDtosDownloaded == false || this.state.clientDownloaded == false ||
+                this.state.macrosPlanDtosDownloaded == false) 
+        }
+    }
+
+    getGraphData = (measureType: string) => {
+        if (measureType === 'Steps') {
+            return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.steps] };
+        }
+
+        if (measureType === 'Macros') {
+            return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.carbs, this.state.graphActivityValues.protein, this.state.graphActivityValues.fat] };
+        }
+
+        if (measureType === 'Weight') {
+            return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.weights] };
+        }
+
+        if (measureType === 'BodyFat') {
+            return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.bodyFats] };
+        }
+        
+        return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.calories] };
+    }
+
+    setActivityGraphValues = () => {
+        if (this.state.graphActivityValues.steps.length == this.state.activity2Dtos.length &&
+            this.state.graphActivityValues.weights.length == this.state.measurementDtos.length &&
+            this.state.graphActivityValues.carbs.length == this.state.mealDtos.length) {
+            return;
+        }
+
+        while (this.state.activityLabel.length > 0) {
+            this.state.activityLabel.pop()
+        }
+
+        this.state.graphActivityValues.steps = [];
+        this.state.graphActivityValues.calories = [];
+        this.state.graphActivityValues.weights = [];
+        this.state.graphActivityValues.bodyFats = [];
+        this.state.graphActivityValues.carbs = [];
+        this.state.graphActivityValues.protein = [];
+        this.state.graphActivityValues.fat = [];
+
+        var index: number = 0;
+        var arr = this.state.activity2Dtos.sort((a: IActivityDto, b: IActivityDto) => {
+            return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+
+        });
+
+        arr.forEach(m => {
+            if (index === 0 || index === arr.length - 1) {
+                this.state.activityLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
+            }
+            else {
+                this.state.activityLabel.push('');
+            }
+
+            this.state.graphActivityValues.steps.push(m.steps);
+            this.state.graphActivityValues.calories.push(m.calories);
+            index++;
+        });
+
+        var arr2 = this.state.measurementDtos.sort((a: IMeasurementDto, b: IMeasurementDto) => {
+            return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+
+        });
+
+        arr2.forEach(m => {
+            this.state.graphActivityValues.weights.push(m.weight);
+            this.state.graphActivityValues.bodyFats.push((m.waist + m.hips - m.neck) / 2);
+        });
+
+        var arr3 = this.state.mealDtos.sort((a: IMealDto, b: IMealDto) => {
+            return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+
+        });
+
+        arr3.forEach(m => {
+            this.state.graphActivityValues.carbs.push((m.carb / this.state.macroGuides.carb) * 100.0);
+            this.state.graphActivityValues.protein.push((m.protein / this.state.macroGuides.protein) * 100.0);
+            this.state.graphActivityValues.fat.push((m.fat / this.state.macroGuides.fat) * 100.0);
+        });
+
+        this.setState({ graphActivityValues: this.state.graphActivityValues, activityLabel: this.state.activityLabel });
+    }
+
+    setMacroGuides = () => {
+        if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
+            const client = this.state.clientDtos[0];
+            const macrosPlan = this.state.macrosPlanDtos[0];
+            const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
+            const totalCalories = getActivityLevel(macrosPlan.activityLevel) * bmr;
+            const carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            const protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            const fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+
+            this.state.macroGuides.carb = parseFloat(carb);
+            this.state.macroGuides.protein = parseFloat(protein);
+            this.state.macroGuides.fat = parseFloat(fat);
+            this.state.macroGuides.fruits = 4;
+            this.setState({ guides: this.state.guides });
+        }
+    }
+
+    getColour = () => {
+        if (this.state.queryStatus.includes('Error')) {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
+    setToClient = (event: any, data: any) => {
+        this.setState({ toClientId: data['value'], dateChanged: true });
+    }
+
+    getAllClientsOptions = () => {
+        if (this.props.logins[0].username === 'admin') {
+            return (<div>
+                <a>Select Client:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
+            </div>);
+        }
+    }
+
+    resetGraphData = () => {
+        this.state.graphActivityValues.bodyFats = [];
+        this.state.graphActivityValues.calories = [];
+        this.state.graphActivityValues.carbs = [];
+        this.state.graphActivityValues.fat = [];
+        this.state.graphActivityValues.protein = [];
+        this.state.graphActivityValues.steps = [];
+        this.state.graphActivityValues.weights = [];
+        this.setState({
+            graphActivityValues: this.state.graphActivityValues, activity2DtosUpdated: false, activity2DtosDownloaded: false, mealDtosDownloaded: false,
+            mealDtosUpdated: false, measurementDtosDownloaded: false, measurementDtosUpdated: false,
+            activity2Dtos: [], mealDtos: [], measurementDtos: []
+        });
+    }
+
+    getDivLabelStyle = () => {
+        return ({
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getColour()
+        });
+    }
+
     render() {
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         if (this.props.logins.length > 0) {
             if (this.state.dateChanged === true) {
                 this.setState({ dateChanged: false });
-                this.resetActivities();
-                this.getActivities();
+                if (this.state.activeItem == 'Leaderboard') {
+                    this.resetActivities();
+                    this.getActivities();
+                }
+                else {
+                    this.resetGraphData();
+                    this.getData(this.state.activeItem);
+                }
             }
 
             if (this.state.apiUpdate === true) {
-                this.setValuesFromDto();
+                this.setClientsFromDto();
+                if (this.state.clientList.length < 1) {
+                    this.state.clientDtos.forEach(client => {
+                        this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
+                    });
+                }
+
+                this.setState({ apiUpdate: false, clientDownloaded: true, clientList: this.state.clientList });
+            }
+
+            if (this.state.activityDtosUpdated === true) {
                 this.setActivities();
-                this.setState({ activities: this.state.activities, apiUpdate: false, updated: !this.state.updated });
+                this.setState({ activities: this.state.activities, activityDtosUpdated: false, activityDtosDownloaded: true });
+            }
+
+            if (this.state.activity2DtosUpdated === true) {
+                this.setState({ activity2DtosUpdated: false, activity2DtosDownloaded: true });
+            }
+
+            if (this.state.mealDtosUpdated === true) {
+                this.setState({ mealDtosDownloaded: true, mealDtosUpdated: false });
+            }
+
+            if (this.state.macrosPlanDtosUpdated === true && this.state.clientDownloaded === true) {
+                this.setState({ macrosPlanDtosUpdated: false, macrosPlanDtosDownloaded: true });
+                this.setMacroGuides();
+            }
+
+            if (this.state.measurementDtosUpdated === true) {
+                this.setState({ measurementDtosDownloaded: true, measurementDtosUpdated: false });
+            }
+
+            this.setActivityGraphValues();
+            const activeItem = this.state.activeItem;
+
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
+                </div>);
             }
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Daily Leaderboards</Label>
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
-                            <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row columns={2}>
+                    <Grid.Row>
                         <Grid.Column>
-                            <Segment inverted attached='top'>
-                                <h5>Steps Leaderboard</h5>
-                            </Segment>
+                            <Menu color='pink' inverted attached='top' pointing>
+                                <Menu.Item
+                                    name='Leaderboard'
+                                    active={activeItem === 'Leaderboard'}
+                                    onClick={this.handleItemClick}
+                                />
+                                <Menu.Item
+                                    name='Progress'
+                                    active={activeItem === 'Progress'}
+                                    onClick={this.handleItemClick}
+                                />
+                            </Menu>
                             <Segment attached='bottom'>
-                                <List>
-                                    {this.getRows('TS')}
-                                </List>
-                            </Segment>
-                        </Grid.Column>
-                        <Grid.Column>
-                            <Segment inverted attached='top'>
-                                <h5>TCB Leaderboard</h5>
-                            </Segment>
-                            <Segment attached='bottom'>
-                                <List>
-                                    {this.getRows('TCB')}
-                                </List>
+                                {this.getDashboard()}
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
@@ -316,14 +854,6 @@ class Dashboard extends React.Component<LoginProps, IState> {
             </div>);
         }
         return (<Redirect to="/" />);
-    }
-
-    private getLoginCredentials = () => {
-        this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
     }
 }
 

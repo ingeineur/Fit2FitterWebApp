@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Loader, Dimmer } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import MacroGuideReviewModal from './MacroGuideReviewModal'
@@ -38,6 +38,8 @@ interface IState {
     selectedDate: Date;
     prevDate: Date;
     notifications: INotification[];
+    messagesMealsDownloaded: boolean;
+    messagesMealsAdminDownloaded: boolean;
 }
 
 interface IMacrosPlanDto {
@@ -150,7 +152,7 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
             fetch('api/tracker/all/comments/meals?dateString=' + date.toISOString())
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    mealsMessageDtos: data, apiUpdate: true
+                    mealsMessageDtos: data, apiUpdate: true, messagesMealsDownloaded: true
                 })).catch(error => console.log(error));
 
             //get macros plan
@@ -164,7 +166,7 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
             fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
                 .then(response => response.json() as Promise<IMessageDto[]>)
                 .then(data => this.setState({
-                    mealsMessageAdminDtos: data, apiUpdate: true
+                    mealsMessageAdminDtos: data, apiUpdate: true, messagesMealsAdminDownloaded: true
                 })).catch(error => console.log(error));
         }
     }
@@ -210,7 +212,9 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
             selectedDate: new Date(),
             prevDate: new Date(),
             mealsMessageAdminDtos: [],
-            notifications:[]
+            notifications: [],
+            messagesMealsAdminDownloaded: false,
+            messagesMealsDownloaded: false
         };
     }
 
@@ -409,13 +413,18 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
         return d.toDateString();
     }
 
-    getLoggedMeals = () => {
+    getLoggedMeals = (unread: boolean) => {
         if (this.state.clientDtos.length < 1) {
             return;
         }
 
+        var meals = this.state.loggedMeals.filter(x => x.unreadComments < 1);
+        if (unread) {
+            meals = this.state.loggedMeals.filter(x => x.unreadComments > 0)
+        }
+
         return (
-            this.state.loggedMeals.map((item, index) =>
+            meals.map((item, index) =>
                 <div key={index}>
                     <Message key={index} color={this.getUnReadMessageColour(item.unreadComments)}>
                         <Label key={index} as='a' color={this.getUnReadMessageColour(item.unreadComments)} corner='right'>
@@ -474,18 +483,20 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
     }
 
     getAllMessages = () => {
+        this.setState({ messagesMealsDownloaded: false });
         fetch('api/tracker/all/comments/meals?dateString=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IMessageDto[]>)
             .then(data => this.setState({
-                mealsMessageDtos: data, apiUpdate: true
+                mealsMessageDtos: data, apiUpdate: true, messagesMealsDownloaded: true
             })).catch(error => console.log(error));
     }
 
     getAllMessagesAdmin = () => {
+        this.setState({ messagesMealsAdminDownloaded: false });
         fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
             .then(response => response.json() as Promise<IMessageDto[]>)
             .then(data => this.setState({
-                mealsMessageAdminDtos: data, apiUpdate: true
+                mealsMessageAdminDtos: data, apiUpdate: true, messagesMealsAdminDownloaded: true
             })).catch(error => console.log(error));
     }
 
@@ -533,7 +544,24 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
         }
     }
 
+    isLoadingData = () => {
+        if (this.state.clientDtos.length < 1 ||
+            this.state.macrosPlanDtos.length < 1 ||
+            this.state.messagesMealsAdminDownloaded === false ||
+            this.state.messagesMealsDownloaded === false) {
+            return true;
+        }
+
+        return false;
+    }
+
     render() {
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         if (this.props.logins.length > 0) {
             if (this.state.dateChanged === true) {
                 this.setState({ dateChanged: false });
@@ -559,7 +587,13 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
                     });
                 }
             }
-
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
+                </div>);
+            }    
         return (
             <div>
                 <Grid centered>
@@ -579,7 +613,8 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
                                 <a>[Not Reviewed: {(this.state.loggedMeals.filter(x => x.unreadComments !== 0)).length}]  [Reviewed: {(this.state.loggedMeals.filter(x => x.unreadComments === 0)).length}]</a>
-                                {this.getLoggedMeals()}
+                                {this.getLoggedMeals(true)}
+                                {this.getLoggedMeals(false)}
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>

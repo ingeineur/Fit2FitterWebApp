@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown, Loader, Dimmer } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import MacroGuideReviewModal from './MacroGuideReviewModal'
@@ -21,6 +21,7 @@ interface IState {
     clients: IClient[];
     clientDtos: IClientDto[];
     mealsMessageDtos: IMessageDto[];
+    mealsMessageDtosDownloaded: boolean;
     mealsMessages: IMessage[];
     typedMessage: string;
     filterUnread: boolean;
@@ -178,6 +179,7 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
             clientList: [],
             toClientId: 2,
             mealsMessageDtos: [],
+            mealsMessageDtosDownloaded: false,
             mealsMessages: [],
             numChar: 0,
             status: 'Ready',
@@ -308,11 +310,16 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
         return d.toDateString();
     }
 
-    getLoggedMeals = () => {
+    getLoggedMeals = (unread: boolean) => {
         this.state.loggedMeals.sort(function (a, b) { return (Date.parse(b.created) - Date.parse(a.created)); });
 
+        var meals = this.state.loggedMeals.filter(x => x.unreadComments < 1);
+        if (unread) {
+            meals = this.state.loggedMeals.filter(x => x.unreadComments > 0)
+        }
+
         return (
-            this.state.loggedMeals.map((item, index) =>
+            meals.map((item, index) =>
                 <div key={index}>
                     <Message key={index} color={this.getUnReadMessageColour(item.unreadComments)}>
                         <Label key={index} as='a' color={this.getUnReadMessageColour(item.unreadComments)} corner='right'>
@@ -463,20 +470,42 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
         }).then(response => response.json()).then(data => this.getAllMessages()).catch(error => console.log('put macros ---------->' + error));
     }
 
+    isLoadingData = () => {
+        if (this.state.clientDtos.length < 1 || this.state.macrosPlanDtos.length < 1 ||
+            this.state.mealsMessageDtosDownloaded === false) {
+            return true;
+        }
+
+        return false;
+    }
+
     render() {
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         if (this.props.logins.length > 0) {
             if (this.state.apiUpdate === true) {
                 this.resetMessages();
                 this.setValuesFromDto();
                 this.setMessages();
                 this.setMacroGuides();
-                this.setState({ apiUpdate: false });
+                this.setState({ apiUpdate: false, mealsMessageDtosDownloaded: true });
 
                 if (this.state.clientList.length < 1) {
                     this.state.clientDtos.forEach(client => {
                         this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
                     });
                 }
+            }
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
+                </div>);
             }
         return (
             <div>
@@ -489,7 +518,8 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
-                                {this.getLoggedMeals()}
+                                {this.getLoggedMeals(true)}
+                                {this.getLoggedMeals(false)}
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>

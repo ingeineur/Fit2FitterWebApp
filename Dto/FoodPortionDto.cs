@@ -22,5 +22,7 @@ namespace Fit2Fitter.Database.Models
         public double IronValue { get; set; }
         public double PotassiumValue { get; set; }
         public double ZincValue { get; set; }
+        public double StarchValue { get; set; }
+        public double SaturatedFattyAcidsValue { get; set; }
     }
 }
