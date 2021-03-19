@@ -8,6 +8,7 @@ import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MeasurementsTable from './MeasurementsTable'
+import Measurements3DViewer from './Measurements3DViewer'
 import MeasurementsHeader from './MeasurementsHeader';
 import MeasurementsReviewModal from './MeasurementsReviewModal'
 
@@ -196,6 +197,9 @@ class Measurements extends React.Component<LoginProps, IState> {
     getComponent = () => {
         if (this.state.activeItem == 'Body') {
             return (<MeasurementsTable type='Body' measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
+        }
+        else if (this.state.activeItem == '3DScanner') {
+            return (<Measurements3DViewer type='3DScanner' height={this.state.macrosPlans[0].height} measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
         }
     }
 
@@ -478,6 +482,11 @@ class Measurements extends React.Component<LoginProps, IState> {
                                 <Menu.Item
                                     name='Body'
                                     active={activeItem === 'Body'}
+                                    onClick={this.handleItemClick}
+                                />
+                                <Menu.Item
+                                    name='3DScanner'
+                                    active={activeItem === '3DScanner'}
                                     onClick={this.handleItemClick}
                                 />
                             </Menu>
