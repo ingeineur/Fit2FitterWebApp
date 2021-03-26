@@ -107,7 +107,7 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
             this.props.updateMeasurements({ neck: this.state.neck, waist: this.state.waist, upperArm: this.state.upperArm, hips: this.state.hips, thigh: this.state.thigh, chest: this.state.chest, weight: this.state.weight });
         }
 
-        var values = 'Neck=' + this.state.neck * 2.54 + '&Chest=' + this.state.chest * 2.54 + '&Waist=' + this.state.waist * 2.54 + '&Hips=' + this.state.hips * 2.54 + '&Height=' + this.props.height;
+        var values = 'Neck=' + this.state.neck * 2.54 + '&Chest=' + this.state.chest * 2.54 + '&Waist=' + this.state.waist * 2.54 + '&Hips=' + this.state.hips * 2.54 + '&Height=' + this.props.height + '&Thigh=' + this.state.thigh * 2.54;
         var url = 'bodyapps-viz-master/female.html?' + values;
 
         var currTime = new Date();

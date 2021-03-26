@@ -135,6 +135,9 @@
 				else if (morphName == "Hip Girth") {
 					morphConfig[morphName] = parseFloat(measuresFromApp["Hips"]);
 				}
+                else if (morphName == "Thigh Girth") {
+                    morphConfig[morphName] = parseFloat(measuresFromApp["Thigh"]);
+                }
 				else {
 					morphConfig[morphName] = character.morphslimit[i];
 				}
