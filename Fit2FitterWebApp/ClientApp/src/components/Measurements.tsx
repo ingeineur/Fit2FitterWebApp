@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Input, Icon, Progress, Modal } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Input, Icon, Progress, Modal, Loader, Dimmer } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -24,19 +24,22 @@ interface IState {
     macroGuides: IMacroGuides;
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
+    measurementDtosUpdated: boolean;
     graphs: IGraphMeasurements;
     graphsData: [IMeta[]];
     weightLabel: string[];
     clients: IClient[];
+    clientsUpdated: boolean;
     macrosPlans: IMacrosPlan[];
+    macrosPlansUpdated: boolean;
     targetWeight: number;
     age: number;
     updated: boolean;
-    apiUpdate: boolean;
     savingStatus: string;
     dateChanged: boolean; 
     measureType: string;
     openReview: boolean;
+    updateAllInfo: boolean;
 }
 
 interface IMacroGuides {
@@ -112,39 +115,6 @@ interface IClient {
     created: string;
 }
 
-const measureType = [
-    {
-        key: 'Neck',
-        text: 'Neck',
-        value: 'Neck'
-    },
-    {
-        key: 'UpperArm',
-        text: 'UpperArm',
-        value: 'UpperArm'
-    },
-    {
-        key: 'Waist',
-        text: 'Waist',
-        value: 'Waist'
-    },
-    {
-        key: 'Hips',
-        text: 'Hips',
-        value: 'Hips'
-    },
-    {
-        key: 'Thigh',
-        text: 'Thigh',
-        value: 'Thigh'
-    },
-    {
-        key: 'Chest',
-        text: 'Chest',
-        value: 'Chest'
-    }
-];
-
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -165,19 +135,19 @@ class Measurements extends React.Component<LoginProps, IState> {
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
                 .then(data => this.setState({
-                    clients: data, apiUpdate: true
+                    clients: data, clientsUpdated: true
                 })).catch(error => console.log(error));
 
             fetch('api/client/' + this.props.logins[0].clientId + '/measurements/closest?date=' + (date).toISOString())
                 .then(response => response.json() as Promise<IMeasurementDto[]>)
                 .then(data => this.setState({
-                    measurementDtos: data, apiUpdate: true
+                    measurementDtos: data, measurementDtosUpdated: true
                 })).catch(error => console.log(error));
 
             fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
                 .then(response => response.json() as Promise<IMacrosPlan[]>)
                 .then(data => this.setState({
-                    macrosPlans: data, apiUpdate: true
+                    macrosPlans: data, macrosPlansUpdated: true
                 })).catch(error => console.log(error));
         }
     }
@@ -219,11 +189,13 @@ class Measurements extends React.Component<LoginProps, IState> {
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
             measurements: { neck: 0.0, upperArm:0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
+            measurementDtosUpdated: false,
             clients: [],
+            clientsUpdated: false,
             macrosPlans: [],
+            macrosPlansUpdated: false,
             updated: false,
-            apiUpdate: false,
-            savingStatus: 'saved',
+            savingStatus: 'Loading',
             dateChanged: false,
             age: 0,
             targetWeight: 0,
@@ -239,7 +211,8 @@ class Measurements extends React.Component<LoginProps, IState> {
             graphsData: [[]],
             weightLabel: [],
             measureType: 'Neck',
-            openReview: false
+            openReview: false,
+            updateAllInfo: false
         };
     }
 
@@ -247,8 +220,6 @@ class Measurements extends React.Component<LoginProps, IState> {
 
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
-        //console.log('1 --' + Math.abs((this.state.selectedDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
-        //console.log('2 --' + Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24)));
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
@@ -276,8 +247,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.state.measurements.hips = measurement.hips;
             this.state.measurements.thigh = measurement.thigh;
             this.state.measurements.weight = measurement.weight;
-            this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
+            this.setState({ measurements: this.state.measurements, updated: !this.state.updated, savingStatus: 'Info Updated' });
         }
         else {
             this.state.measurements.neck = 0;
@@ -287,8 +257,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             this.state.measurements.hips = 0;
             this.state.measurements.thigh = 0;
             this.state.measurements.weight = 0;
-            this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
+            this.setState({ measurements: this.state.measurements, updated: !this.state.updated, savingStatus: 'Info Updated' });
         }
     }
 
@@ -297,8 +266,7 @@ class Measurements extends React.Component<LoginProps, IState> {
     }
 
     onSave = () => {
-        this.setState({ savingStatus: 'Saving in progress' })
-        var fetchStr = 'api/client/measurement?date=' + this.state.selectedDate.toISOString();
+        this.setState({ savingStatus: 'Saving in progress', measurementDtosUpdated: false })
         if (this.state.measurementDtos.length < 1) {
             this.state.measurementDtos.push({
                 id: 0,
@@ -314,9 +282,9 @@ class Measurements extends React.Component<LoginProps, IState> {
                 created: this.state.selectedDate.toISOString(),
                 clientId: this.props.logins[0].clientId
             })
-            this.setState({ measurementDtos: this.state.measurementDtos });
         }
 
+        var fetchStr = 'api/client/measurement?date=' + this.state.selectedDate.toISOString();
         fetch(fetchStr, {
             method: 'PUT',
             headers: {
@@ -337,11 +305,10 @@ class Measurements extends React.Component<LoginProps, IState> {
                 created: this.state.selectedDate.toISOString(),
                 clientId: this.props.logins[0].clientId,
             })
-        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved' })).catch(error => console.log('put macros ---------->' + error));
-
-        setTimeout(() => {
+        }).then(response => response.json()).then(data => {
+            this.setState({ savingStatus: 'Saved', measurementDtos: this.state.measurementDtos, measurementDtosUpdated: true })
             this.logMeasurements();
-        }, 2000);
+        }).catch(error => console.log('put macros ---------->' + error));
     }
 
     logMeasurements = () => {
@@ -415,21 +382,16 @@ class Measurements extends React.Component<LoginProps, IState> {
         }
     }
 
+    isLoadingData = () => {
+        if (!this.state.clientsUpdated || !this.state.macrosPlansUpdated ||
+            !this.state.measurementDtosUpdated) {
+            return true;
+        }
+
+        return false;
+    }
+
     render() {
-        var data = {
-            labels: this.state.weightLabel,
-            series: [this.getGraphData()]
-        };
-
-        var type = 'Line'
-
-        var data2 = {
-            labels: this.state.weightLabel,
-            series: [this.state.graphs.weight]
-        };
-
-        var type2 = 'Line'
-
         var divLabelStyle = {
             display: 'flex',
             justifyContent: 'center',
@@ -438,21 +400,35 @@ class Measurements extends React.Component<LoginProps, IState> {
             backgroundColor: this.getColour()
         };
 
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         const activeItem = this.state.activeItem;
         if (this.props.logins.length > 0) {
             if (this.state.dateChanged === true) {
-                this.setState({ dateChanged: false });
-                if (this.props.logins.length > 0) {
-                    fetch('api/client/' + this.props.logins[0].clientId + '/measurements/closest?date=' + this.state.selectedDate.toISOString())
-                        .then(response => response.json() as Promise<IMeasurementDto[]>)
-                        .then(data => this.setState({
-                            measurementDtos: data, apiUpdate: true
-                        })).catch(error => console.log(error));
-                }
+                this.setState({ dateChanged: false, measurementDtosUpdated: false });
+
+                // fetch measurements
+                fetch('api/client/' + this.props.logins[0].clientId + '/measurements/closest?date=' + this.state.selectedDate.toISOString())
+                    .then(response => response.json() as Promise<IMeasurementDto[]>)
+                    .then(data => this.setState({
+                        measurementDtos: data, measurementDtosUpdated: true, updateAllInfo: false
+                    })).catch(error => console.log(error));
             }
 
-            if (this.state.apiUpdate === true) {
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content={this.state.savingStatus} />
+                    </Dimmer>
+                </div>);
+            }
+            else if (!this.state.updateAllInfo) {
                 this.setValuesFromDto();
+                this.setState({ updateAllInfo: true, updated: !this.state.updated, savingStatus: 'Info Updated' });
             }
 
         return (
@@ -526,14 +502,6 @@ class Measurements extends React.Component<LoginProps, IState> {
             </div>);
         }
         return (<Redirect to="/" />);
-    }
-
-    private getLoginCredentials = () => {
-        this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
     }
 }
 

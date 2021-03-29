@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\Activities.tsx~RF571aa85c.TMP" />
     <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
     <None Remove="ClientApp\src\models\activities.ts" />
     <None Remove="ClientApp\src\models\clients.ts" />

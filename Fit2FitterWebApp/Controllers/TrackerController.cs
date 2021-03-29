@@ -180,6 +180,13 @@ namespace Fit2FitterWebApp.Controllers
             return data.ToArray();
         }
 
+        [HttpGet("{clientId}/status/comments/meals")]
+        public async Task<IEnumerable<CommentDto>> GetAllCommentsMeals(int clientId, bool readStatus)
+        {
+            var data = await this.trackerService.GetAllCommentsMeals(clientId, readStatus).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
         [HttpGet("all/comments/meals")]
         public async Task<IEnumerable<CommentDto>> GetAllCommentsMeals([FromQuery, Required] string dateString)
         {
@@ -207,6 +214,14 @@ namespace Fit2FitterWebApp.Controllers
         {
             var date = DateTime.Parse(dateString);
             var data = await this.trackerService.GetCommentsMeasurements(clientId, date).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{clientId}/status/comments/measurements")]
+        public async Task<IEnumerable<CommentDto>> GetCommentsMeasurements(int clientId, [FromQuery, Required] string dateString, [FromQuery, Required] bool readStatus)
+        {
+            var date = DateTime.Parse(dateString);
+            var data = await this.trackerService.GetCommentsMeasurements(clientId, date, readStatus).ConfigureAwait(false);
             return data.ToArray();
         }
 

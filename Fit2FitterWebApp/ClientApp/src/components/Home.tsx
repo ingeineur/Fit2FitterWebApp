@@ -24,12 +24,14 @@ interface IState {
     unReadMessageMeals: number;
     unReadMessageMeasurements: number;
     messageDtos: IMessageDto[];
+    messagesUpdated: boolean;
     messageMealsDtos: IMessageDto[];
+    mealMessagesUpdated: boolean;
     messageMeasurementsDtos: IMessageDto[];
-    apiUpdate: boolean;
+    measurementMessagesUpdated: boolean;
     clientDtos: IClientDto[];
     clientList: IOption[],
-    clients: IClient[];
+    clientUpdated: boolean;
     toClientId: number;
     checkClients: boolean;
     loginDtos: LoginDto[];
@@ -37,8 +39,7 @@ interface IState {
     version: IVersion;
     apiVersionUpdate: boolean;
     openResetPwd: boolean;
-    messagesDownloaded: boolean;
-    mealsMessagesDownloaded: boolean;
+    fetchAllData: boolean;
 }
 
 interface LoginDto {
@@ -50,12 +51,6 @@ interface LoginDto {
     clientId: number;
 }
 
-interface IClient {
-    id: number
-    name: string;
-    age: number;
-    city: string;
-}
 interface IClientDto {
     id: number,
     lastName: string;
@@ -116,14 +111,49 @@ type LoginProps =
     
 class Home extends React.Component<LoginProps, IState > {
 
-    getAllMeasurementsMessages = () => {
-        var date = new Date();
-        date.setHours(0, 0, 0, 0);
+    fetchAllData = () => {
+        if (this.props.logins[0].username === 'admin2') {
+            //get all clients for admin2 only
+            fetch('api/client/all')
+                .then(response => response.json() as Promise<IClientDto[]>)
+                .then(data => {
+                    var clientsList: IOption[] = [];
+                    data.forEach(client => {
+                        clientsList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
+                    });
 
-        fetch('api/tracker/' + this.props.logins[0].clientId + '/comments/measurements?dateString=' + date.toISOString())
+                    this.setState({
+                        clientDtos: data, clientUpdated: true, clientList: clientsList
+                    })
+                }).catch(error => console.log(error));
+        }
+        else {
+            //get client info
+            fetch('api/client?clientId=' + this.props.logins[0].clientId)
+                .then(response => response.json() as Promise<IClientDto[]>)
+                .then(data => this.setState({
+                    clientDtos: data, clientUpdated: true
+                })).catch(error => console.log(error));
+        }
+
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
             .then(response => response.json() as Promise<IMessageDto[]>)
             .then(data => this.setState({
-                messageMeasurementsDtos: data, apiUpdate: true
+                messageDtos: data, messagesUpdated: true, unReadMessage: data.length
+            })).catch(error => console.log(error));
+
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/meals?readStatus=' + false)
+            .then(response => response.json() as Promise<IMessageDto[]>)
+            .then(data => this.setState({
+                messageMealsDtos: data, mealMessagesUpdated: true, unReadMessageMeals: data.length
+            })).catch(error => console.log(error));
+
+        var date = new Date();
+        date.setHours(0, 0, 0, 0);
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/measurements?dateString=' + date.toISOString() + '&readStatus=' + false)
+            .then(response => response.json() as Promise<IMessageDto[]>)
+            .then(data => this.setState({
+                messageMeasurementsDtos: data, measurementMessagesUpdated: true, unReadMessageMeasurements: data.length
             })).catch(error => console.log(error));
     }
 
@@ -135,29 +165,6 @@ class Home extends React.Component<LoginProps, IState > {
             })).catch(error => console.log(error));
 
         this.props.getLogin();
-
-        if (this.props.logins.length > 0) {
-            //get client info
-            fetch('api/client/all')
-                .then(response => response.json() as Promise<IClientDto[]>)
-                .then(data => this.setState({
-                    clientDtos: data, apiUpdate: true
-                })).catch(error => console.log(error));
-
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    messageDtos: data, apiUpdate: true, messagesDownloaded: true
-                })).catch(error => console.log(error));
-
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    messageMealsDtos: data, apiUpdate: true, mealsMessagesDownloaded: true
-                })).catch(error => console.log(error));
-
-            this.getAllMeasurementsMessages();
-        }
     }
 
     public displayUpdate = () => {
@@ -184,28 +191,17 @@ class Home extends React.Component<LoginProps, IState > {
         super(props);
         this.state = {
             username: '', password: '', activeItem: '', error: '', login: '',
-            messageDtos: [], checkMail: false, unReadMessage: 0, unReadMessageMeals:0, apiUpdate: false,
-            clientDtos: [], clientList: [], clients: [], toClientId: 2, checkClients: false,
-            loginDtos: [], messageMealsDtos: [], messageMeasurementsDtos: [], unReadMessageMeasurements: 0,
+            messageDtos: [], messagesUpdated: false, checkMail: false, unReadMessage: 0, unReadMessageMeals: 0,
+            clientDtos: [], clientList: [], clientUpdated: false, toClientId: 2, checkClients: false,
+            loginDtos: [], messageMealsDtos: [], mealMessagesUpdated: false, messageMeasurementsDtos: [],
+            measurementMessagesUpdated: false, unReadMessageMeasurements: 0,
             version: { major: 0, minor: 0, build: 0 },
             versionDto: { major: 0, minor: 0, build: 0 },
-            apiVersionUpdate: false, openResetPwd: false, messagesDownloaded: false, mealsMessagesDownloaded: false
+            apiVersionUpdate: false, openResetPwd: false, fetchAllData: false
         };
     }
 
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
-
-    setValuesFromDto = () => {
-        if (this.state.clients.length > 0) {
-            return;
-        }
-
-        this.state.clientDtos.forEach(client => {
-            this.state.clients.push({ id: client.id, name: client.firstName, age: client.age, city: client.city });
-        });
-
-        this.setState({ clients: this.state.clients });
-    }
 
     getAdmin = () => {
         if (this.props.logins[0].username === 'admin') {
@@ -305,8 +301,7 @@ class Home extends React.Component<LoginProps, IState > {
 
     getUserInfo = () => {
         if (this.state.clientDtos.length > 0) {
-            var clients = this.state.clientDtos.filter(x => x.id == this.props.logins[0].clientId)
-            var name = clients[0].firstName;
+            var name = this.state.clientDtos[0].firstName;
             var lastSeen = new Date(this.props.logins[0].lastLogin);
             return name + ', last login: ' + lastSeen.toLocaleDateString();
         }
@@ -314,8 +309,7 @@ class Home extends React.Component<LoginProps, IState > {
 
     getPhoto = () => {
         if (this.state.clientDtos.length > 0) {
-            var clients = this.state.clientDtos.filter(x => x.id == this.props.logins[0].clientId)
-            var img = clients[0].avatar;
+            var img = this.state.clientDtos[0].avatar;
             if (img != '') {
                 return '/images/avatars/' + img;
             }
@@ -337,10 +331,6 @@ class Home extends React.Component<LoginProps, IState > {
     }
 
     render() {
-        var divStyle = {
-            fontSize: '15px'
-        };
-
         var divStyle2 = {
             fontStyle: 'italic',
             fontFamily: 'Comic Sans MS',
@@ -362,12 +352,6 @@ class Home extends React.Component<LoginProps, IState > {
             alignItems: 'center'
         };
 
-        var divLogoStyle = {
-            display: 'flex',
-            justifyContent: 'right',
-            alignItems: 'right'
-        };
-
         if (this.state.apiVersionUpdate === true) {
             this.setState({ version: this.state.versionDto, apiVersionUpdate: false });
         }
@@ -386,112 +370,14 @@ class Home extends React.Component<LoginProps, IState > {
         }
 
         if (this.props.logins.length > 0 && this.props.logins[0].username !== 'admin2') {
-            if (this.state.error !== 'Login is Successfull') {
-                this.setState({ error: 'Login is Successfull' });
+            if (!this.state.fetchAllData) {
+                this.fetchAllData();
+                this.setState({ fetchAllData: true });
             }
-
-            if (this.state.checkMail === false) {
-                if (this.props.logins.length > 0) {
-                    fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
-                        .then(response => response.json() as Promise<IMessageDto[]>)
-                        .then(data => this.setState({
-                            messageDtos: data, checkMail: true, apiUpdate: true, messagesDownloaded: true
-                        })).catch(error => console.log(error));
-
-                    fetch('api/tracker/' + this.props.logins[0].clientId + '/all/comments/meals')
-                        .then(response => response.json() as Promise<IMessageDto[]>)
-                        .then(data => this.setState({
-                            messageMealsDtos: data, apiUpdate: true, mealsMessagesDownloaded: true
-                        })).catch(error => console.log(error));
-
-                    this.getAllMeasurementsMessages();
-                }
-            }
-
-            if (this.state.apiUpdate === true) {
-
-                this.setState({ unReadMessage: this.state.messageDtos.length, apiUpdate: false });
-
-                var unreadMsg = this.state.messageMealsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
-                this.setState({ unReadMessageMeals: unreadMsg.length });
-
-                var unreadMsg2 = this.state.messageMeasurementsDtos.filter(x => x.readStatus === false && x.clientId === this.props.logins[0].clientId);
-                this.setState({ unReadMessageMeasurements: unreadMsg2.length });
-
-                this.setValuesFromDto();
-                if (this.state.clientList.length < 1) {
-                    this.state.clientDtos.forEach(client => {
-                        this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
-                    });
-                }
-            }
-
-            if (this.state.activeItem === 'Master') {
-                return (<Redirect to="/master" />);
-            }
-
-            if (this.state.activeItem === 'Macro') {
-                return (<Redirect to="/personal" />);
-            }
-
-            if (this.state.activeItem === 'Body') {
-                return (<Redirect to="/measurements" />);
-            }
-
-            if (this.state.activeItem === 'Meal') {
-                return (<Redirect to="/meals" />);
-            }
-
-            if (this.state.activeItem === 'New Meal') {
-                return (<Redirect to="/macroguide" />);
-            }
-
-            if (this.state.activeItem === 'Activity') {
-                return (<Redirect to="/activities" />);
-            }
-
-            if (this.state.activeItem === 'Dashboard') {
-                return (<Redirect to="/dashboard" />);
-            }
-
-            if (this.state.activeItem === 'EBook') {
-                return (<Redirect to="/ebook" />);
-            }
-
-            if (this.state.activeItem === 'Admin') {
-                return (<Redirect to="/admin" />);
-            }
-
-            if (this.state.activeItem === 'Messages') {
-                return (<Redirect to="/messages" />);
-            }
-
-            if (this.state.activeItem === 'Meals Logger') {
-                return (<Redirect to="/messagesmeals" />);
-            }
-
-            if (this.state.activeItem === 'Meals Logger (Admin)') {
-                return (<Redirect to="/messagesmealsadmin" />);
-            }
-
-            if (this.state.activeItem === 'Meals Logger by Date (Admin)') {
-                return (<Redirect to="/messagesmealsadminbydate" />);
-            }
-
-            if (this.state.activeItem === 'Measurements Logger') {
-                return (<Redirect to="/messagesmeasurements" />);
-            }
-
-            if (this.state.activeItem === 'Measurements Logger Admin') {
-                return (<Redirect to="/messagesmeasurementsadminbydate" />);
-            }
-
-            if (this.state.activeItem === 'Nutrients Lookup') {
-                return (<Redirect to="/macroguidesearch" />);
-            }
-
-            if (!this.state.messagesDownloaded ||
-                !this.state.mealsMessagesDownloaded) {
+            if (!this.state.messagesUpdated ||
+                !this.state.mealMessagesUpdated ||
+                !this.state.measurementMessagesUpdated ||
+                !this.state.clientUpdated) {
                 return (<div style={divLoaderStyle}>
                     <Dimmer active inverted>
                         <Loader content='Loading' />
@@ -499,6 +385,74 @@ class Home extends React.Component<LoginProps, IState > {
                 </div>);
             }
             else {
+                if (this.state.error !== 'Login is Successfull') {
+                    this.setState({ error: 'Login is Successfull' });
+                }
+
+                if (this.state.activeItem === 'Master') {
+                    return (<Redirect to="/master" />);
+                }
+
+                if (this.state.activeItem === 'Macro') {
+                    return (<Redirect to="/personal" />);
+                }
+
+                if (this.state.activeItem === 'Body') {
+                    return (<Redirect to="/measurements" />);
+                }
+
+                if (this.state.activeItem === 'Meal') {
+                    return (<Redirect to="/meals" />);
+                }
+
+                if (this.state.activeItem === 'New Meal') {
+                    return (<Redirect to="/macroguide" />);
+                }
+
+                if (this.state.activeItem === 'Activity') {
+                    return (<Redirect to="/activities" />);
+                }
+
+                if (this.state.activeItem === 'Dashboard') {
+                    return (<Redirect to="/dashboard" />);
+                }
+
+                if (this.state.activeItem === 'EBook') {
+                    return (<Redirect to="/ebook" />);
+                }
+
+                if (this.state.activeItem === 'Admin') {
+                    return (<Redirect to="/admin" />);
+                }
+
+                if (this.state.activeItem === 'Messages') {
+                    return (<Redirect to="/messages" />);
+                }
+
+                if (this.state.activeItem === 'Meals Logger') {
+                    return (<Redirect to="/messagesmeals" />);
+                }
+
+                if (this.state.activeItem === 'Meals Logger (Admin)') {
+                    return (<Redirect to="/messagesmealsadmin" />);
+                }
+
+                if (this.state.activeItem === 'Meals Logger by Date (Admin)') {
+                    return (<Redirect to="/messagesmealsadminbydate" />);
+                }
+
+                if (this.state.activeItem === 'Measurements Logger') {
+                    return (<Redirect to="/messagesmeasurements" />);
+                }
+
+                if (this.state.activeItem === 'Measurements Logger Admin') {
+                    return (<Redirect to="/messagesmeasurementsadminbydate" />);
+                }
+
+                if (this.state.activeItem === 'Nutrients Lookup') {
+                    return (<Redirect to="/macroguidesearch" />);
+                }
+
                 return (
                     <div>
                         {this.displayUpdate()}
@@ -613,24 +567,6 @@ class Home extends React.Component<LoginProps, IState > {
         }
         else if (this.props.logins.length > 0 && this.props.logins[0].username === 'admin2') {
 
-            if (this.state.apiUpdate === true) {
-                this.setState({ apiUpdate: false });
-                this.setValuesFromDto();
-                if (this.state.clientList.length < 1) {
-                    this.state.clientDtos.forEach(client => {
-                        this.state.clientList.push({ key: client.id.toString(), text: client.firstName, value: client.id.toString() });
-                    });
-                }
-            }
-
-            if (this.state.checkClients === false) {
-                fetch('api/client/all')
-                    .then(response => response.json() as Promise<IClientDto[]>)
-                    .then(data => this.setState({
-                        clientDtos: data, apiUpdate: true, checkClients: true
-                    })).catch(error => console.log(error));
-            }
-
             return (
                 <div>
                     <div style={divLabelStyle2}>
@@ -737,17 +673,23 @@ class Home extends React.Component<LoginProps, IState > {
             this.setState({ error: 'Please Dont Leave Empty Fields' });
             return;
         }
-        this.setState({ error: 'loading..' });
-        this.setState({ login: 'logging' });
+        this.setState({
+            error: 'loading..', login: 'logging', checkMail: false,
+            clientUpdated: false, messagesUpdated: false,
+            mealMessagesUpdated: false, measurementMessagesUpdated: false
+        });
         this.props.requestLogout(this.state.username, this.state.password);
         this.props.requestLogins(this.state.username, this.state.password);
-        this.setState({ checkMail: false, messagesDownloaded: false, mealsMessagesDownloaded: false });
     }
 
     private clearCredentials = () => {
-        this.setState({ login: 'logout' });
         this.props.requestLogout(this.state.username, this.state.password);
-        this.setState({ error: 'Logout is Successfull' });
+        this.setState({
+            login: 'logout',
+            error: 'Logout is Successfull', checkMail: false,
+            clientUpdated: false, messagesUpdated: false,
+            mealMessagesUpdated: false, measurementMessagesUpdated: false, fetchAllData: false
+        });
     }
 }
 

@@ -303,6 +303,24 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<CommentDto>> GetAllCommentsMeals(int clientId, bool readStatus)
+        {
+            var comments = await this.trackerRepository.FindAllCommentsMeals(clientId, readStatus).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
         public async Task<IEnumerable<CommentDto>> GetAllCommentsMeals(DateTime date)
         {
             var comments = await this.trackerRepository.FindAllCommentsMeals(date).ConfigureAwait(false);
@@ -339,6 +357,24 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
+        public async Task<IEnumerable<CommentDto>> GetCommentsMeals(int clientId, DateTime date, bool readStatus)
+        {
+            var comments = await this.trackerRepository.FindCommentsMeals(clientId, date, readStatus).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
         public async Task<IEnumerable<CommentDto>> GetAllCommentsMeasurements(DateTime date)
         {
             var comments = await this.trackerRepository.FindAllCommentsMeasurements(date).ConfigureAwait(false);
@@ -360,6 +396,24 @@ namespace Fit2Fitter.Services.Implementation
         public async Task<IEnumerable<CommentDto>> GetCommentsMeasurements(int clientId, DateTime date)
         {
             var comments = await this.trackerRepository.FindCommentsMeasurements(clientId, date).ConfigureAwait(false);
+            return comments.Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                MeasurementRef = comment.MeasurementRef,
+                MealsRef = comment.MealsRef,
+                ActivitiesRef = comment.ActivitiesRef,
+                Message = comment.Message,
+                ReadStatus = comment.ReadStatus,
+                Updated = comment.Updated,
+                Created = comment.Created,
+                FromId = comment.FromId,
+                ClientId = comment.ClientId
+            });
+        }
+
+        public async Task<IEnumerable<CommentDto>> GetCommentsMeasurements(int clientId, DateTime date, bool readStatus)
+        {
+            var comments = await this.trackerRepository.FindCommentsMeasurements(clientId, date, readStatus).ConfigureAwait(false);
             return comments.Select(comment => new CommentDto
             {
                 Id = comment.Id,

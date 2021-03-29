@@ -228,7 +228,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         return (
             <Grid centered>
                 <Grid.Column>
-                    <Segment attached='top'>
+                    <Segment inverted color='grey' attached='top'>
                         <Grid centered>
                             <Grid.Row columns={4}>
                                 <Grid.Column width={3} floated='left'>
@@ -261,7 +261,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                     </Modal>
                                 </Grid.Column>
                                 <Grid.Column width={5} floated='left'>
-                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' basic color='pink' fluid icon onClick={this.autoPopulateFromYesterday}>
+                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' inverted color='black' fluid icon onClick={this.autoPopulateFromYesterday}>
                                         Auto
                                     </Button>} />
                                 </Grid.Column>
@@ -270,7 +270,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         open={this.state.updateMeal}
                                         onClose={() => this.handleUpdateOpen(false)}
                                         onOpen={() => this.handleUpdateOpen(true)}
-                                        trigger={<Button size='tiny' basic color='pink' fluid icon>
+                                        trigger={<Button size='tiny' inverted color='black' fluid icon>
                                             Modify
                                         </Button>}>
                                         <Modal.Header>Update Your Meal</Modal.Header>
@@ -294,7 +294,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                     </Segment>
                     <Segment textAlign='center' attached='bottom'>
                         <Grid centered>
-                            <Grid.Row columns={6} textAlign='center' color='grey'>
+                            <Grid.Row columns={6} textAlign='center'>
                                 <Grid.Column width={2}>
                                 </Grid.Column>
                                 <Grid.Column width={6} textAlign='left'>

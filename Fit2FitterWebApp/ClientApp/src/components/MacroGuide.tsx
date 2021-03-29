@@ -24,16 +24,18 @@ interface IState {
     prevDate: Date;
     guides: IMacroGuides;
     clientDtos: IClientDto[];
+    clientDtosUpdated: boolean;
     macrosPlanDtos: IMacrosPlanDto[];
+    macrosPlanUpdated: boolean;
     mealDtos: IMealDto[];
+    mealDtosUpdated: boolean;
     meals: IMeals;
     updated: boolean;
-    apiUpdate: boolean;
     savingStatus: string;
     dateChanged: boolean;
     openReview: boolean;
     savingDone: boolean;
-    mealsDownloaded: boolean;
+    updateAllInfo: boolean;
 }
 
 // At runtime, Redux will merge together...
@@ -47,30 +49,31 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
     public componentDidMount() {
         this.props.getLogin();
-        var date = new Date();
-        date.setHours(0, 0, 0, 0);
-        this.setState({ selectedDate: date, prevDate: date });
-
+        
         if (this.props.logins.length > 0) {
+            var date = new Date();
+            date.setHours(0, 0, 0, 0);
+            this.setState({ selectedDate: date, prevDate: date });
+
             //get client info
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClientDto[]>)
                 .then(data => this.setState({
-                    clientDtos: data, apiUpdate: true
+                    clientDtos: data, clientDtosUpdated: true
                 })).catch(error => console.log(error));
 
             //get macros plan
             fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
                 .then(response => response.json() as Promise<IMacrosPlanDto[]>)
                 .then(data => this.setState({
-                    macrosPlanDtos: data, apiUpdate: true
+                    macrosPlanDtos: data, macrosPlanUpdated: true
                 })).catch(error => console.log(error));
 
             //get all meals
             fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + date.toISOString())
                 .then(response => response.json() as Promise<IMealDto[]>)
                 .then(data => this.setState({
-                    mealDtos: data, apiUpdate: true, mealsDownloaded: true
+                    mealDtos: data, mealDtosUpdated: true
                 })).catch(error => console.log(error));
         }
     }
@@ -104,14 +107,16 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             meals: { 0: [], 1: [], 2: [], 3: []},
             updated: false,
             clientDtos: [],
+            clientDtosUpdated: false,
             macrosPlanDtos: [],
+            macrosPlanUpdated: false,
             mealDtos: [],
-            apiUpdate: false,
-            savingStatus: 'Saved',
+            mealDtosUpdated: false,
+            savingStatus: 'Loading',
             dateChanged: false,
             openReview: false,
             savingDone: false,
-            mealsDownloaded: false
+            updateAllInfo: false
         };
     }
 
@@ -212,7 +217,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }
 
         removedMeals.forEach(meal => {
-            this.setState({ savingStatus: 'Saving in progress' })
             var fetchStr = 'api/tracker/' + meal.id + '/macrosguide/delete';
             fetch(fetchStr, {
                 method: 'DELETE',
@@ -246,14 +250,24 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             });
         }
 
-        fetch(fetchStr, {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newMealDtos)
-        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Saved', savingDone: true })).catch(error => console.log('save  ---------->' + error));
+        if (newMealDtos.length > 0) {
+            fetch(fetchStr, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newMealDtos)
+            }).then(response => response.json()).then(data => {
+                this.logMeals();
+                console.log('saving done...');
+                this.setState({ savingStatus: 'Saved', savingDone: true })
+            }).catch(error => console.log('save  ---------->' + error));
+        }
+        else {
+            console.log('saving done...');
+            this.setState({ savingStatus: 'Saved', savingDone: true })
+        }
     }
 
     updateMacrosGuide = () => {
@@ -314,30 +328,42 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     onSave = () => {
-        this.setState({ savingStatus: 'Saving in progress' })
+        this.setState({ savingStatus: 'Saving in progress', mealDtosUpdated: false })
 
         // delete rows
-        this.deleteMeals();
+        var removedMeals: IMealDetails[] = [];
+        for (let i = 0; i < 4; i++) {
+            var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove === true && x.id !== 0);
+            removedMeals.push(...meals);
+        }
 
-        // add rows
-        setTimeout(() => {
+        if (removedMeals.length > 0) {
+            removedMeals.forEach(meal => {
+                var fetchStr = 'api/tracker/' + meal.id + '/macrosguide/delete';
+                fetch(fetchStr, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                }).then(response => response.json()).then(data => {
+                    console.log("finished deleting")
+                    this.saveMacrosGuide();
+                }).catch(error => console.log('delete meals---------->' + error));
+            });
+        }
+        else {
+            console.log("start saving")
             this.saveMacrosGuide();
-            this.logMeals();
-        }, 2000);
+        }
     }
 
     getMeals = () => {
-        this.setState({ mealsDownloaded: false });
         fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IMealDto[]>)
             .then(data => this.setState({
-                mealDtos: data, apiUpdate: true, mealsDownloaded: true
+                mealDtos: data, mealDtosUpdated: true, meals: { 0: [], 1: [], 2: [], 3: [] }
             })).catch(error => console.log(error));
-    }
-
-    resetMeals = () => {
-        this.setState({
-            meals: { 0: [], 1: [], 2: [], 3: [] } });
     }
 
     handleDateChange = (event: any, field: any) => {
@@ -345,7 +371,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
-            this.setState({ selectedDate: new Date(field['value']), mealDtos: [], dateChanged: true, apiUpdate: true })
+            this.setState({ selectedDate: new Date(field['value']), mealDtos: [], dateChanged: true, mealDtosUpdated: false })
         }
     }
 
@@ -359,23 +385,15 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         date.setDate(day - 1);
         date.setHours(0, 0, 0, 0);
 
-        //console.log('selected: ' + this.state.selectedDate.toDateString())
-        //console.log('selected: ' + day + ',' + month + ',' + year)
-
-        //console.log('adjusted: ' + date.toDateString())
-        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
-
         if (date.getDate() > day) {
             date.setMonth(month - 1);
-            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
         if (date.getMonth() > month) {
             date.setFullYear(year - 1);
-            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
-        this.setState({ selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+        this.setState({ savingStatus: 'Loading prev day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false });
     }
 
     handleNextDate = (e: any) => {
@@ -388,23 +406,15 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         date.setDate(day + 1);
         date.setHours(0, 0, 0, 0);
 
-        //console.log('selected: ' + this.state.selectedDate.toDateString())
-        //console.log('selected: ' + day + ',' + month + ',' + year)
-
-        //console.log('adjusted: ' + date.toDateString())
-        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
-        
         if (date.getDate() < day) {
             date.setMonth(month + 1);
-            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
         if (date.getMonth() < month) {
             date.setFullYear(year + 1);
-            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
-        this.setState({ selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+        this.setState({ savingStatus: 'Loading next day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false });
     }
 
     handleOpen = (open: boolean) => {
@@ -448,14 +458,13 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     onCancel = () => {
-        this.resetMeals();
+        this.setState({ savingStatus: 'Reverting..', mealDtosUpdated: false, updateAllInfo: false });
         this.getMeals();
-        this.setState({ savingStatus: 'Saved' });
     }
 
     showProgressBar = () => {
         if (this.state.savingStatus == 'Saving in progress') {
-            return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'} />);
+            return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'}/>);
         }
     }
 
@@ -506,8 +515,8 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     isLoadingData = () => {
-        if (this.state.clientDtos.length < 1 || this.state.macrosPlanDtos.length < 1 ||
-            this.state.mealsDownloaded === false) {
+        if (!this.state.clientDtosUpdated || !this.state.macrosPlanUpdated ||
+            !this.state.mealDtosUpdated) {
             return true;
         }
 
@@ -515,22 +524,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     render() {
-        var divLabelStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColour()
-        };
-
-        var divTitleStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'black',
-            backgroundColor: 'pink'
-        };
-
         var divDateStyle = {
             display: 'flex',
             justifyContent: 'center',
@@ -545,31 +538,24 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
         const activeItem = this.state.activeItem;
         if (this.props.logins.length > 0) {
-            if (this.state.savingDone === true) {
-                this.setState({ savingDone: false });
-                this.resetMeals();
+            if (this.state.savingDone || this.state.dateChanged) {
+                this.setState({ savingDone: false, dateChanged: false, updateAllInfo: false });
                 this.getMeals();
-            }
-
-            if (this.state.dateChanged === true) {
-                this.setState({ dateChanged: false });
-                this.resetMeals();
-                this.getMeals();
-            }
-
-            if (this.state.apiUpdate === true) {
-                this.setState({ apiUpdate: false, updated: !this.state.updated, savingStatus: 'Info Updated' });
-                this.setMacroGuides();
-                this.setMeals();
             }
 
             if (this.isLoadingData()) {
                 return (<div style={divLoaderStyle}>
                     <Dimmer active inverted>
-                        <Loader content='Loading' />
+                        <Loader content={this.state.savingStatus} />
                     </Dimmer>
                 </div>);
             }
+            else if (!this.state.updateAllInfo) {
+                this.setMacroGuides();
+                this.setMeals();
+                this.setState({ updateAllInfo: true, updated: !this.state.updated, savingStatus: 'Info Updated' });
+            }
+
             return (
                 <div>
                     <Grid centered>
@@ -584,11 +570,11 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         </Grid.Row>
                         <Grid.Row>
                             <Grid.Column verticalAlign='middle'>
-                                <Segment color='grey' inverted attached='top'>
+                                <Segment color='black' inverted attached='top'>
                                     <div style={divDateStyle}>
-                                        <Button color='grey' className='prev' onClick={this.handlePrevDate} inverted attached='left' basic icon='chevron left'/>
-                                            <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
-                                        <Button color='grey' className='next' onClick={this.handleNextDate} inverted attached='right' basic icon='chevron right'/>
+                                        <Button color='black' inverted className='prev' onClick={this.handlePrevDate} attached='left' icon='chevron left' />
+                                        <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                                        <Button color='black' inverted className='next' onClick={this.handleNextDate} attached='right' icon='chevron right' />
                                     </div>
                                     <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                                 </Segment>
@@ -621,7 +607,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                         onClick={this.handleItemClick}
                                     />
                                 </Menu>
-
                                 <Segment attached='bottom'>
                                     <Grid.Column stretched width={16}>
                                         <MacroGuideTable update={this.state.updated} client={this.state.clientDtos[0]} meals={this.state.meals[this.getMealType(activeItem)]} updateMeals={this.updateMeals} mealType={this.getMealType(this.state.activeItem)} />
@@ -632,8 +617,8 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         <Grid.Row>
                             <Grid.Column textAlign='left' floated='left'>
                                 <Button.Group floated='left' fluid>
-                                    <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                                    <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                    <Button color='black' floated='left' size='tiny' onClick={this.onCancel} >Cancel</Button>
+                                    <Button color='blue' floated='left' size='tiny' onClick={this.onSave} >Save</Button>
                                     <Modal
                                         open={this.state.openReview}
                                         onClose={() => this.handleOpen(false)}
@@ -659,14 +644,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                 </div>);
         }
         return (<Redirect to="/" />);
-    }
-
-    private getLoginCredentials = () => {
-        this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
     }
 }
 

@@ -76,6 +76,14 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId);
 
         /// <summary>
+        /// Finds all comments on meals with read status.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="readStatus">Read status.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId, bool readStatus);
+
+        /// <summary>
         /// Finds all comments on meals.
         /// </summary>
         /// <param name="clientId">The user id.</param>
@@ -92,6 +100,14 @@ namespace Fit2Fitter.Database.Contracts
         System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date);
 
         /// <summary>
+        /// Finds all comments on meals by date and read status.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">The meals date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date, bool readStatus);
+
+        /// <summary>
         /// Finds all comments on measurements by date.
         /// </summary>
         /// <param name="date">The meals date.</param>
@@ -105,6 +121,14 @@ namespace Fit2Fitter.Database.Contracts
         /// <param name="date">The meals date.</param>
         /// <returns>The user that has the requirement user name.</returns>
         System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeasurements(int clientId, DateTime date);
+
+        /// <summary>
+        /// Finds all comments on measurements by clientid and date and read status.
+        /// </summary>
+        /// <param name="clientId">The user id.</param>
+        /// <param name="date">The meals date.</param>
+        /// <returns>The user that has the requirement user name.</returns>
+        System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeasurements(int clientId, DateTime date, bool readStatus);
 
         /// <summary>
         /// Finds the comments by read status.

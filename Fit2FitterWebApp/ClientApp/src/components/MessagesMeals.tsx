@@ -471,12 +471,7 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
     }
 
     isLoadingData = () => {
-        if (this.state.clientDtos.length < 1 || this.state.macrosPlanDtos.length < 1 ||
-            this.state.mealsMessageDtosDownloaded === false) {
-            return true;
-        }
-
-        return false;
+        return !this.state.mealsMessageDtosDownloaded;
     }
 
     render() {

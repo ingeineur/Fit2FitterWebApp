@@ -341,14 +341,12 @@ class Personal extends React.Component<LoginProps, IState> {
                             </div>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row columns={3}>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Reset</Button>
-                        </Grid.Column>
-                        <Grid.Column width={4} textAlign='left' floated='left'>
-                            <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
-                        </Grid.Column>
-                        <Grid.Column width={8} textAlign='left' floated='left'>
+                    <Grid.Row>
+                        <Grid.Column>
+                            <Button.Group floated='left' fluid>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Reset</Button>
+                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                            </Button.Group>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

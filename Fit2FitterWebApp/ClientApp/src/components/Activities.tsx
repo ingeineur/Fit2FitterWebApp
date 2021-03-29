@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Progress, Label, Input, Icon, Image } from 'semantic-ui-react'
+import { Button, Segment, Grid, Progress, Label, Input, Icon, Image, Loader, Dimmer, Divider, Header } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -24,11 +24,12 @@ interface IState {
     activities: IActivity[];
     removedActivities: IActivity[];
     activityDtos: IActivityDto[];
+    activityDtosUpdated: boolean;
     updated: boolean;
-    apiUpdate: boolean;
     savingStatus: string;
     dateChanged: boolean;
     clients: IClient[];
+    clientsUpdated: boolean;
     age: number;
     steps: number;
     sleeps: number;
@@ -37,6 +38,7 @@ interface IState {
     sleepsStatus: string,
     workoutUpdated: boolean;
     savingDone: boolean;
+    updateAllInfo: boolean;
 }
 
 interface IClient {
@@ -70,14 +72,14 @@ class Activities extends React.Component<LoginProps, IState> {
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
                 .then(data => this.setState({
-                    clients: data, apiUpdate: true
+                    clients: data, clientsUpdated: true
                 })).catch(error => console.log(error));
 
             //get all activities
             fetch('api/tracker/' + this.props.logins[0].clientId + '/activity?date=' + date.toISOString())
                 .then(response => response.json() as Promise<IActivityDto[]>)
                 .then(data => this.setState({
-                    activityDtos: data, apiUpdate: true
+                    activityDtos: data, activityDtosUpdated: true
                 })).catch(error => console.log(error));
         }
     }
@@ -127,11 +129,12 @@ class Activities extends React.Component<LoginProps, IState> {
             activities: [],
             removedActivities: [],
             activityDtos: [],
+            activityDtosUpdated: false,
             updated: false,
-            apiUpdate: false,
-            savingStatus: 'Saved',
+            savingStatus: 'Loading',
             dateChanged: false,
             clients: [],
+            clientsUpdated: false,
             age: 0,
             sleeps: 0,
             steps: 0,
@@ -139,7 +142,8 @@ class Activities extends React.Component<LoginProps, IState> {
             workoutUpdated: false,
             stepsStatus: '',
             sleepsStatus: '',
-            savingDone: false
+            savingDone: false,
+            updateAllInfo: false
         };
     }
 
@@ -204,7 +208,10 @@ class Activities extends React.Component<LoginProps, IState> {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(activityIds)
-        }).then(response => response.json()).then(data => this.setState({ savingStatus: 'Delete Completed' })).catch(error => console.log('delete meals---------->' + error));
+        }).then(response => response.json()).then(data => {
+            this.setState({ savingStatus: 'Delete Completed' })
+            this.saveActivities();
+        }).catch(error => console.log('delete and save meals---------->' + error));
     }
 
     saveActivities = () => {
@@ -240,27 +247,26 @@ class Activities extends React.Component<LoginProps, IState> {
 
     onCancel = () => {
         this.resetActivities();
-        this.setActivities();
-        this.setState({ activities: this.state.activities, updated: !this.state.updated });
+        this.setState({ updateAllInfo: false, updated: !this.state.updated });
     }
 
     onSave = () => {
-        this.setState({ savingStatus: 'Saving in progress' })
+        this.setState({ savingStatus: 'Saving in progress', activityDtosUpdated: false })
 
-        // delete rows
-        this.deleteActivitiesByIds();
-
-        // add rows
-        setTimeout(() => {
+        if (this.state.removedActivities.length > 0) {
+            // delete rows, then save
+            this.deleteActivitiesByIds();
+        }
+        else {
             this.saveActivities();
-        }, 2000);
+        }
     }
 
     getActivities = () => {
         fetch('api/tracker/' + this.props.logins[0].clientId + '/activity?date=' + this.state.selectedDate.toISOString())
             .then(response => response.json() as Promise<IActivityDto[]>)
             .then(data => this.setState({
-                activityDtos: data, apiUpdate: true
+                activityDtos: data, activityDtosUpdated: true, updateAllInfo: false
             })).catch(error => console.log(error));
     }
 
@@ -279,7 +285,7 @@ class Activities extends React.Component<LoginProps, IState> {
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
-            this.setState({ selectedDate: new Date(field['value']), activityDtos:[], dateChanged: true, apiUpdate: true })
+            this.setState({ selectedDate: new Date(field['value']), activityDtos: [], dateChanged: true, activityDtosUpdated: false })
         }
     }
 
@@ -342,27 +348,48 @@ class Activities extends React.Component<LoginProps, IState> {
         }
     }
 
-    setHeartRateStatus = () => {
+    getMaxHr = () => {
         var maxHr: number = Math.max.apply(Math, this.state.activities.map(function (o) { return o.maxHr; }));
         if (this.state.activities.length < 1) {
             maxHr = 0;
         }
 
+        return maxHr;
+    }
+
+    getHeartRateStatus = () => {
+        var maxHr = this.getMaxHr();
+
         if (maxHr > (220 - this.state.age)) {
-            this.setState({ status: 'Warning!!!: Exceeding your max heart-rate is not advisable' });
+            return 'Warning!!!: Exceeding your max heart-rate is not advisable';
         }
         else if (maxHr === (220 - this.state.age)) {
-            this.setState({ status: 'Awesome!!!: Your body will keep burning for the next 24 Hours' });
+            return 'Awesome!!!: Your body will keep burning for the next 24 Hours';
         }
         else if (maxHr > (0.65 * (220 - this.state.age))) {
-            this.setState({ status: 'Excellent: Your body will keep burning for the next 12 Hours' });
+            return 'Excellent: Your body will keep burning for the next 12 Hours';
         }
         else if (maxHr > 0) {
-            this.setState({ status: 'Great work so far' });
+            return 'Great work so far';
         }
         else {
-            this.setState({ status: 'No max heartrate detected!!' });
+            return 'No MAX HR detected!!';
         }
+    }
+
+    getMaxHrColour = (maxHr: number) => {
+        var calcMaxHr = 220 - this.state.age;
+        var minMaxHr = 0.65 * calcMaxHr;
+        var maxMaxHr = 0.85 * calcMaxHr;
+
+        if (maxHr >= minMaxHr && maxHr <= maxMaxHr) {
+            return 'green';
+        }
+        else if (maxHr > maxMaxHr && maxHr <= calcMaxHr) {
+            return 'orange';
+        }
+
+        return 'red';
     }
 
     showProgressBar = () => {
@@ -402,23 +429,15 @@ class Activities extends React.Component<LoginProps, IState> {
         date.setDate(day - 1);
         date.setHours(0, 0, 0, 0);
 
-        //console.log('selected: ' + this.state.selectedDate.toDateString())
-        //console.log('selected: ' + day + ',' + month + ',' + year)
-
-        //console.log('adjusted: ' + date.toDateString())
-        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
-
         if (date.getDate() > day) {
             date.setMonth(month - 1);
-            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
         if (date.getMonth() > month) {
             date.setFullYear(year - 1);
-            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
-        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, activityDtosUpdated: false });
     }
 
     handleNextDate = (e: any) => {
@@ -431,77 +450,65 @@ class Activities extends React.Component<LoginProps, IState> {
         date.setDate(day + 1);
         date.setHours(0, 0, 0, 0);
 
-        //console.log('selected: ' + this.state.selectedDate.toDateString())
-        //console.log('selected: ' + day + ',' + month + ',' + year)
-
-        //console.log('adjusted: ' + date.toDateString())
-        //console.log('adjusted: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
-
         if (date.getDate() < day) {
             date.setMonth(month + 1);
-            //console.log('adjusted 2: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
         if (date.getMonth() < month) {
             date.setFullYear(year + 1);
-            //console.log('adjusted 3: ' + date.getDate() + ',' + date.getMonth() + ',' + date.getFullYear())
         }
 
-        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, apiUpdate: true });
+        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, activityDtosUpdated: false });
+    }
+
+    isLoadingData = () => {
+        if (!this.state.clientsUpdated || !this.state.activityDtosUpdated) {
+            return true;
+        }
+
+        return false;
     }
 
     render() {
         if (this.props.logins.length > 0) {
-            if (this.state.savingDone === true) {
-                this.setState({ savingDone: false });
-                this.resetActivities();
-                this.getActivities();
-            }
-
-            if (this.state.dateChanged === true) {
-                this.setState({ dateChanged: false });
-                this.resetActivities();
-                this.getActivities();
-            }
-
-            if (this.state.apiUpdate === true) {
-                this.setActivities();
-                this.setState({ apiUpdate: false, updated: !this.state.updated});
-
-                if (this.state.clients.length > 0) {
-                    const client = this.state.clients[0];
-                    this.setState({ age: client.age });
-                }
-
-                this.setHeartRateStatus();
-            }
-
-            if (this.state.workoutUpdated === true) {
-                this.setHeartRateStatus();
-                this.setState({ workoutUpdated: false });
-            }
-
-            var divStatusLabelStyle = {
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: 'black',
-                backgroundColor: 'yellow'
-            };
-
-            var divLabelStyle = {
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: '#fffafa',
-                backgroundColor: this.getColour()
-            };
-
             var divDateStyle = {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
             };
+
+            var divLoaderStyle = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            };
+
+            if (this.state.savingDone === true || this.state.dateChanged === true) {
+                this.setState({ savingDone: false, dateChanged: false, updateAllInfo: false });
+                this.resetActivities();
+                this.getActivities();
+            }
+
+            if (this.state.workoutUpdated === true) {
+                this.setState({ workoutUpdated: false });
+            }
+
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content={this.state.savingStatus} />
+                    </Dimmer>
+                </div>);
+            }
+            else if (!this.state.updateAllInfo) {
+                this.setActivities();
+                if (this.state.clients.length > 0) {
+                    const client = this.state.clients[0];
+                    this.setState({ age: client.age });
+                }
+
+                this.setState({ updateAllInfo: true, updated: !this.state.updated });
+            }
 
         return (
             <div>
@@ -517,85 +524,72 @@ class Activities extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column verticalAlign='middle'>
-                            <Segment color='grey' inverted attached='top'>
+                            <Segment inverted attached='top'>
                                 <div style={divDateStyle}>
-                                    <Button color='grey' className='prev' onClick={this.handlePrevDate} inverted attached='left' basic icon='chevron left' />
+                                    <Button color='black' className='prev' inverted onClick={this.handlePrevDate} attached='left' icon='chevron left' />
                                     <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
-                                    <Button color='grey' className='next' onClick={this.handleNextDate} inverted attached='right' basic icon='chevron right' />
+                                    <Button color='black' className='next' inverted onClick={this.handleNextDate} attached='right' icon='chevron right' />
                                 </div>
                                 <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                             </Segment>
                             <Segment textAlign='center' attached='bottom'>
                                 <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column>
-                            <div style={divStatusLabelStyle}>
-                                <a>{this.state.status}</a>
-                            </div>
-                            <Segment attached='bottom' textAlign='center'>
-                                <Grid key={100} centered>
-                                    <Grid.Row key={100} columns={3} stretched>
-                                        <Grid.Column key={100} width={4} textAlign='left' verticalAlign='middle'>
-                                            <div><a>Steps (Count)</a></div>
-                                        </Grid.Column>
-                                        <Grid.Column key={100 + 1} width={4} textAlign='left' verticalAlign='middle'>
-                                            <Input as='a' size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
-                                        </Grid.Column>
-                                        <Grid.Column key={100 + 2} width={8} textAlign='left' verticalAlign='middle'>
+                            <Segment attached='top' textAlign='center'>
+                                <Grid divided columns={3} textAlign='center' key={100} centered>
+                                    <Grid.Row key={100} verticalAlign='middle'>
+                                        <Grid.Column key={100} textAlign='center'>
+                                            <Header color='blue'>Steps (Count)</Header>
+                                            <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
                                             <div><a>{this.state.stepsStatus}</a></div>
                                         </Grid.Column>
-                                        <Grid.Column key={100 + 3} width={4} textAlign='left' verticalAlign='middle'>
-                                            <div><a>Sleep (Hours)</a></div>
+                                        <Grid.Column key={100 + 3} textAlign='center'>
+                                            <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
+                                            <div><a>{this.getHeartRateStatus()}</a></div>
                                         </Grid.Column>
-                                        <Grid.Column key={100 + 4} width={4} textAlign='left' verticalAlign='middle'>
-                                            <Input size='mini' value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
-                                        </Grid.Column>
-                                        <Grid.Column key={100 + 5} width={8} textAlign='left' verticalAlign='middle'>
+                                        <Grid.Column key={100 + 4} textAlign='center'>
+                                            <Header color='blue'>Sleep (Hours)</Header>
+                                            <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
                                             <div><a>{this.state.sleepsStatus}</a></div>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>
                             </Segment>
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column>
-                            <Segment attached='top'>
-                                <Grid centered>
-                                    <Grid.Row columns={5}>
-                                        <Grid.Column floated='left'>
-                                            <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
-                                                <Icon name='minus' />
-                                            </Button>
-                                        </Grid.Column>
-                                        <Grid.Column floated='right'>
-                                            <Button size='tiny' color='blue' fluid icon onClick={this.addActivity}>
-                                                <Icon name='plus' />
-                                            </Button>
-                                        </Grid.Column>
-                                        <Grid.Column verticalAlign='middle'>
-                                            <h2>Workouts</h2>
-                                        </Grid.Column>
-                                        <Grid.Column>
-                                        </Grid.Column>
-                                        <Grid.Column>
-                                        </Grid.Column>
-                                    </Grid.Row>
-                                </Grid>
-                            </Segment>
-                            <Segment textAlign='center' attached='bottom'>
-                                <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
+                            <Segment attached='bottom'>
+                                <Segment inverted color='grey' attached='top'>
+                                    <Grid centered>
+                                        <Grid.Row columns={5}>
+                                            <Grid.Column floated='left'>
+                                                <Button size='tiny' color='red' inverted fluid icon onClick={this.removeActivities}>
+                                                    <Icon name='minus' />
+                                                </Button>
+                                            </Grid.Column>
+                                            <Grid.Column floated='right'>
+                                                <Button size='tiny' color='blue' inverted fluid icon onClick={this.addActivity}>
+                                                    <Icon name='plus' />
+                                                </Button>
+                                            </Grid.Column>
+                                            <Grid.Column verticalAlign='middle'>
+                                                <h2>Workouts</h2>
+                                            </Grid.Column>
+                                            <Grid.Column>
+                                            </Grid.Column>
+                                            <Grid.Column>
+                                            </Grid.Column>
+                                        </Grid.Row>
+                                    </Grid>
+                                </Segment>
+                                <Segment textAlign='center' attached='bottom'>
+                                    <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
+                                </Segment>
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
-                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                <Button floated='left' size='tiny' onClick={this.onCancel} color='black'>Cancel</Button>
+                                <Button floated='left' size='tiny' onClick={this.onSave} color='blue' >Save</Button>
                             </Button.Group>
                         </Grid.Column>
                     </Grid.Row>

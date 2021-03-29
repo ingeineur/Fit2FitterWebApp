@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, Segment } from 'semantic-ui-react';
+import { Button, Icon, Dimmer, Grid, Loader, Header, Segment } from 'semantic-ui-react';
 import ChartistGraph from 'react-chartist';
 import MeasurementsChat from './MeasurementsChat';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -16,17 +16,19 @@ interface IProps {
 interface IState {
     dirty: boolean;
     clientId: number;
-    apiUpdate: boolean;
     updated: boolean;
     graphs: IGraphMeasurements;
     graphsData: [IMeta[]];
     weightLabel: string[];
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
+    measurementDtosUpdated: boolean;
     allMeasurementDtos: IMeasurementDto[];
+    allMeasurementDtosUpdated: boolean;
     selectedDate: Date;
     prevDate: Date;
     dateChanged: boolean,
+    updateAllInfo: boolean,
 }
 
 interface IMeta {
@@ -77,7 +79,6 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         this.state = {
             dirty: false,
             clientId: 0,
-            apiUpdate: false,
             updated: false,
             graphs: {
                 neck: [],
@@ -93,15 +94,18 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             weightLabel: [],
             measurements: { neck: 0.0, upperArm: 0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
+            measurementDtosUpdated: false,
             allMeasurementDtos: [],
+            allMeasurementDtosUpdated: false,
             selectedDate: new Date(),
             prevDate: new Date(),
-            dateChanged: false
+            dateChanged: false,
+            updateAllInfo: true
         };
     }
 
     public componentDidMount() {
-        var date = new Date();
+        var date = new Date(this.props.date);
         date.setDate(date.getDate() - 15);
         date.setHours(0, 0, 0, 0);
         this.setState({ selectedDate: date });
@@ -109,13 +113,13 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         fetch('api/client/' + this.props.clientId + '/measurements/closest?date=' + this.props.date)
             .then(response => response.json() as Promise<IMeasurementDto[]>)
             .then(data => this.setState({
-                measurementDtos: data, apiUpdate: true
+                measurementDtos: data, measurementDtosUpdated: true, updateAllInfo: false
             })).catch(error => console.log(error));
 
         fetch('api/client/' + this.props.clientId + '/all/measurements?fromDate=' + date.toISOString() + '&date=' + this.props.date)
             .then(response => response.json() as Promise<IMeasurementDto[]>)
             .then(data => this.setState({
-                allMeasurementDtos: data, apiUpdate: true
+                allMeasurementDtos: data, allMeasurementDtosUpdated: true, updateAllInfo: false
             })).catch(error => console.log(error));
 
         this.setGraphValues();
@@ -368,7 +372,7 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             this.state.measurements.thigh = measurement.thigh;
             this.state.measurements.weight = measurement.weight;
             this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated });
+            this.setState({ updated: !this.state.updated });
         }
         else {
             this.state.measurements.neck = 0;
@@ -379,7 +383,7 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             this.state.measurements.thigh = 0;
             this.state.measurements.weight = 0;
             this.setState({ measurements: this.state.measurements });
-            this.setState({ apiUpdate: false, updated: !this.state.updated });
+            this.setState({ updated: !this.state.updated });
         }
 
         this.setGraphValues();
@@ -398,8 +402,16 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         fetch('api/client/' + this.props.clientId + '/all/measurements?fromDate=' + this.state.selectedDate.toISOString() + '&date=' + this.props.date)
             .then(response => response.json() as Promise<IMeasurementDto[]>)
             .then(data => this.setState({
-                allMeasurementDtos: data, apiUpdate: true
+                allMeasurementDtos: data, allMeasurementDtosUpdated: true, updateAllInfo: false
             })).catch(error => console.log(error));
+    }
+
+    isLoadingData = () => {
+        if (!this.state.measurementDtosUpdated || !this.state.allMeasurementDtosUpdated) {
+            return true;
+        }
+
+        return false;
     }
 
     render() {
@@ -411,18 +423,19 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             background: this.getColour(level)
         };
 
+        var divLoaderStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+
         if (this.state.dirty !== this.props.update) {
             this.setState({ dirty: this.props.update });
         }
 
         if (this.state.dateChanged === true) {
-            this.setState({ dateChanged: false });
+            this.setState({ dateChanged: false, allMeasurementDtosUpdated: false, updateAllInfo: true });
             this.getAllMeasurements();
-        }
-
-        if (this.state.apiUpdate === true) {
-            this.setState({ apiUpdate: false });
-            this.setValuesFromDto();
         }
 
         var data2 = {
@@ -435,6 +448,18 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         var lineChartOptions = {
             reverseData: false,
             showArea: true
+        }
+
+        if (this.isLoadingData()) {
+            return (<div style={divLoaderStyle}>
+                <Dimmer active inverted>
+                    <Loader content='Loading' />
+                </Dimmer>
+            </div>);
+        }
+        else if (!this.state.updateAllInfo) {
+            this.setValuesFromDto();
+            this.setState({ updateAllInfo: true, updated: !this.state.updated });
         }
 
         return (<div>

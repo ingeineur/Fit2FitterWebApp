@@ -94,11 +94,20 @@ namespace Fit2Fitter.Database.Data
                 (x.ClientId == clientId || x.FromId == clientId) && x.MealsRef == 1).ToArrayAsync().ConfigureAwait(false);
         }
 
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(int clientId, bool readStatus)
+        {
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId &&
+                x.MealsRef == 1 &&
+                x.ReadStatus == readStatus).ToArrayAsync().ConfigureAwait(false);
+        }
+
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeals(DateTime date)
         {
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Comments.Where(x =>
-                DbF.DateDiffDay(x.Created, date) == 0 && x.MealsRef == 1).ToArrayAsync().ConfigureAwait(false);
+                DbF.DateDiffDay(x.Created, date) == 0 &&
+                x.MealsRef == 1).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date)
@@ -106,6 +115,16 @@ namespace Fit2Fitter.Database.Data
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Comments.Where(x =>
                 (x.ClientId == clientId || x.FromId == clientId) && x.MealsRef == 1 && DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeals(int clientId, DateTime date, bool readStatus)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId && 
+                x.ReadStatus == readStatus && 
+                x.MealsRef == 1 && 
+                DbF.DateDiffDay(x.Created, date) == 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindAllCommentsMeasurements(DateTime date)
@@ -120,6 +139,16 @@ namespace Fit2Fitter.Database.Data
             var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
             return await this.databaseContext.Comments.Where(x =>
                 (x.ClientId == clientId || x.FromId == clientId) && x.MeasurementRef == 1 && DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
+        }
+
+        public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindCommentsMeasurements(int clientId, DateTime date, bool readStatus)
+        {
+            var DbF = Microsoft.EntityFrameworkCore.EF.Functions;
+            return await this.databaseContext.Comments.Where(x =>
+                x.ClientId == clientId &&
+                x.ReadStatus == readStatus &&
+                x.MeasurementRef == 1 && 
+                DbF.DateDiffDay(x.Created, date) >= 0).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task<IEnumerable<Models.Comment>> FindComment(int clientId, bool readStatus)

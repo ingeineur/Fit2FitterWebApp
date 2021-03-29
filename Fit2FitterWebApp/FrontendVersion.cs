@@ -6,6 +6,6 @@
 
         public int Minor { get { return 0; } }
 
-        public int Build { get { return 6; } }
+        public int Build { get { return 8; } }
     }
 }
