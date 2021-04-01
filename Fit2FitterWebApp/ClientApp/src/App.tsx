@@ -16,7 +16,6 @@ import ActivivtyTable from './components/ActivityTable';
 import Measurements from './components/Measurements';
 import Personal from './components/Personal';
 import EBook from './components/EBook';
-import PhotoCapture from './components/PhotoCapture';
 import Admin from './components/Admin';
 import AdminResetPwd from './components/AdminResetPwd';
 import Master from './components/Master';
@@ -54,7 +53,6 @@ export default () => (
         <Route path='/messagesmeasurements' component={MessagesMeasurements} />
         <Route path='/macroguide' component={MacroGuide} />
         <Route path='/macroguidesearch' component={MacroGuideSearch} />
-        <Route path='/photocapture' component={PhotoCapture} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>
 );
