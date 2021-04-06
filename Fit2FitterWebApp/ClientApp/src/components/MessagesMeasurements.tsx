@@ -2,11 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import MeasurementsReviewModal from './MeasurementsReviewModal'
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -54,6 +55,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IMessage {
@@ -352,12 +354,11 @@ class MessagesMeasurements extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Measurements Log</Label>
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Measurements Logger' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <Divider />
+                        </Grid.Column>
                         <Grid.Column width={16}>
                             <Segment attached='bottom'>
                                 {this.getLogs()}

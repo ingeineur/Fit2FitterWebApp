@@ -2,11 +2,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Menu, Comment, Grid, Header, Label, Form, Icon, Image, List, Flag, Container, Message, Checkbox, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Menu, Comment, Grid, Header, Label, Form, Icon, Image, List, Flag, Divider, Message, Checkbox, Dropdown } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
-import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -74,6 +74,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IActivityDto {
@@ -558,13 +559,12 @@ class Messages extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row >
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Messages</Label>
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row textAlign='left'>
-                        <Grid.Column textAlign='left' floated='left'>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Messages' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column width={16} textAlign='left' floated='left'>
                             {this.getReplyOption()}
                         </Grid.Column>
                     </Grid.Row>

@@ -51,3 +51,50 @@ export interface IMacrosPlanDto {
     created: string;
     clientId: number;
 }
+
+export interface IFoodLegacyDto {
+    fdcId: string,
+    description: string
+}
+
+export interface IMealDesc {
+    id: string,
+    description: string
+}
+
+export interface IFoodPortionDto {
+    fdcId: string,
+    modifier: string,
+    amount: number,
+    gramWeight: number,
+    proteinValue: number,
+    fatValue: number,
+    carbValue: number,
+}
+
+export interface IRecipeDto {
+    id: number,
+    name: string,
+    carbs: number,
+    protein: number,
+    fat: number,
+    serving: number,
+    photo: string,
+    updated: string,
+    created: string,
+    clientId: number,
+}
+
+export interface IRecipeItemDto {
+    id: number,
+    name: string,
+    dataSource: string,
+    externalId: string,
+    weight: number,
+    carbs: number,
+    protein: number,
+    fat: number,
+    updated: string,
+    created: string,
+    recipeId: number,
+}

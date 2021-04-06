@@ -51,5 +51,40 @@ namespace Fit2FitterWebApp.Controllers
             var data = await this.foodService.GetAnzFoodPortions(foodKey).ConfigureAwait(false);
             return data.ToArray();
         }
+
+        [HttpPut("{clientId}/recipe")]
+        public async Task<IActionResult> AddUpdateRecipe([FromBody, Required] RecipeDto recipe)
+        {
+            var result = await this.foodService.AddRecipe(recipe).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpPut("recipe/items")]
+        public async Task<IActionResult> AddUpdateRecipeItems([FromBody, Required] IEnumerable<RecipeItemDto> recipeItems)
+        {
+            var result = await this.foodService.AddRecipeItems(recipeItems).ConfigureAwait(false);
+            return this.Ok(result);
+        }
+
+        [HttpGet("{clientId}/recipes/search")]
+        public async Task<IEnumerable<RecipeDto>> GetRecipes(int clientId, [FromQuery, Required] string keyword)
+        {
+            var data = await this.foodService.GetRecipes(clientId, keyword).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpGet("{recipeId}/recipe/items")]
+        public async Task<IEnumerable<RecipeItemDto>> GetRecipeItems(int recipeId)
+        {
+            var data = await this.foodService.GetRecipeItems(recipeId).ConfigureAwait(false);
+            return data.ToArray();
+        }
+
+        [HttpDelete("{recipeId}/recipe/delete")]
+        public async Task<IActionResult> deleteRecipe(int recipeId)
+        {
+            var result = await this.foodService.DeleteRecipe(recipeId).ConfigureAwait(false);
+            return this.Ok(result);
+        }
     }
 }

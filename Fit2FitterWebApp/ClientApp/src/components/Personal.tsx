@@ -310,7 +310,7 @@ class Personal extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Personalized Macro Tracker</Label>
+                            <Label size='large' as='a' color='pink' basic circular>Account</Label>
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>

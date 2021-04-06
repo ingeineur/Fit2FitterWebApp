@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress, Flag, Image, Loader, Dimmer } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Modal, Icon, Progress, Flag, Image, Loader, Dimmer, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -12,6 +12,7 @@ import MacroGuideReviewModal from './MacroGuideReviewModal'
 import MacroGuideTable from './MacroGuideTable'
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
 import { IClientDto } from '../models/clients';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -559,17 +560,12 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             return (
                 <div>
                     <Grid centered>
-                        <Grid.Row columns={2}>
-                            <Grid.Column width={6}>
-                                <Label size='large' as='a' color='pink' basic circular>Daily Meals Tracker</Label>
-                            </Grid.Column>
-                            <Grid.Column width={10} textAlign='right'>
-                                <Image avatar src={this.getPhoto()} />
-                                <a>{this.getUserInfo()}</a>
-                            </Grid.Column>
-                        </Grid.Row>
                         <Grid.Row>
-                            <Grid.Column verticalAlign='middle'>
+                            <Grid.Column width={16}>
+                                <AppsMenu activeItem='New Meal' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                                <Divider />
+                            </Grid.Column>
+                            <Grid.Column width={16} verticalAlign='middle'>
                                 <Segment color='black' inverted attached='top'>
                                     <div style={divDateStyle}>
                                         <Button color='black' inverted className='prev' onClick={this.handlePrevDate} attached='left' icon='chevron left' />
@@ -647,7 +643,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 }
 
-//export default connect()(Home);
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props

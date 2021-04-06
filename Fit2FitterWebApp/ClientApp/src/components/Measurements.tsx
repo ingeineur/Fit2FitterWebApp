@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Input, Icon, Progress, Modal, Loader, Dimmer } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Input, Icon, Progress, Modal, Loader, Dimmer, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -11,6 +11,8 @@ import MeasurementsTable from './MeasurementsTable'
 import Measurements3DViewer from './Measurements3DViewer'
 import MeasurementsHeader from './MeasurementsHeader';
 import MeasurementsReviewModal from './MeasurementsReviewModal'
+import AppsMenu from './AppMenus';
+import { IClientDto } from '../models/clients';
 
 interface IProps {
 }
@@ -28,7 +30,7 @@ interface IState {
     graphs: IGraphMeasurements;
     graphsData: [IMeta[]];
     weightLabel: string[];
-    clients: IClient[];
+    clients: IClientDto[];
     clientsUpdated: boolean;
     macrosPlans: IMacrosPlan[];
     macrosPlansUpdated: boolean;
@@ -105,16 +107,6 @@ interface IMacrosPlan {
     clientId: number;
 }
 
-interface IClient {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-}
-
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -133,7 +125,7 @@ class Measurements extends React.Component<LoginProps, IState> {
         if (this.props.logins.length > 0) {
 
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
-                .then(response => response.json() as Promise<IClient[]>)
+                .then(response => response.json() as Promise<IClientDto[]>)
                 .then(data => this.setState({
                     clients: data, clientsUpdated: true
                 })).catch(error => console.log(error));
@@ -391,6 +383,14 @@ class Measurements extends React.Component<LoginProps, IState> {
         return false;
     }
 
+    getSaveIcon = () => {
+        if (this.state.savingStatus === 'Not Saved') {
+            return 'edit outline';
+        }
+
+        return 'save';
+    }
+
     render() {
         var divLabelStyle = {
             display: 'flex',
@@ -434,19 +434,18 @@ class Measurements extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Weekly Measurements Tracker</Label>
-                        </Grid.Column>
-                        <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
-                            <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row>
-                        <Grid.Column>
-                            <div style={divLabelStyle}>
-                                <a>{this.state.savingStatus}</a>
-                            </div>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Body' logins={this.props.logins} clientDtos={this.state.clients} />
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column width={16}>
+                            <Segment inverted attached='top'>
+                                <div style={divLoaderStyle}>
+                                    <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
+                                </div>
+                                <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
+                            </Segment>
                             <Segment textAlign='center' attached='bottom'>
                                 <MeasurementsHeader targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
                             </Segment>

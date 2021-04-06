@@ -2,12 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Loader, Dimmer } from 'semantic-ui-react'
+import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Loader, Dimmer, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import MacroGuideReviewModal from './MacroGuideReviewModal'
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -84,6 +85,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IMessage {
@@ -597,13 +599,12 @@ class MessagesMealsAdminByDate extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Meals Log Review</Label>
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row textAlign='left'>
-                        <Grid.Column verticalAlign='middle' width={10} textAlign='left' floated='left'>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Meals Logger by Date (Admin)' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column verticalAlign='middle' width={16} textAlign='left' floated='left'>
                             <div>
                                 <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
                             </div>

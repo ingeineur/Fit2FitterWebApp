@@ -69,6 +69,8 @@ namespace Fit2Fitter.Database.Data
         public virtual DbSet<Models.FoodNutrient> FoodNutrients { get; set; }
         public virtual DbSet<Models.AnzFoodNutrient> AnzFoodNutrients { get; set; }
         public virtual DbSet<Models.AnzFoodMeasure> AnzFoodMeasures { get; set; }
+        public virtual DbSet<Models.Recipe> Recipes { get; set; }
+        public virtual DbSet<Models.RecipeItem> RecipeItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -617,6 +619,92 @@ namespace Fit2Fitter.Database.Data
                 entity.Property(e => e.Weight)
                     .IsRequired()
                     .HasMaxLength(8);
+            });
+
+            modelBuilder.Entity<Models.Recipe>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Carbs)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Protein)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Fat)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Serving)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Photo)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Updated)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Created)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.ClientId)
+                    .IsRequired()
+                    .HasMaxLength(4);
+            });
+
+            modelBuilder.Entity<Models.RecipeItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.DataSource)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.ExternalId)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Weight)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Carbs)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Protein)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Fat)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Updated)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Created)
+                    .IsRequired()
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.RecipeId)
+                    .IsRequired()
+                    .HasMaxLength(4);
             });
         }
     }

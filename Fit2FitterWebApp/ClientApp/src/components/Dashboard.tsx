@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Menu, Segment, Grid, Dimmer, Label, Loader, Image, List, Flag, Dropdown } from 'semantic-ui-react'
+import { Menu, Segment, Grid, Dimmer, Label, Loader, Image, List, Flag, Dropdown, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -10,6 +10,7 @@ import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
 import { getActivityLevel } from '../models/activities';
 import ChartistGraph from 'react-chartist';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -218,7 +219,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     })).catch(error => console.log(error));
 
                 //get macros plan
-                fetch('api/client/' + this.state.toClientId + '/macrosplan')
+                fetch('api/client/' + clientId + '/macrosplan')
                     .then(response => response.json() as Promise<IMacrosPlanDto[]>)
                     .then(data => this.setState({
                         macrosPlanDtos: data, macrosPlanDtosUpdated: true
@@ -493,7 +494,6 @@ class Dashboard extends React.Component<LoginProps, IState> {
         return (<Grid centered>
             <Grid.Row columns={2}>
                 <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                    <Label size='large' as='a' color='pink' basic circular>Daily Leaderboards</Label>
                 </Grid.Column>
                 <Grid.Column verticalAlign='middle' floated='right' textAlign='right'>
                     <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
@@ -549,7 +549,6 @@ class Dashboard extends React.Component<LoginProps, IState> {
         return (<Grid centered>
             <Grid.Row columns={2}>
                 <Grid.Column width={6}>
-                    <Label size='large' as='a' color='pink' basic circular>Full Progress</Label>
                 </Grid.Column>
                 <Grid.Column width={10} textAlign='right'>
                     {this.getAllClientsOptions()}
@@ -704,7 +703,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
 
     setMacroGuides = () => {
         if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
-            const client = this.state.clientDtos[0];
+            var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)];
             const macrosPlan = this.state.macrosPlanDtos[0];
             const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
             const totalCalories = getActivityLevel(macrosPlan.activityLevel) * bmr;
@@ -832,7 +831,11 @@ class Dashboard extends React.Component<LoginProps, IState> {
             <div>
                 <Grid centered>
                     <Grid.Row>
-                        <Grid.Column>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Dashboard' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column width={16}>
                             <Menu color='pink' inverted attached='top' pointing>
                                 <Menu.Item
                                     name='Leaderboard'

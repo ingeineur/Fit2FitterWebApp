@@ -2,12 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown } from 'semantic-ui-react'
+import { Button, Segment, Grid, Label, Form, Icon, Message, Modal, Dropdown, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import MacroGuideReviewModal from './MacroGuideReviewModal'
-import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -82,6 +82,7 @@ interface IClientDto {
     city: string;
     age: number;
     created: string;
+    avatar: string;
 }
 
 interface IMessage {
@@ -569,11 +570,10 @@ class MessagesMealsAdmin extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Meals Log</Label>
-                        </Grid.Column>
-                    </Grid.Row>
+                    <Grid.Column width={16}>
+                        <AppsMenu activeItem='Meals Logger (Admin)' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                        <Divider />
+                    </Grid.Column>
                     <Grid.Row columns={2} textAlign='left'>
                         <Grid.Column verticalAlign='middle' width={10} textAlign='left' floated='left'>
                             <a>Select Trainee:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />

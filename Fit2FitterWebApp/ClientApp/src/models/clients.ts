@@ -33,3 +33,12 @@ export interface IClientDto {
     created: string;
     avatar: string;
 }
+
+export interface LoginDto {
+    id: number,
+    username: string;
+    password: string;
+    active: boolean;
+    lastLogin: string;
+    clientId: number;
+}

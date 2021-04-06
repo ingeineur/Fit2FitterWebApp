@@ -55,3 +55,46 @@ export function getActivityLevel(activityLevel: string) {
 
     return 0;
 }
+
+export function getStepIndicatorColour (percent: number) {
+    if (percent <= 0.5) {
+        return 'red';
+    }
+
+    if (percent > 0.99) {
+        return 'green';
+    }
+
+    return 'yellow';
+}
+
+export function getSleepColour (hour: number) {
+    if (hour < 6.0) {
+        return 'red';
+    }
+
+    return 'green';
+}
+
+export function getIndicatorColour (percent: number) {
+    if (percent >= 1.0) {
+        return 'green';
+    }
+
+    return 'red';
+}
+
+export function getMaxHrColour(maxHr: number, age: number) {
+    var calcMaxHr = 220 - age;
+    var minMaxHr = 0.65 * calcMaxHr;
+    var maxMaxHr = 0.85 * calcMaxHr;
+
+    if (maxHr >= minMaxHr && maxHr <= maxMaxHr) {
+        return 'green';
+    }
+    else if (maxHr > maxMaxHr && maxHr <= calcMaxHr) {
+        return 'orange';
+    }
+
+    return 'red';
+}

@@ -1,10 +1,64 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider } from 'semantic-ui-react'
+import { Redirect } from 'react-router-dom';
+import { Button, Icon, Input, Grid, Message, Header, List, Search, Dropdown, Divider, Dimmer, Loader, Menu } from 'semantic-ui-react'
 import ChartistGraph from 'react-chartist';
 import { isNullOrUndefined } from 'util';
+import { IClientDto } from '../models/clients';
+import { ApplicationState } from '../store';
+import * as LoginStore from '../store/Login';
+import AppsMenu from './AppMenus';
 
 interface IProps {
+}
+
+var divLabelStyle1 = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'blue'
+};
+
+var divLabelStyle2 = {
+    color: 'black'
+};
+
+var divLabelStyle3 = {
+    color: 'red'
+};
+
+var options2 = {
+    reverseData: true,
+    donut: true,
+    donutWidth: 60,
+    donutSolid: true,
+    startAngle: 270,
+    showLabel: true
+};
+
+var responsiveOptions = [
+    ['screen and (min-width: 640px)', {
+        chartPadding: 30,
+        labelOffset: 100,
+        labelDirection: 'explode',
+        labelInterpolationFnc: function (value: number) {
+            return value;
+        }
+    }],
+    ['screen and (min-width: 1024px)', {
+        labelOffset: 80,
+        chartPadding: 20
+    }]
+];
+
+var options = {
+    seriesBarDistance: 10,
+    reverseData: true,
+    distributeSeries: true,
+    horizontalBars: true,
+    axisY: {
+        offset: 70
+    }
 }
 
 interface IMealDetails {
@@ -77,12 +131,21 @@ interface IState {
     apiUpdated: boolean,
     usdaQuantity: number,
     selectedFdcId: string,
-    usdaUpdated: boolean
+    usdaUpdated: boolean,
+    clientDtos: IClientDto[];
+    clientDtosUpdated: boolean;
+    activeItem: string;
 }
 
-class MacroGuideSearch extends React.Component<IProps, IState> {
+// At runtime, Redux will merge together...
+type LoginProps =
+    IProps
+    & LoginStore.LoginState // ... state we've requested from the Redux store
+    & typeof LoginStore.actionCreators; // ... plus action creators we've requested
 
-    constructor(props: IProps) {
+class MacroGuideSearch extends React.Component<LoginProps, IState> {
+
+    constructor(props: LoginProps) {
         super(props);
         this.state = {
             dirty: false,
@@ -91,11 +154,21 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
                 vitaminA: 0, vitaminB6: 0, vitaminC: 0, vitaminD: 0, calcium: 0, potassium: 0, iron: 0, zinc: 0 },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
-            searchText: '', selectedFdcId: '', usdaUpdated: false
+            searchText: '', selectedFdcId: '', usdaUpdated: false, clientDtos: [], clientDtosUpdated: false,
+            activeItem: 'USDA'
         };
     }
 
     public componentDidMount() {
+        this.props.getLogin();
+        if (this.props.logins.length > 0) {
+            //get client info
+            fetch('api/client?clientId=' + this.props.logins[0].clientId)
+                .then(response => response.json() as Promise<IClientDto[]>)
+                .then(data => this.setState({
+                    clientDtos: data, clientDtosUpdated: true
+                })).catch(error => console.log(error));
+        }
     }
 
     updateCarb = (event: any) => {
@@ -235,68 +308,42 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
         return 'green';
     }
 
-    render() {
+    isLoadingData = () => {
+        if (!this.state.clientDtosUpdated) {
+            return true;
+        }
+        return false;
+    }
 
-        var divLabelStyle = {
-            display: 'flex', 
+    getDivLabelStyle = () => {
+        return {
+            display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             color: '#fffafa',
             backgroundColor: this.getColour()
         };
+    }
 
-        var divLabelStyle1 = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'blue'
-        };
-
-        var divLabelStyle2 = {
-            color: 'black'
-        };
-
-        var divLabelStyle3 = {
-            color: 'red'
-        };
-        
-        if (this.state.usdaUpdated === true) {
-            this.setState({ usdaUpdated: false });
-            this.addUsda();
-        }
-
-        if (this.state.apiUpdated === true) {
-            this.setState({ apiUpdated: false });
-            
-            this.state.foodPortionDtos.forEach(x => {
-                this.state.portions.push({ key: x.modifier, value: x.modifier, text: x.amount + ' ' + x.modifier + ' (' + x.gramWeight + 'g)' });
-            });
-
-            if (this.state.foodPortionDtos.length > 0) {
-                this.setState({ portions: this.state.portions, selectedPortion: this.state.foodPortionDtos[0].modifier });
-            }
-
-            this.setState({ usdaUpdated: true });
-        }
-
+    getUSDA = () => {
         var totalGram: number = 1;
         var selectedPortion = this.state.foodPortionDtos.find(x => x.modifier === this.state.selectedPortion);
         if (!isNullOrUndefined(selectedPortion)) {
             totalGram = selectedPortion.gramWeight;
         }
-        
+
         var data = {
             labels: ['Carb', 'Protein', 'Fat', 'Fiber', 'Sugar'],
             series: [
-                    ((this.state.meal.carb) / totalGram) * 100.0
+                ((this.state.meal.carb) / totalGram) * 100.0
                 ,
-                    ((this.state.meal.protein) / totalGram) * 100.0
+                ((this.state.meal.protein) / totalGram) * 100.0
                 ,
-                    ((this.state.meal.fat) / totalGram) * 100.0
+                ((this.state.meal.fat) / totalGram) * 100.0
                 ,
-                    ((this.state.meal.fiber) / totalGram) * 100.0
+                ((this.state.meal.fiber) / totalGram) * 100.0
                 ,
-                    ((this.state.meal.sugar) / totalGram) * 100.0
+                ((this.state.meal.sugar) / totalGram) * 100.0
             ]
         };
 
@@ -306,42 +353,7 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
             series: [percentageWater, 100.0 - percentageWater]
         }
 
-        var options2 = {
-            reverseData: true,
-            donut: true,
-            donutWidth: 60,
-            donutSolid: true,
-            startAngle: 270,
-            showLabel: true
-        };
-
-        var responsiveOptions = [
-            ['screen and (min-width: 640px)', {
-                chartPadding: 30,
-                labelOffset: 100,
-                labelDirection: 'explode',
-                labelInterpolationFnc: function (value:number) {
-                    return value;
-                }
-            }],
-            ['screen and (min-width: 1024px)', {
-                labelOffset: 80,
-                chartPadding: 20
-            }]
-        ];
-        
-        var options = {
-            seriesBarDistance: 10,
-            reverseData: true,
-            distributeSeries: true,
-            horizontalBars: true,
-            axisY: {
-                offset: 70
-            }
-        }
-        
         var linkUsda = 'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients';
-
         return (<div>
             <Message color='blue' attached='top'>
                 <Grid centered>
@@ -363,26 +375,30 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
                                 <a style={divLabelStyle3} href={linkUsda} target='_blank'>{this.state.selectedValue}</a>
                             </div>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row columns={3} stretched textAlign='left'>
-                        <Grid.Column width={4} textAlign='left'>
-                            <a style={divLabelStyle2}>Quantity:</a>
-                        </Grid.Column>
-                        <Grid.Column width={2} textAlign='left'>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left' floated='left'>
-                            <a style={divLabelStyle2}>Meal Portions:</a>
-                        </Grid.Column>
-                        <Grid.Column width={4} textAlign='left'>
-                            <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
-                        </Grid.Column>
-                        <Grid.Column width={2} textAlign='center'>
-                            <div style={divLabelStyle2}>
-                                <h3>x</h3>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                        <Grid.Column verticalAlign='middle' as='a' width={16} textAlign='center'>
+                            <Grid centered>
+                                <Grid.Row columns={3} stretched textAlign='left'>
+                                    <Grid.Column width={4} textAlign='left'>
+                                        <a style={divLabelStyle2}>Quantity:</a>
+                                    </Grid.Column>
+                                    <Grid.Column width={2} textAlign='left'>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left' floated='left'>
+                                        <a style={divLabelStyle2}>Meal Portions:</a>
+                                    </Grid.Column>
+                                    <Grid.Column width={4} textAlign='left'>
+                                        <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
+                                    </Grid.Column>
+                                    <Grid.Column width={2} textAlign='center'>
+                                        <div style={divLabelStyle2}>
+                                            <h3>x</h3>
+                                        </div>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
@@ -394,7 +410,7 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
                 </Header>
             </Divider>
             <Message attached='bottom'>
-                <div style={divLabelStyle}>
+                <div style={this.getDivLabelStyle()}>
                     <a>{this.state.status}</a>
                 </div>
                 <Grid centered>
@@ -503,12 +519,84 @@ class MacroGuideSearch extends React.Component<IProps, IState> {
                 </div>
                 <div>
                     <a style={divLabelStyle1}>Percentage (%) of water (moistures)</a>
-                    <ChartistGraph data={data2} type='Pie' options={options2}/>
+                    <ChartistGraph data={data2} type='Pie' options={options2} />
                 </div>
                 <a>Data Source: </a><a style={divLabelStyle3} href={linkUsda} target='_blank'>USDA Food Data Central</a>
             </Message>
         </div>);
     }
+
+    getSearchOption = () => {
+        if (this.state.activeItem == 'USDA') {
+            return this.getUSDA();
+        }
+
+        return this.getUSDA();
+    }
+
+    handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
+
+    render() {
+        if (this.props.logins.length > 0) {
+            var divLoaderStyle = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            };
+
+            if (this.state.usdaUpdated === true) {
+                this.setState({ usdaUpdated: false });
+                this.addUsda();
+            }
+
+            if (this.state.apiUpdated === true) {
+                this.setState({ apiUpdated: false });
+
+                this.state.foodPortionDtos.forEach(x => {
+                    this.state.portions.push({ key: x.modifier, value: x.modifier, text: x.amount + ' ' + x.modifier + ' (' + x.gramWeight + 'g)' });
+                });
+
+                if (this.state.foodPortionDtos.length > 0) {
+                    this.setState({ portions: this.state.portions, selectedPortion: this.state.foodPortionDtos[0].modifier });
+                }
+
+                this.setState({ usdaUpdated: true });
+            }
+
+            if (this.isLoadingData()) {
+                return (<div style={divLoaderStyle}>
+                    <Dimmer active inverted>
+                        <Loader content='Loading' />
+                    </Dimmer>
+                </div>);
+            }
+
+            return (<div>
+                <Grid centered>
+                    <Grid.Row>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Nutrients Lookup' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column width={16}>
+                            <Menu attached='top' tabular compact>
+                                <Menu.Item
+                                    name='USDA'
+                                    active={this.state.activeItem === 'USDA'}
+                                    onClick={this.handleItemClick}
+                                />
+                            </Menu>
+                            {this.getSearchOption()}
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+            </div>);
+        }
+        return (<Redirect to="/" />);
+    }
 }
 
-export default connect()(MacroGuideSearch);
+export default connect(
+    (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
+    LoginStore.actionCreators // Selects which action creators are merged into the component's props
+)(MacroGuideSearch as any);

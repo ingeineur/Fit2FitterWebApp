@@ -2,10 +2,10 @@
 {
     public class FrontendVersion
     {
-        public int Major { get { return 1; } }
+        public int Major { get { return 2; } }
 
         public int Minor { get { return 0; } }
 
-        public int Build { get { return 8; } }
+        public int Build { get { return 0; } }
     }
 }

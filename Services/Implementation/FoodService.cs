@@ -256,5 +256,129 @@ namespace Fit2Fitter.Services.Implementation
 
             return dtos;
         }
+
+        public async Task<int> AddRecipe(RecipeDto recipe)
+        {
+            try
+            {
+                var recipeId = await this.foodRepository.AddUpdateRecipe(
+                new Recipe
+                {
+                    Id = recipe.Id,
+                    Name = recipe.Name,
+                    Carbs = recipe.Carbs,
+                    Protein = recipe.Protein,
+                    Fat = recipe.Fat,
+                    Serving = recipe.Serving,
+                    Photo = recipe.Photo,
+                    Updated = DateTime.Now,
+                    Created = recipe.Id > 0 ? recipe.Created : DateTime.Now,
+                    ClientId = recipe.ClientId
+                }
+                ).ConfigureAwait(false);
+
+                return recipeId;
+            }
+            catch(Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<bool> AddRecipeItems(IEnumerable<RecipeItemDto> recipeItems)
+        {
+            try
+            {
+                foreach (var item in recipeItems)
+                {
+                    await this.foodRepository.AddUpdateRecipeItem(
+                        new RecipeItem { 
+                            Id = item.Id,
+                            Name = item.Name,
+                            DataSource = item.DataSource,
+                            ExternalId = item.ExternalId,
+                            Weight = item.Weight,
+                            Carbs = item.Carbs,
+                            Protein = item.Protein,
+                            Fat = item.Fat,
+                            Updated = DateTime.Now,
+                            Created = item.Id > 0 ? item.Created: DateTime.Now,
+                            RecipeId = item.RecipeId
+                        });
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<RecipeDto>> GetRecipes(int clientId, string keyword)
+        {
+            try
+            {
+                var results = await this.foodRepository.FindRecipes(clientId, keyword).ConfigureAwait(false);
+                var results2 = results.Select(Value => new { Value, Index = Value.Name.IndexOf(keyword, StringComparison.InvariantCultureIgnoreCase) })
+                   .Where(pair => pair.Index >= 0)
+                   .OrderBy(pair => pair.Index)
+                   .Select(pair => pair.Value);
+
+                return results2.Select(recipe => new RecipeDto {
+                    Id = recipe.Id,
+                    Name = recipe.Name,
+                    Carbs = recipe.Carbs,
+                    Protein = recipe.Protein,
+                    Fat = recipe.Fat,
+                    Serving = recipe.Serving,
+                    Photo = recipe.Photo,
+                    Updated = recipe.Updated,
+                    Created = recipe.Created,
+                    ClientId = recipe.ClientId
+                });
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<RecipeItemDto>> GetRecipeItems(int recipeId)
+        {
+            try
+            {
+                var results = await this.foodRepository.GetRecipeItems(recipeId).ConfigureAwait(false);
+                return results.Select(item => new RecipeItemDto {
+                    Id = item.Id,
+                    Name = item.Name,
+                    DataSource = item.DataSource,
+                    ExternalId = item.ExternalId,
+                    Weight = item.Weight,
+                    Carbs = item.Carbs,
+                    Protein = item.Protein,
+                    Fat = item.Fat,
+                    Updated = item.Created,
+                    Created = item.Created,
+                    RecipeId = item.RecipeId
+                });
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> DeleteRecipe(int recipeId)
+        {
+            try
+            {
+                await this.foodRepository.DeleteRecipe(recipeId).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
     }
 }

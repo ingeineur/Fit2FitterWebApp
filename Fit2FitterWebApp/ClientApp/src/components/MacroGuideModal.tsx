@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Button, Icon, Input, Grid, Image, List, Search, Dropdown, Menu, Segment, Label, Divider } from 'semantic-ui-react'
 import { isNullOrUndefined } from 'util';
-import { IMealDto, IMealDetails } from '../models/meals';
+import { IMealDto, IMealDetails, IRecipeDto, IRecipeItemDto } from '../models/meals';
 import { IClientDto } from '../models/clients';
 
 interface IProps {
@@ -71,6 +71,14 @@ interface IState {
     selectedPortionAnz: string,
     foodPortionDtosAnz: IFoodPortionDto[],
     apiUpdatedAnz: boolean,
+    searchedRecipeDtos: IRecipeDto[];
+    recipeDto: IRecipeDto;
+    recipeQuantity: number,
+    recipeUpdated: boolean,
+    selectedPortionRecipe: string,
+    foodPortionDtosRecipe: IFoodPortionDto[],
+    portionsRecipe: IOption[],
+    apiUpdatedRecipe: boolean,
 }
 
 var divFoodLogoStyle = {
@@ -89,10 +97,13 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus: 'No Image', searchFoodResults: [],
-            searchFoodText: '', selectedFoodValue: '', dropDownString: [], activeItem: 'ANZ',
+            searchFoodText: '', selectedFoodValue: '', dropDownString: [], activeItem: 'Recipes',
             loadingAnz: false, searchResultsAnz: [], selectedValueAnz: 'No Selection',
-            portionsAnz: [], selectedPortionAnz: '', foodPortionDtosAnz:[], anzQuantity: 1.0, selectedFdcIdAnz: '', searchTextAnz: '',
-            anzUpdated: false, apiUpdatedAnz: false
+            portionsAnz: [], selectedPortionAnz: '', foodPortionDtosAnz: [], anzQuantity: 1.0, selectedFdcIdAnz: '', searchTextAnz: '',
+            anzUpdated: false, apiUpdatedAnz: false, searchedRecipeDtos: [],
+            recipeDto: { id: 0, name: '', carbs: 0, protein: 0, fat: 0, serving: 0, photo: '', updated: '', created: '', clientId: 0 },
+            recipeQuantity: 1, recipeUpdated: false, selectedPortionRecipe: '', foodPortionDtosRecipe: [],
+            portionsRecipe: [], apiUpdatedRecipe: false
         };
     }
 
@@ -191,6 +202,13 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
             this.setState({ anzQuantity: event.target.value, anzUpdated: true });
+        }
+    }
+
+    updateRecipeQuantity = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            this.setState({ recipeQuantity: event.target.value, recipeUpdated: true });
         }
     }
 
@@ -384,26 +402,30 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             <a style={this.getDivLabelStyle3()} href={'https://fdc.nal.usda.gov/fdc-app.html#/food-details/' + this.state.selectedFdcId + '/nutrients'} target='_blank'>source link: {this.state.selectedValue}</a>
                         </div>
                     </Grid.Column>
-                </Grid.Row>
-                <Grid.Row columns={3} stretched textAlign='left'>
-                    <Grid.Column width={4} textAlign='left'>
-                        <a style={this.getDivLabelStyle2()}>Quantity:</a>
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='left'>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left' floated='left'>
-                        <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
-                    </Grid.Column>
-                    <Grid.Column width={4} textAlign='left'>
-                        <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='center'>
-                        <div style={this.getDivLabelStyle2()}>
-                            <h3>x</h3>
-                        </div>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                    <Grid.Column width={16} textAlign='center'>
+                        <Grid centered>
+                            <Grid.Row columns={3} stretched textAlign='left'>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <a style={this.getDivLabelStyle2()}>Quantity:</a>
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='left'>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left' floated='left'>
+                                    <a style={this.getDivLabelStyle2()}>Portions:</a>
+                                </Grid.Column>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <Input size='small' value={this.state.usdaQuantity} onChange={this.updateUsdaQuantity} placeholder='Quantity' />
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='center'>
+                                    <div style={this.getDivLabelStyle2()}>
+                                        <h3>x</h3>
+                                    </div>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left'>
+                                    <Dropdown fluid id='portions' value={this.state.selectedPortion} selection options={this.state.portions} onChange={this.handleSelectPortion} />
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
@@ -494,26 +516,30 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             <a style={this.getDivLabelStyle3()} href={'https://www.foodstandards.gov.au/science/monitoringnutrients/afcd/Pages/fooddetails.aspx?PFKID=' + this.state.selectedFdcIdAnz} target='_blank'>source link: {this.state.selectedValueAnz}</a>
                         </div>
                     </Grid.Column>
-                </Grid.Row>
-                <Grid.Row columns={3} stretched textAlign='left'>
-                    <Grid.Column width={4} textAlign='left'>
-                        <a style={this.getDivLabelStyle2()}>Quantity:</a>
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='left'>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left' floated='left'>
-                        <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
-                    </Grid.Column>
-                    <Grid.Column width={4} textAlign='left'>
-                        <Input size='small' value={this.state.anzQuantity} onChange={this.updateAnzQuantity} placeholder='Quantity' />
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='center'>
-                        <div style={this.getDivLabelStyle2()}>
-                            <h3>x</h3>
-                        </div>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <Dropdown fluid id='portions' value={this.state.selectedPortionAnz} selection options={this.state.portionsAnz} onChange={this.handleSelectPortionAnz} />
+                    <Grid.Column width={16} textAlign='center'>
+                        <Grid centered>
+                            <Grid.Row columns={3} stretched textAlign='left'>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <a style={this.getDivLabelStyle2()}>Quantity:</a>
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='left'>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left' floated='left'>
+                                    <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
+                                </Grid.Column>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <Input size='small' value={this.state.anzQuantity} onChange={this.updateAnzQuantity} placeholder='Quantity' />
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='center'>
+                                    <div style={this.getDivLabelStyle2()}>
+                                        <h3>x</h3>
+                                    </div>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left'>
+                                    <Dropdown fluid id='portions' value={this.state.selectedPortionAnz} selection options={this.state.portionsAnz} onChange={this.handleSelectPortionAnz} />
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
@@ -529,6 +555,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
         else if (this.state.activeItem == 'ANZ') {
             return this.getFsanz();
+        }
+        else if (this.state.activeItem == 'Recipes') {
+            return this.getRecipesSearch();
         }
     }
 
@@ -555,6 +584,229 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         </Segment>);
     }
 
+    handleRecipeSelectResult = (e: any, data: any) => {
+        this.setState({ status: 'Updating Recipe Data .......' });
+        var sel = data['result'];
+        if (!isNullOrUndefined(sel)) {
+            this.setState({ selectedFoodValue: sel['description'] });
+            var id = sel['id'];
+            var recipe = this.state.searchedRecipeDtos.find(x => x.id === parseInt(id));
+            if (recipe != null) {
+                var imageUploadStatus = '';
+                console.log(recipe);
+                if (recipe.photo !== '') {
+                    imageUploadStatus = 'Uploaded';
+                }
+
+                let portions: IFoodPortionDto[] = [];
+                portions.push({
+                    fdcId: recipe.id.toString(), modifier: 'One Serve', amount: 1, carbValue: recipe.carbs / 100.00,
+                    proteinValue: recipe.protein / 100.00, fatValue: recipe.fat / 100.00, gramWeight: recipe.serving
+                });
+
+                portions.push({
+                    fdcId: recipe.id.toString(), modifier: 'One Gram', amount: 1, carbValue: recipe.carbs / 100.00,
+                    proteinValue: recipe.protein / 100.00, fatValue: recipe.fat / 100.00, gramWeight: 1
+                });
+
+                portions.push({
+                    fdcId: recipe.id.toString(), modifier: 'One Hundred Gram', amount: 1, carbValue: recipe.carbs / 100.00,
+                    proteinValue: recipe.protein / 100.00, fatValue: recipe.fat / 100.00, gramWeight: 100
+                });
+
+                this.setState({
+                    recipeDto: recipe, updated: true,
+                    imageUploadStatus: imageUploadStatus, 
+                    status: 'Ready',
+                    apiUpdatedRecipe: true,
+                    foodPortionDtosRecipe: portions
+                });
+            }
+        }
+    }
+
+    handleRecipeSearchChange = (e: any, data: any) => {
+        this.setState({ loading: true });
+        fetch('api/food/' + this.props.client.id + '/recipes/search?keyword=' + data['value'])
+            .then(response => response.json() as Promise<IRecipeDto[]>)
+            .then(data => {
+                let results: IMealDesc[] = [];
+                data.forEach(x => {
+                    results.push({
+                        id: x.id.toString(), description: x.name
+                    });
+                });
+                this.setState({
+                    searchedRecipeDtos: data, loading: false, dropDownString: results
+                })
+            }).catch(error => console.log(error));
+
+        this.setState({ searchFoodText: data['value'] });
+    }
+
+    handleSelectPortionRecipe = (event: any, data: any) => {
+        this.setState({ recipeUpdated: true, selectedPortionRecipe: data['value'] });
+    }
+
+    getRecipesSearch = () => {
+        return (<Segment attached='top'>
+            <Grid centered>
+                <Grid.Row stretched textAlign='center'>
+                    <Grid.Column textAlign='center' width={16}>
+                        <div style={this.getDivLabelStyle()}>
+                            {this.getPhoto()}
+                        </div>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' width={16}>
+                        <div style={this.getDivLabelStyle3()}>
+                            <a style={this.getDivLabelStyle3()}>Search for your recipes</a>
+                        </div>
+                        <Search
+                            fluid
+                            size='small'
+                            loading={this.state.loading}
+                            onSearchChange={this.handleRecipeSearchChange}
+                            onResultSelect={this.handleRecipeSelectResult}
+                            results={this.state.dropDownString}
+                            value={this.state.searchFoodText}
+                        />
+                    </Grid.Column>
+                    <Grid.Column width={16} textAlign='center'>
+                        <Grid centered>
+                            <Grid.Row columns={3} stretched textAlign='left'>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <a style={this.getDivLabelStyle2()}>Quantity:</a>
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='left'>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left' floated='left'>
+                                    <a style={this.getDivLabelStyle2()}>Meal Portions:</a>
+                                </Grid.Column>
+                                <Grid.Column width={4} textAlign='left'>
+                                    <Input size='small' value={this.state.recipeQuantity} onChange={this.updateRecipeQuantity} placeholder='Quantity' />
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='center'>
+                                    <div style={this.getDivLabelStyle2()}>
+                                        <h3>x</h3>
+                                    </div>
+                                </Grid.Column>
+                                <Grid.Column width={10} textAlign='left'>
+                                    <Dropdown fluid id='portions' value={this.state.selectedPortionRecipe} selection options={this.state.portionsRecipe} onChange={this.handleSelectPortionRecipe} />
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>);
+    }
+
+    addRecipe = () => {
+        this.state.meal.food = this.state.selectedFoodValue;
+        if (this.state.portionsRecipe.length > 0 && this.state.foodPortionDtosRecipe.length > 0) {
+            this.state.foodPortionDtosRecipe.forEach(x => {
+                if (x.modifier === this.state.selectedPortionRecipe) {
+                    this.state.meal.carb = parseFloat((this.state.recipeQuantity * x.carbValue * x.gramWeight).toFixed(2));
+                    this.state.meal.protein = parseFloat((this.state.recipeQuantity * x.proteinValue * x.gramWeight).toFixed(2));
+                    this.state.meal.fat = parseFloat((this.state.recipeQuantity * x.fatValue * x.gramWeight).toFixed(2));
+                    var totalWeight = this.state.recipeQuantity * x.gramWeight;
+                    this.state.meal.food = this.state.selectedFoodValue + ' (' + totalWeight.toFixed(2) + 'g)';
+                    this.state.meal.photo = this.state.recipeDto.photo;
+                }
+            });
+        }
+        else {
+            this.state.meal.carb = 0.0;
+            this.state.meal.protein = 0.0;
+            this.state.meal.fat = 0.0;
+            this.state.meal.fv = 0;
+        }
+
+        this.setState({ meal: this.state.meal, status: 'Pending add to the list', updated: true });
+    }
+
+    getTableRows = () => {
+        return (
+            this.state.meals.map((item, index) =>
+                <Grid.Row className={'row'} key={index} columns={5} stretched>
+                    <Grid.Column className={'col_food'} key={index + 1} width={8}>
+                        <a key={index + 1}>{item.food}</a>
+                    </Grid.Column>
+                    <Grid.Column className={'col_carb'} key={index + 2} width={2}>
+                        <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
+                    </Grid.Column>
+                    <Grid.Column className={'col_protein'} key={index + 3} width={2}>
+                        <a key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
+                    </Grid.Column>
+                    <Grid.Column className={'col_fat'} key={index + 4} width={2}>
+                        <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
+                    </Grid.Column>
+                    <Grid.Column className={'col_fv'} key={index + 5} width={2}>
+                        <a key={index + 5}>{item.fv}</a>
+                    </Grid.Column>
+                </Grid.Row>
+            ));
+    }
+
+    getRows = () => {
+        var totalCarb = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
+        var totalProtein = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
+        var totalFat = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+        var totalFv = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+        return (
+            <div>
+                <Segment textAlign='center' attached='bottom'>
+                    <Grid centered>
+                        <Grid.Row columns={6} textAlign='left' color='orange'>
+                            <Grid.Column width={2}>
+                            </Grid.Column>
+                            <Grid.Column width={6} textAlign='left'>
+                                <div><a>Item's Name</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
+                                <div><a>Ca(g)</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
+                                <div><a>Pro(g)</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
+                                <div><a>Fa(g)</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
+                                <div><a>FV</a></div>
+                            </Grid.Column>
+                        </Grid.Row>
+                        {this.getTableRows()}
+                        <Grid.Row textAlign='left' color='black' className={'row'} key={1} columns={5} stretched>
+                            <Grid.Column className={'col_food'} key={1} width={8} textAlign='left'>
+                                <a key={1}>Total Macros</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_carb'} key={2} width={2}>
+                                <a key={2}>{totalCarb.toFixed(2)}</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_protein'} key={3} width={2}>
+                                <a key={3}>{totalProtein.toFixed(2)}</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_fat'} key={4} width={2}>
+                                <a key={4}>{totalFat.toFixed(2)}</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_fv'} key={5} width={2}>
+                                <a key={5}>{totalFv.toFixed(2)}</a>
+                            </Grid.Column>
+                        </Grid.Row>
+                    </Grid>
+                </Segment>
+            </div>
+        );
+    }
+
+    getPhoto = () => {
+        if (this.state.recipeDto.photo != '' && this.state.activeItem == 'Recipes') {
+            return (<Segment size='tiny' attached='top' textAlign='center'><Image src={'/images/meals/' + this.state.recipeDto.photo} size='small' /></Segment>);
+        }
+        return;
+    }
+
     render() {
 
         if (this.state.dirty !== this.props.update) {
@@ -571,6 +823,11 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         if (this.state.anzUpdated === true) {
             this.setState({ anzUpdated: false });
             this.addAnz();
+        }
+
+        if (this.state.recipeUpdated === true) {
+            this.setState({ recipeUpdated: false });
+            this.addRecipe();
         }
 
         if (this.state.updated === true) {
@@ -606,98 +863,133 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.setState({ anzUpdated: true });
         }
 
+        if (this.state.apiUpdatedRecipe === true) {
+            if (this.state.portionsRecipe.length < 1 && this.state.foodPortionDtosRecipe.length > 0) {
+                this.state.foodPortionDtosRecipe.forEach(x => {
+                    this.state.portionsRecipe.push({ key: x.modifier, value: x.modifier, text: x.amount + ' ' + x.modifier + ' (' + x.gramWeight + 'g)' });
+                });
+            }
+
+            if (this.state.foodPortionDtosRecipe.length > 0) {
+                this.setState({ portionsRecipe: this.state.portionsRecipe, selectedPortionRecipe: this.state.foodPortionDtosRecipe[0].modifier });
+            }
+
+            this.setState({ apiUpdatedRecipe: false, recipeUpdated: true });
+        }
+        
+
         const activeItem = this.state.activeItem;
         return (<div>
-            <Menu color='pink' inverted attached='top' pointing>
-                <Menu.Item
-                    name='ANZ'
-                    active={activeItem === 'ANZ'}
-                    onClick={this.handleItemClick}
-                />
-                <Menu.Item
-                    name='USDA'
-                    active={activeItem === 'USDA'}
-                    onClick={this.handleItemClick}
-                />
-                <Menu.Item
-                    name='previous'
-                    active={activeItem === 'previous'}
-                    onClick={this.handleItemClick}
-                />
-                <Menu.Item
-                    name='manual'
-                    active={activeItem === 'manual'}
-                    onClick={this.handleItemClick}
-                />
-            </Menu>
-            {this.getSearchOption()}
-            <div style={this.getDivLabelStyle()}>
-                <a>{this.state.status}</a>
-            </div>
-            <Segment attached='bottom'>
-                <div style={divFoodLogoStyle}>
-                    <Button.Group fluid>
-                        <Button size='tiny' primary onClick={this.addMeal}>Add</Button>
-                        <Button size='tiny' secondary onClick={this.removeLastAddedMeal}>Undo</Button>
-                    </Button.Group>
-                </div>
-                <Divider />
-                <Grid centered>
-                    <Grid.Row stretched>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Foods or Drinks</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Carb (g)</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Protein (g)</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Fat (g)</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Fruit/Veg (serv)</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={6} textAlign='left'>
-                            <h5>Image</h5>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='left'>
-                            <div>
-                                <div style={this.getDivUploadImageStyle()}>
-                                    <a>{this.state.imageUploadStatus}</a>
-                                </div>
-                                <input
-                                    type='file'
-                                    accept="image/*"
-                                    onChange={this.handleImageChange}
-                                />
-                            </div>
-                        </Grid.Column>
-                    </Grid.Row>
-                </Grid>
-                <div>
-                    <a>List of new items:</a>
-                    <List>
-                        {this.getItems()}
-                    </List>
-                </div>
-            </Segment>
+            <Grid centered>
+                <Grid.Row textAlign='center'>
+                    <Grid.Column width={16}>
+                        <Menu color='pink' inverted attached='top' pointing>
+                            <Menu.Item
+                                name='Recipes'
+                                active={activeItem === 'Recipes'}
+                                onClick={this.handleItemClick}
+                            />
+                            <Menu.Item
+                                name='ANZ'
+                                active={activeItem === 'ANZ'}
+                                onClick={this.handleItemClick}
+                            />
+                            <Menu.Item
+                                name='USDA'
+                                active={activeItem === 'USDA'}
+                                onClick={this.handleItemClick}
+                            />
+                            <Menu.Item
+                                name='previous'
+                                active={activeItem === 'previous'}
+                                onClick={this.handleItemClick}
+                            />
+                            <Menu.Item
+                                name='manual'
+                                active={activeItem === 'manual'}
+                                onClick={this.handleItemClick}
+                            />
+                        </Menu>
+                        {this.getSearchOption()}
+                    </Grid.Column>
+                    <Grid.Column width={16}>
+                        <Segment attached='top' inverted color='grey'>
+                            <Grid centered>
+                                <Grid.Row stretched>
+                                    <Grid.Column width={4}>
+                                        <Button size='tiny' inverted fluid color={this.getColour()} onClick={this.addMeal}>Add</Button>
+                                    </Grid.Column>
+                                    <Grid.Column width={4}>
+                                        <Button size='tiny' inverted fluid color='black' onClick={this.removeLastAddedMeal}>Undo</Button>
+                                    </Grid.Column>
+                                    <Grid.Column width={8}>
+                                        <span style={this.getDivLabelStyle()}>
+                                            <a>{this.state.status}</a>
+                                        </span>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </Segment>
+                        <Segment attached='bottom'>
+                            <Grid centered>
+                                <Grid.Row stretched>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Foods or Drinks</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Carb (g)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Protein (g)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Fat (g)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Fruit/Veg (serv)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Image</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <div>
+                                            <div style={this.getDivUploadImageStyle()}>
+                                                <a>{this.state.imageUploadStatus}</a>
+                                            </div>
+                                            <input
+                                                type='file'
+                                                accept="image/*"
+                                                onChange={this.handleImageChange}
+                                            />
+                                        </div>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </Segment>
+                    </Grid.Column>
+                    <Grid.Column width={16}>
+                        List of added items:
+                    </Grid.Column>
+                    <Grid.Column width={16}>
+                        {this.getRows()}
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
         </div>);
     }
 }

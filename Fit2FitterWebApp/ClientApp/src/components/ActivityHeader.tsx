@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { Button, Form, Input, Grid, Label, Icon, Card, Header } from 'semantic-ui-react'
+import { getSleepColour, getStepIndicatorColour } from '../models/activities';
 
 interface IProps {
     activities: IActivity[];
@@ -79,26 +80,6 @@ class ActivityHeader extends React.Component<IProps, IState> {
         return 'red';
     }
 
-    getStepIndicatorColour = (percent: number) => {
-        if (percent <= 0.5) {
-            return 'red';
-        }
-
-        if (percent > 0.99) {
-            return 'green';
-        }
-
-        return 'yellow';
-    }
-
-    getSleepColour = (hour: number) => {
-        if (hour < 6.0) {
-            return 'red';
-        }
-
-        return 'green';
-    }
-
     getWarningText = () => {
         return (<Grid.Row>
             <a>Warning Text</a>
@@ -150,11 +131,11 @@ class ActivityHeader extends React.Component<IProps, IState> {
                         <div><a>Max HR</a></div>
                         <div style={divLabelStyle5}><a>{maxHr}/{220 - this.props.age}</a></div>
                     </Grid.Column>
-                    <Grid.Column color={this.getStepIndicatorColour(totalStepsPercent)} textAlign='center'>
+                    <Grid.Column color={getStepIndicatorColour(totalStepsPercent)} textAlign='center'>
                         <div><a>Steps</a></div>
                         <div style={divLabelStyle3}><a>{this.props.steps}/{this.props.guides.steps}</a></div>
                     </Grid.Column>
-                    <Grid.Column color={this.getSleepColour(this.props.sleeps)} textAlign='center'>
+                    <Grid.Column color={getSleepColour(this.props.sleeps)} textAlign='center'>
                         <div><a>Sleep</a></div>
                         <div style={divLabelStyle5}><a>{this.props.sleeps}</a></div>
                     </Grid.Column>

@@ -91,7 +91,6 @@ class PersonalTable extends React.Component<IProps, IState> {
     public componentDidMount() {
         var imageStatus = '';
         if (this.props.personal.avatar != '') {
-            console.log('saddddddddddddddd');
             imageStatus = 'Uploaded'
         }
 

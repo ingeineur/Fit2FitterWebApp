@@ -61,8 +61,8 @@ var divLabelStyle = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    color: 'black',
-    backgroundColor: '#feb8c6'
+    color: 'white',
+    backgroundColor: 'black'
 };
 
 class MacroGuideReviewModal extends React.Component<IProps, IState> {
@@ -503,14 +503,16 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var data = {
             labels: ['Carb', 'Protein', 'Fat'],
             series: [
-                [totalCarb, totalProtein, totalFat]
+                (totalCarb / this.state.guides.carb) * 100.0, (totalProtein / this.state.guides.protein) * 100.00, (totalFat / this.state.guides.fat) * 100.00
             ]
         };
 
-        var type = 'Line'
+        var type = 'Bar'
         var lineChartOptions = {
             reverseData: false,
-            showArea: true
+            horizontalBars: true,
+            distributeSeries: true,
+            seriesBarDistance: 10
         }
 
         var divCarb = {
@@ -635,7 +637,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         return (<div>
             <Grid centered>
                 <Grid.Row>
-                    <Grid.Column>
+                    <Grid.Column width={16}>
                         <div style={divLabelStyle}>
                             <a>Macros Balance Summary</a>
                         </div>
@@ -651,24 +653,22 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>
-                    <Grid.Column>
+                    <Grid.Column width={16}>
                         <div style={divLabelStyle}>
-                            <a>Total Macros Consumptions (unit gram)</a>
+                            <a>Total Macros Consumptions (%)</a>
                         </div>
                         <Segment attached='bottom' textAlign='center'>
                             <ChartistGraph data={data} options={lineChartOptions} type={type} />
+                            <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
                         </Segment>
                     </Grid.Column>
-                </Grid.Row>
-                <Grid.Row>
-                    <Grid.Column>
+                    <Grid.Column width={16}>
                         <div style={divLabelStyle}>
                             <a>Breakdown of Macros Consumptions (%)</a>
                         </div>
                         <Segment attached='bottom' textAlign='center'>
                             <div>
                                 <ChartistGraph data={data2} options={options} type='Bar' />
-                                <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
                             </div>
                         </Segment>
                     </Grid.Column>

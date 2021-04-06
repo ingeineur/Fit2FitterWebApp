@@ -9,7 +9,9 @@ import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import ActivityWorkoutTable from './ActivityWorkoutTable';
 import ActivityHeader from './ActivityHeader';
-import { IActivityGuides, ITotalDailyActivity, IActivity, IActivityDto } from '../models/activities'
+import AppsMenu from './AppMenus';
+import { IActivityGuides, ITotalDailyActivity, IActivity, IActivityDto, getStepIndicatorColour, getSleepColour } from '../models/activities'
+import { IClientDto} from '../models/clients';
 
 interface IProps {
 }
@@ -28,7 +30,7 @@ interface IState {
     updated: boolean;
     savingStatus: string;
     dateChanged: boolean;
-    clients: IClient[];
+    clients: IClientDto[];
     clientsUpdated: boolean;
     age: number;
     steps: number;
@@ -39,17 +41,6 @@ interface IState {
     workoutUpdated: boolean;
     savingDone: boolean;
     updateAllInfo: boolean;
-}
-
-interface IClient {
-    id: number,
-    lastName: string;
-    firstName: string;
-    address: string;
-    city: string;
-    age: number;
-    created: string;
-    avatar: string;
 }
 
 // At runtime, Redux will merge together...
@@ -70,7 +61,7 @@ class Activities extends React.Component<LoginProps, IState> {
         if (this.props.logins.length > 0) {
             //get client info
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
-                .then(response => response.json() as Promise<IClient[]>)
+                .then(response => response.json() as Promise<IClientDto[]>)
                 .then(data => this.setState({
                     clients: data, clientsUpdated: true
                 })).catch(error => console.log(error));
@@ -513,17 +504,12 @@ class Activities extends React.Component<LoginProps, IState> {
         return (
             <div>
                 <Grid centered>
-                    <Grid.Row columns={2}>
-                        <Grid.Column width={6}>
-                            <Label size='large' as='a' color='pink' basic circular>Daily Activities Tracker</Label>
-                        </Grid.Column>
-                        <Grid.Column width={10} textAlign='right'>
-                            <Image avatar src={this.getPhoto()} />
-                            <a>{this.getUserInfo()}</a>
-                        </Grid.Column>
-                    </Grid.Row>
                     <Grid.Row>
-                        <Grid.Column verticalAlign='middle'>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Activity' logins={this.props.logins} clientDtos={this.state.clients} />
+                            <Divider/>
+                        </Grid.Column>
+                        <Grid.Column width={16} verticalAlign='middle'>
                             <Segment inverted attached='top'>
                                 <div style={divDateStyle}>
                                     <Button color='black' className='prev' inverted onClick={this.handlePrevDate} attached='left' icon='chevron left' />
@@ -539,18 +525,19 @@ class Activities extends React.Component<LoginProps, IState> {
                                 <Grid divided columns={3} textAlign='center' key={100} centered>
                                     <Grid.Row key={100} verticalAlign='middle'>
                                         <Grid.Column key={100} textAlign='center'>
-                                            <Header color='blue'>Steps (Count)</Header>
+                                            <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} />
                                             <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
-                                            <div><a>{this.state.stepsStatus}</a></div>
+                                            <div><a>Steps Count: {this.state.stepsStatus}</a></div>
                                         </Grid.Column>
                                         <Grid.Column key={100 + 3} textAlign='center'>
                                             <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
+                                            <div><Label color='black' horizontal>{this.getMaxHr()}</Label></div>
                                             <div><a>{this.getHeartRateStatus()}</a></div>
                                         </Grid.Column>
                                         <Grid.Column key={100 + 4} textAlign='center'>
-                                            <Header color='blue'>Sleep (Hours)</Header>
+                                            <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} />
                                             <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
-                                            <div><a>{this.state.sleepsStatus}</a></div>
+                                            <div><a>Sleep Hours: {this.state.sleepsStatus}</a></div>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>
@@ -594,7 +581,6 @@ class Activities extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
-                {this.showProgressBar()}
             </div>);
         }
         return (<Redirect to="/" />);

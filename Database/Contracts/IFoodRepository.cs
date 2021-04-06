@@ -23,5 +23,17 @@ namespace Fit2Fitter.Database.Contracts
         Task<Models.AnzFoodNutrient> FindAnzFoodsByKey(string foodKey);
 
         Task<IEnumerable<Models.AnzFoodMeasure>> FindAnzPortions(string foodKey);
+
+        Task<IEnumerable<Models.Recipe>> FindRecipes(int clientId, string keyword);
+
+        Task<IEnumerable<Models.RecipeItem>> GetRecipeItems(int recipeId);
+
+        Task<int> AddUpdateRecipe(Recipe recipe);
+
+        Task DeleteRecipe(int recipeId);
+
+        Task DeleteRecipeItems(int recipeId);
+
+        Task AddUpdateRecipeItem(RecipeItem recipeItem);
     }
 }
