@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\Activities.tsx~RF571aa85c.TMP" />
+    <None Remove="ClientApp\src\components\DashboardDaily.tsx~RF27d0de0.TMP" />
     <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
     <None Remove="ClientApp\src\components\NavMenu.tsx~RF6a83d8d9.TMP" />
     <None Remove="ClientApp\src\models\activities.ts" />

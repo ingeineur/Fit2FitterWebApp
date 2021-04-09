@@ -107,27 +107,27 @@ class Home extends React.Component<LoginProps, IState > {
                 .then(data => this.setState({
                     clientDtos: data, clientUpdated: true
                 })).catch(error => console.log(error));
+
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageDtos: data, messagesUpdated: true, unReadMessage: data.length
+                })).catch(error => console.log(error));
+
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/meals?readStatus=' + false)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageMealsDtos: data, mealMessagesUpdated: true, unReadMessageMeals: data.length
+                })).catch(error => console.log(error));
+
+            var date = new Date();
+            date.setHours(0, 0, 0, 0);
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/measurements?dateString=' + date.toISOString() + '&readStatus=' + false)
+                .then(response => response.json() as Promise<IMessageDto[]>)
+                .then(data => this.setState({
+                    messageMeasurementsDtos: data, measurementMessagesUpdated: true, unReadMessageMeasurements: data.length
+                })).catch(error => console.log(error));
         }
-
-        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
-            .then(response => response.json() as Promise<IMessageDto[]>)
-            .then(data => this.setState({
-                messageDtos: data, messagesUpdated: true, unReadMessage: data.length
-            })).catch(error => console.log(error));
-
-        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/meals?readStatus=' + false)
-            .then(response => response.json() as Promise<IMessageDto[]>)
-            .then(data => this.setState({
-                messageMealsDtos: data, mealMessagesUpdated: true, unReadMessageMeals: data.length
-            })).catch(error => console.log(error));
-
-        var date = new Date();
-        date.setHours(0, 0, 0, 0);
-        fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/measurements?dateString=' + date.toISOString() + '&readStatus=' + false)
-            .then(response => response.json() as Promise<IMessageDto[]>)
-            .then(data => this.setState({
-                messageMeasurementsDtos: data, measurementMessagesUpdated: true, unReadMessageMeasurements: data.length
-            })).catch(error => console.log(error));
     }
 
     public componentDidMount() {
@@ -490,7 +490,8 @@ class Home extends React.Component<LoginProps, IState > {
         this.setState({
             error: 'loading..', login: 'logging', checkMail: false,
             clientUpdated: false, messagesUpdated: false,
-            mealMessagesUpdated: false, measurementMessagesUpdated: false
+            mealMessagesUpdated: false, measurementMessagesUpdated: false,
+            fetchAllData: false
         });
         this.props.requestLogout(this.state.username, this.state.password);
         this.props.requestLogins(this.state.username, this.state.password);

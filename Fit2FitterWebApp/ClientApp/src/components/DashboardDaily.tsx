@@ -558,26 +558,6 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                         <Grid.Column width={16}>
                             <Segment textAlign='center'>
                                 <span style={divLoaderStyle}>
-                                    <a>Macros Indicators </a>
-                                    <a style={divCarb}>col</a><a>Used% </a><a style={divPro}>col</a><a>Balance%</a>
-                                </span>
-                                <Grid celled centered>
-                                    <Grid.Row textAlign='center' columns={3}>
-                                        <Grid.Column textAlign='center'>
-                                            <ChartistGraph data={this.getGraphMacroData(this.state.graphActivityValues.carbs)} type='Pie' options={options2} />
-                                            {this.getMacroIndicatorIcon(this.state.graphActivityValues.carbs)}<span> carbs</span>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <ChartistGraph data={this.getGraphMacroData(this.state.graphActivityValues.protein)} type='Pie' options={options2} />
-                                            {this.getProteinIndicatorIcon(this.state.graphActivityValues.protein)}<span> protein</span>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <ChartistGraph data={this.getGraphMacroData(this.state.graphActivityValues.fat)} type='Pie' options={options2} />
-                                            {this.getMacroIndicatorIcon(this.state.graphActivityValues.fat)}<span> fat</span>
-                                        </Grid.Column>
-                                    </Grid.Row>
-                                </Grid>
-                                <span style={divLoaderStyle}>
                                     <div>
                                         <Icon name='thumbs up' size='large' color='green' /><a>Good</a>
                                     </div>
@@ -588,6 +568,23 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                                         <Icon name='exclamation triangle' size='large' color='red' /><a>Too High</a>
                                     </div>
                                 </span>
+                                <Divider />
+                                <Grid divided centered>
+                                    <Grid.Row textAlign='center' columns={3}>
+                                        <Grid.Column textAlign='center'>
+                                            <Statistic size='tiny' label='Carbs' value={this.getFirstValue(this.state.graphActivityValues.carbs).toFixed(0) + '%'} />
+                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.carbs)}</div>
+                                        </Grid.Column>
+                                        <Grid.Column textAlign='center'>
+                                            <Statistic size='tiny' label='Protein' value={this.getFirstValue(this.state.graphActivityValues.protein).toFixed(0) + '%'} />
+                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.protein)}</div>
+                                        </Grid.Column>
+                                        <Grid.Column textAlign='center'>
+                                            <Statistic size='tiny' label='Fat' value={this.getFirstValue(this.state.graphActivityValues.fat).toFixed(0) + '%'} />
+                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.fat)}</div>
+                                        </Grid.Column>
+                                    </Grid.Row>
+                                </Grid>
                             </Segment>
                         </Grid.Column>
                     </Grid.Row>

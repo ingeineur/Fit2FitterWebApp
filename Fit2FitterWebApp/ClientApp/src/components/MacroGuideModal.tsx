@@ -380,7 +380,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     handleItemClick = (e: any, { name }: any) => this.setState({ activeItem: name })
 
     getUsda = () => {
-        return (<Segment attached='top'>
+        return (<Segment attached='bottom'>
             <div style={divFoodLogoStyle}>
                 <Image circular size='tiny' src='USDALogo.jfif' href='https://www.usda.gov/topics/food-and-nutrition' target='_blank' />
             </div>
@@ -494,7 +494,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     getFsanz = () => {
-        return (<Segment attached='top'>
+        return (<Segment attached='bottom'>
             <div style={divFoodLogoStyle}>
                 <Image circular size='small' src='FSANZLogo.jpg' href='https://www.foodstandards.gov.au/' target='_blank' />
             </div>
@@ -550,7 +550,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         if (this.state.activeItem == 'USDA') {
             return this.getUsda();
         }
-        else if (this.state.activeItem == 'previous') {
+        else if (this.state.activeItem == 'prev') {
             return this.getOwnMealData();
         }
         else if (this.state.activeItem == 'ANZ') {
@@ -562,7 +562,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     getOwnMealData = () => {
-        return (<Segment attached='top'>
+        return (<Segment attached='bottom'>
             <Grid centered>
                 <Grid.Row stretched textAlign='left'>
                     <Grid.Column textAlign='center' width={16}>
@@ -649,7 +649,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     getRecipesSearch = () => {
-        return (<Segment attached='top'>
+        return (<Segment attached='bottom'>
             <Grid centered>
                 <Grid.Row stretched textAlign='center'>
                     <Grid.Column textAlign='center' width={16}>
@@ -883,7 +883,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             <Grid centered>
                 <Grid.Row textAlign='center'>
                     <Grid.Column width={16}>
-                        <Menu color='pink' inverted attached='top' pointing>
+                        <Menu color='pink' inverted attached='top' compact pointing>
                             <Menu.Item
                                 name='Recipes'
                                 active={activeItem === 'Recipes'}
@@ -900,8 +900,8 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                 onClick={this.handleItemClick}
                             />
                             <Menu.Item
-                                name='previous'
-                                active={activeItem === 'previous'}
+                                name='prev'
+                                active={activeItem === 'prev'}
                                 onClick={this.handleItemClick}
                             />
                             <Menu.Item
