@@ -507,7 +507,6 @@ class Activities extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <AppsMenu activeItem='Activity' logins={this.props.logins} clientDtos={this.state.clients} />
-                            <Divider/>
                         </Grid.Column>
                         <Grid.Column width={16} verticalAlign='middle'>
                             <Segment inverted attached='top'>
@@ -521,59 +520,57 @@ class Activities extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
-                            <Segment attached='top' textAlign='center'>
-                                <Grid divided columns={3} textAlign='center' key={100} centered>
-                                    <Grid.Row key={100} verticalAlign='middle'>
-                                        <Grid.Column key={100} textAlign='center'>
-                                            <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} />
-                                            <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
-                                            <div><a>Steps Count: {this.state.stepsStatus}</a></div>
+                        </Grid.Column>
+                        <Grid.Column width={16} verticalAlign='middle'>
+                            <Grid celled columns={3} textAlign='center' key={100} centered>
+                                <Grid.Row key={100} verticalAlign='middle'>
+                                    <Grid.Column key={100} textAlign='center'>
+                                        <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} />
+                                        <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
+                                        <div><a>Steps Count: {this.state.stepsStatus}</a></div>
+                                    </Grid.Column>
+                                    <Grid.Column key={100 + 3} textAlign='center'>
+                                        <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
+                                        <div><Label color='black' horizontal>{this.getMaxHr()}</Label></div>
+                                        <div><a>{this.getHeartRateStatus()}</a></div>
+                                    </Grid.Column>
+                                    <Grid.Column key={100 + 4} textAlign='center'>
+                                        <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} />
+                                        <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
+                                        <div><a>Sleep Hours: {this.state.sleepsStatus}</a></div>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </Grid.Column>
+                        <Grid.Column width={16} verticalAlign='middle'>
+                            <Segment inverted color='grey' attached='top'>
+                                <Grid centered>
+                                    <Grid.Row columns={5}>
+                                        <Grid.Column floated='left'>
+                                            <Button size='tiny' color='red' inverted fluid icon onClick={this.removeActivities}>
+                                                <Icon name='minus' />
+                                            </Button>
                                         </Grid.Column>
-                                        <Grid.Column key={100 + 3} textAlign='center'>
-                                            <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
-                                            <div><Label color='black' horizontal>{this.getMaxHr()}</Label></div>
-                                            <div><a>{this.getHeartRateStatus()}</a></div>
+                                        <Grid.Column floated='right'>
+                                            <Button size='tiny' color='blue' inverted fluid icon onClick={this.addActivity}>
+                                                <Icon name='plus' />
+                                            </Button>
                                         </Grid.Column>
-                                        <Grid.Column key={100 + 4} textAlign='center'>
-                                            <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} />
-                                            <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
-                                            <div><a>Sleep Hours: {this.state.sleepsStatus}</a></div>
+                                        <Grid.Column verticalAlign='middle'>
+                                            <h2>Workouts</h2>
+                                        </Grid.Column>
+                                        <Grid.Column>
+                                        </Grid.Column>
+                                        <Grid.Column>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>
                             </Segment>
-                            <Segment attached='bottom'>
-                                <Segment inverted color='grey' attached='top'>
-                                    <Grid centered>
-                                        <Grid.Row columns={5}>
-                                            <Grid.Column floated='left'>
-                                                <Button size='tiny' color='red' inverted fluid icon onClick={this.removeActivities}>
-                                                    <Icon name='minus' />
-                                                </Button>
-                                            </Grid.Column>
-                                            <Grid.Column floated='right'>
-                                                <Button size='tiny' color='blue' inverted fluid icon onClick={this.addActivity}>
-                                                    <Icon name='plus' />
-                                                </Button>
-                                            </Grid.Column>
-                                            <Grid.Column verticalAlign='middle'>
-                                                <h2>Workouts</h2>
-                                            </Grid.Column>
-                                            <Grid.Column>
-                                            </Grid.Column>
-                                            <Grid.Column>
-                                            </Grid.Column>
-                                        </Grid.Row>
-                                    </Grid>
-                                </Segment>
-                                <Segment textAlign='center' attached='bottom'>
-                                    <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
-                                </Segment>
+                            <Segment textAlign='center' attached='bottom'>
+                                <ActivityWorkoutTable updateActivities={this.updateActivities} activities={this.state.activities} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column textAlign='left' floated='left'>
+                        <Grid.Column width={16} textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
                                 <Button floated='left' size='tiny' onClick={this.onCancel} color='black'>Cancel</Button>
                                 <Button floated='left' size='tiny' onClick={this.onSave} color='blue' >Save</Button>

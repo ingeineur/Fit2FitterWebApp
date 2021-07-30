@@ -58,6 +58,8 @@ interface IState {
     recipeItemDtos: IRecipeItemDto[];
     savingInProgress: boolean;
     loadingRecipe: boolean;
+    numOfServings: number;
+    readOnly: boolean;
 }
 
 var divFoodLogoStyle = {
@@ -86,9 +88,9 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
             portionsAnz: [], selectedPortionAnz: '', foodPortionDtosAnz:[], anzQuantity: 1.0, selectedFdcIdAnz: '', searchTextAnz: '',
             anzUpdated: false, apiUpdatedAnz: false,
             clientDtos: [], clientDtosUpdated: false,
-            recipeDto: { id: 0, name: '', carbs: 0, protein: 0, fat: 0, serving: 0, photo: '', updated: '', created: '', clientId: 0 },
+            recipeDto: { id: 0, name: '', carbs: 0, protein: 0, fat: 0, serving: 0.0, photo: '', updated: '', created: '', clientId: 0 },
             recipeItemDto: { id: 0, name: '', dataSource: 'manual', externalId: '0', weight: 0, carbs: 0, protein: 0, fat: 0, updated: '', created: '', recipeId: 0 },
-            recipeItemDtos: [], savingInProgress: false, searchedRecipeDtos: [], loadingRecipe: false
+            recipeItemDtos: [], savingInProgress: false, searchedRecipeDtos: [], loadingRecipe: false, numOfServings: 1, readOnly: false
         };
     }
 
@@ -141,11 +143,10 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
         this.setState({ recipeDto: this.state.recipeDto, updated: true });
     }
 
-    updateReciperServingWeight = (event: any) => {
+    updateNumOfServings = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
-            this.state.recipeDto.serving = event.target.value;
-            this.setState({ recipeDto: this.state.recipeDto, updated: true });
+            this.setState({ numOfServings: event.target.value, updated: true });
         }
     }
 
@@ -252,10 +253,15 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
     }
 
     getRows = () => {
+        if (this.state.recipeItemDtos.length < 1) {
+            return (<div><Segment>Empty</Segment></div>);
+        }
+
         var totalWeight = (this.state.recipeItemDtos.reduce(function (a, b) { return a + parseFloat(b.weight.toString()) }, 0));
         var totalCarb = (this.state.recipeItemDtos.reduce(function (a, b) { return a + parseFloat(b.carbs.toString()) }, 0));
         var totalProtein = (this.state.recipeItemDtos.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
         var totalFat = (this.state.recipeItemDtos.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+
         return (
             <div>
                 <Segment textAlign='center' attached='bottom'>
@@ -315,16 +321,16 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                                 <a key={1}>Per-Serving Portion</a>
                             </Grid.Column>
                             <Grid.Column className={'col_fv'} key={12} width={2}>
-                                <a key={5}>{this.state.recipeDto.serving}</a>
+                                <a key={5}>{totalWeight / this.state.numOfServings}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={13} width={2}>
-                                <a key={2}>{((totalCarb / totalWeight) * this.state.recipeDto.serving).toFixed(2)}</a>
+                                <a key={2}>{((totalCarb / this.state.numOfServings)).toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_protein'} key={14} width={2}>
-                                <a key={3}>{((totalProtein / totalWeight) * this.state.recipeDto.serving).toFixed(2)}</a>
+                                <a key={3}>{((totalProtein / this.state.numOfServings)).toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_fat'} key={15} width={2}>
-                                <a key={4}>{((totalFat / totalWeight) * this.state.recipeDto.serving).toFixed(2)}</a>
+                                <a key={4}>{((totalFat / this.state.numOfServings)).toFixed(2)}</a>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -447,7 +453,7 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                 <Image circular size='tiny' src='USDALogo.jfif' href='https://www.usda.gov/topics/food-and-nutrition' target='_blank' />
             </div>
             <Grid centered>
-                <Grid.Row stretched textAlign='left'>
+                <Grid.Row stretched textAlign='center'>
                     <Grid.Column textAlign='center' width={16}>
                         <Search
                             fluid
@@ -557,9 +563,10 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                 <Image circular size='small' src='FSANZLogo.jpg' href='https://www.foodstandards.gov.au/' target='_blank' />
             </div>
             <Grid centered>
-                <Grid.Row stretched textAlign='left'>
+                <Grid.Row stretched textAlign='center'>
                     <Grid.Column textAlign='center' width={16}>
                         <Search
+                            disabled={this.state.readOnly}
                             fluid
                             size='small'
                             loading={this.state.loadingAnz}
@@ -611,31 +618,31 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                     <Grid.Column as='a' width={6} textAlign='left'>
                         <h5>Name</h5>
                     </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
+                    <Grid.Column width={10} textAlign='center'>
                         <input value={this.state.recipeItemDto.name} onChange={this.updateFood} placeholder='Foods' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
                         <h5>Actual Weight (g)</h5>
                     </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
+                    <Grid.Column width={10} textAlign='center'>
                         <input value={this.state.recipeItemDto.weight} onChange={this.updateWeight} placeholder='Weight' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
                         <h5>Carb (g)</h5>
                     </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
+                    <Grid.Column width={10} textAlign='center'>
                         <input value={this.state.recipeItemDto.carbs} onChange={this.updateCarb} placeholder='Carbs' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
                         <h5>Protein (g)</h5>
                     </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
+                    <Grid.Column width={10} textAlign='center'>
                         <input value={this.state.recipeItemDto.protein} onChange={this.updateProtein} placeholder='Protein' />
                     </Grid.Column>
                     <Grid.Column as='a' width={6} textAlign='left'>
                         <h5>Fat (g)</h5>
                     </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
+                    <Grid.Column width={10} textAlign='center'>
                         <input value={this.state.recipeItemDto.fat} onChange={this.updateFat} placeholder='Fat' />
                     </Grid.Column>
                 </Grid.Row>
@@ -644,15 +651,19 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
     }
 
     getSearchOption = () => {
-        if (this.state.activeItem == 'USDA') {
-            return this.getUsda();
+        if (!this.state.readOnly) {
+            if (this.state.activeItem == 'USDA') {
+                return this.getUsda();
+            }
+            else if (this.state.activeItem == 'ANZ') {
+                return this.getFsanz();
+            }
+            else if (this.state.activeItem == 'manual') {
+                return this.getManualEntry();
+            }
         }
-        else if (this.state.activeItem == 'ANZ') {
-            return this.getFsanz();
-        }
-        else if (this.state.activeItem == 'manual') {
-            return this.getManualEntry();
-        }
+
+        return (<div><Segment attached='bottom'><h5>Not Applicable</h5></Segment></div>);
     }
 
     handleFoodSelectResult = (e: any, data: any) => {
@@ -679,11 +690,15 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                 fetch('api/food/' + recipe.id + '/recipe/items')
                     .then(response => response.json() as Promise<IRecipeItemDto[]>)
                     .then(data => {
+                        var totalWeight = (data.reduce(function(a, b) { return a + parseFloat(b.weight.toString()) }, 0));
+                        var numOfServings = totalWeight / recipeDto.serving;
                         this.setState({
                             recipeItemDtos: data,
                             recipeDto: recipeDto,
                             updated: true, imageUploadStatus: imageUploadStatus,
-                            loadingRecipe: false, status: 'Ready'
+                            numOfServings: numOfServings,
+                            loadingRecipe: false, status: 'Read-Only Mode',
+                            readOnly: true
                         });
                     }).catch(error => console.log(error))
             }
@@ -718,45 +733,44 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
     }
 
     getRecipeDetails = () => {
-        return (<Segment attached='top'>
-            <Grid centered>
-                <Grid.Row stretched>
-                    <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Find Recipes (Optional)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        {this.getRecipesSearch()}
-                    </Grid.Column>
-                    <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Recipe's Name</h5>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <input value={this.state.recipeDto.name} onChange={this.updateRecipeName} placeholder='Foods' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Per-Serving (g)</h5>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <input value={this.state.recipeDto.serving} onChange={this.updateReciperServingWeight} placeholder='Weight per serve' />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={6} textAlign='left'>
-                        <h5>Image</h5>
-                    </Grid.Column>
-                    <Grid.Column width={10} textAlign='left'>
-                        <div>
-                            <div style={this.getDivUploadImageStyle()}>
-                                <a>{this.state.imageUploadStatus}</a>
-                            </div>
-                            <input
-                                type='file'
-                                accept="image/*"
-                                onChange={this.handleImageChange}
-                            />
+        return (<Grid centered>
+            <Grid.Row stretched>
+                <Grid.Column as='a' width={6} textAlign='left'>
+                    <h5>Find Recipes (View)</h5>
+                </Grid.Column>
+                <Grid.Column width={10} textAlign='center'>
+                    {this.getRecipesSearch()}
+                </Grid.Column>
+                <Grid.Column as='a' width={6} textAlign='left'>
+                    <h5>Recipe's Name</h5>
+                </Grid.Column>
+                <Grid.Column width={10} textAlign='left'>
+                    <input disabled={this.state.readOnly} value={this.state.recipeDto.name} onChange={this.updateRecipeName} placeholder='Foods' />
+                </Grid.Column>
+                <Grid.Column as='a' width={6} textAlign='left'>
+                    <h5>Number of Servings</h5>
+                </Grid.Column>
+                <Grid.Column width={10} textAlign='center'>
+                    <input disabled={this.state.readOnly} value={this.state.numOfServings} onChange={this.updateNumOfServings} placeholder='number of servings' />
+                </Grid.Column>
+                <Grid.Column as='a' width={6} textAlign='left'>
+                    <h5>Image</h5>
+                </Grid.Column>
+                <Grid.Column width={10} textAlign='center'>
+                    <div>
+                        <div style={this.getDivUploadImageStyle()}>
+                            <a>{this.state.imageUploadStatus}</a>
                         </div>
-                    </Grid.Column>
-                </Grid.Row>
-            </Grid>
-        </Segment>);
+                        <input
+                            disabled={this.state.readOnly}
+                            type='file'
+                            accept="image/*"
+                            onChange={this.handleImageChange}
+                        />
+                    </div>
+                </Grid.Column>
+            </Grid.Row>
+        </Grid>);
     }
 
     isLoadingData = () => {
@@ -774,7 +788,8 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
             recipeItemDtos: [], selectedValueAnz: 'No Selection', selectedValue: 'No Selection', selectedFdcId: '', selectedFdcIdAnz: '',
             status: status, portions: [], portionsAnz: [],
             searchFoodText: '', searchedRecipeDtos: [], searchText: '', searchTextAnz: '', searchFoodResults: [], searchResults: [], searchResultsAnz: [],
-            recipeItemDto: { id: 0, name: '', dataSource: 'manual', externalId: '0', weight: 0, carbs: 0, protein: 0, fat: 0, updated: '', created: '', recipeId: 0 }
+            recipeItemDto: { id: 0, name: '', dataSource: 'manual', externalId: '0', weight: 0, carbs: 0, protein: 0, fat: 0, updated: '', created: '', recipeId: 0 },
+            numOfServings: 1, readOnly: false
         });
     }
 
@@ -807,7 +822,7 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
     }
 
     onSave = () => {
-        if (this.state.recipeDto.name == '' || this.state.recipeDto.serving < 1.0) {
+        if (this.state.recipeDto.name == '' || this.state.numOfServings < 1.0) {
             this.setState({ status: 'Error: Recipe name or serving is invalid!!' });
             return;
         }
@@ -828,7 +843,7 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
         recipeDto.clientId = this.props.logins[0].clientId;
         recipeDto.updated = (new Date()).toISOString();
         recipeDto.created = (new Date()).toISOString();
-        recipeDto.serving = parseFloat(recipeDto.serving.toString());
+        recipeDto.serving = totalWeight / parseInt(this.state.numOfServings.toString());
         recipeDto.carbs = ((totalCarb / totalWeight) * 100.00);
         recipeDto.protein = ((totalProtein / totalWeight) * 100.00);
         recipeDto.fat = ((totalFat / totalWeight) * 100.00);
@@ -935,19 +950,18 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <AppsMenu activeItem='CreateRecipes' logins={this.props.logins} clientDtos={this.state.clientDtos} />
-                            <Divider />
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <a>1. Create/Edit Your Recipes's</a>
+                            1. Create/Edit Your Recipes's
                         </Grid.Column>
-                        <Grid.Column width={16}>
+                        <Grid.Column width={16} verticalAlign='middle'>
                             {this.getRecipeDetails()}
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <a>2. Add Recipes's Ingredients</a>
+                            2. Add Recipes's Ingredients
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <Menu attached='top' tabular compact>
+                            <Menu attached='top' pointing compact>
                                 <Menu.Item
                                     name='ANZ'
                                     active={activeItem === 'ANZ'}
@@ -971,10 +985,10 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                                 <Grid centered>
                                     <Grid.Row stretched>
                                         <Grid.Column width={4}>
-                                            <Button size='tiny' inverted fluid color={this.getColour()} onClick={this.addMeal}>Add</Button>
+                                            <Button disabled={this.state.readOnly} size='tiny' inverted fluid color={this.getColour()} onClick={this.addMeal}>Add</Button>
                                         </Grid.Column>
                                         <Grid.Column width={4}>
-                                            <Button size='tiny' inverted fluid color='black' onClick={this.removeLastAddedMeal}>Undo</Button>
+                                            <Button disabled={this.state.readOnly} size='tiny' inverted fluid color='black' onClick={this.removeLastAddedMeal}>Undo</Button>
                                         </Grid.Column>
                                         <Grid.Column width={8}>
                                             <span style={this.getDivLabelStyle()}>
@@ -991,12 +1005,10 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                         <Grid.Column width={16}>
                             {this.getRows()}
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column textAlign='left' floated='left'>
+                        <Grid.Column width={16} textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
                                 <Button color='black' floated='left' size='tiny' onClick={this.onClear}>New</Button>
-                                <Button color='blue' floated='left' size='tiny' onClick={this.onSave}>Save</Button>
+                                <Button disabled={this.state.readOnly} color='blue' floated='left' size='tiny' onClick={this.onSave}>Save</Button>
                                 <Button color='red' floated='left' size='tiny' onClick={this.onDelete}>Delete</Button>
                             </Button.Group>
                         </Grid.Column>

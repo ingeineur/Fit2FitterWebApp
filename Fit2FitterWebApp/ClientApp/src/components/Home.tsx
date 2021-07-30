@@ -401,10 +401,7 @@ class Home extends React.Component<LoginProps, IState > {
                     <div style={divLabelStyle2}>
                         <Grid>
                             <Grid.Column>
-                                <div id='logo'><Image src="fit2fitter_small_logo_2.jpg" size='small' /></div>
-                                <div id='text' style={divStyle2}>
-                                    <a>by Ida</a>
-                                </div>
+                                <div id='logo'><Image src="fit2fitter_new_logo_1.png" size='medium' /></div>
                             </Grid.Column>
                         </Grid>
                     </div>

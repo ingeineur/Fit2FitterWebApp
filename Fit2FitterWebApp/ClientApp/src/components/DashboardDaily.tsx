@@ -238,6 +238,10 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             return (<Flag name='ie' />)
         }
 
+        if (country === 'bn') {
+            return (<Flag name='bn' />)
+        }
+
         return (<Flag name='au' />)
     }
 
@@ -525,7 +529,6 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <AppsMenu activeItem='home' logins={this.props.logins} clientDtos={this.state.clientDtos} />
-                            <Divider />
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='left'>
                             <Image avatar src={this.getPhotoProfile()} />

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Segment, Input, Grid, Dropdown, Image } from 'semantic-ui-react';
+import { Segment, Input, Grid, Dropdown, Image, Loader, Dimmer } from 'semantic-ui-react';
 import RangeSlider from 'react-bootstrap-range-slider';
 import { IPersonal } from '../models/clients'
 
@@ -391,6 +391,10 @@ class PersonalTable extends React.Component<IProps, IState> {
         return;
     }
 
+    isLoadingData = () => {
+        return (this.state.imageUploadStatus.includes('Uploading')); 
+    }
+
     render() {
         var divUploadImageStyle = {
             display: 'flex',
@@ -440,6 +444,14 @@ class PersonalTable extends React.Component<IProps, IState> {
             fontSize: '10px',
             verticalAlign: 'middle'
         };
+
+        if (this.isLoadingData()) {
+            return (<div style={divUploadImageStyle}>
+                <Dimmer active inverted>
+                    <Loader content='Uploading Image...' />
+                </Dimmer>
+            </div>);
+        }
 
         return (
             <Grid centered>

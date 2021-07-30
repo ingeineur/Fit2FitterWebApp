@@ -437,7 +437,6 @@ class Measurements extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <AppsMenu activeItem='Body' logins={this.props.logins} clientDtos={this.state.clients} />
-                            <Divider />
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Segment inverted attached='top'>
@@ -450,10 +449,8 @@ class Measurements extends React.Component<LoginProps, IState> {
                                 <MeasurementsHeader targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
                         <Grid.Column width={16}>
-                            <Menu attached='top' tabular compact>
+                            <Menu attached='top' pointing compact>
                                 <Menu.Item
                                     name='Body'
                                     active={activeItem === 'Body'}
@@ -470,9 +467,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                                 {this.getComponent()}
                             </Segment>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column textAlign='left' floated='left'>
+                        <Grid.Column width={16} textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
                                 <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
                                 <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
@@ -497,7 +492,6 @@ class Measurements extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
-                {this.showProgressBar()}
             </div>);
         }
         return (<Redirect to="/" />);

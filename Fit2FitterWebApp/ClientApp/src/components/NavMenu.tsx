@@ -32,11 +32,11 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
             <header>
                 <Navbar className="navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3 navbar-bg" light>
                     <Container>
-                        <NavbarBrand tag={Link} to="/">
+                        <NavbarBrand tag={Link} to="/myapp">
                             <Grid>
                                 <Grid.Column>
                                     <div>
-                                        <h3 className="text-app">Health & Fitness Tracker</h3>
+                                        <h3 className="text-app">Nutrition & Fitness Centre</h3>
                                     </div>
                                     <div id='text' style={divStyle2}>
                                         <a>by Ida</a>
@@ -51,13 +51,7 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                                     <NavLink tag={Link} className="text-light" to="/">Home</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/admin">Admin</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/personal">Account</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/logout">Logout</NavLink>
+                                    <NavLink tag={Link} className="text-light" to="/myapp">MyApp</NavLink>
                                 </NavItem>
                             </ul>
                         </Collapse>

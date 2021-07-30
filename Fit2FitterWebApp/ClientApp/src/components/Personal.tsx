@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Progress } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Progress, Loader, Dimmer, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
@@ -10,6 +10,7 @@ import MeasurementsPersonalTable from './PersonalTable'
 import PersonalHeader from './PersonalHeader'
 import { IClient, IPersonal } from '../models/clients'
 import { IMacroGuides, IMacrosPlan } from '../models/macros'
+import AppsMenu from './AppMenus';
 
 interface IProps {
 }
@@ -202,7 +203,7 @@ class Personal extends React.Component<LoginProps, IState> {
     }
 
     getComponent = () => {
-        if (this.state.activeItem == 'Profile') {
+        if (this.state.activeItem == 'Macros') {
             return (<MeasurementsPersonalTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
         }
     }
@@ -222,7 +223,7 @@ class Personal extends React.Component<LoginProps, IState> {
         this.updatePersonal = this.updatePersonal.bind(this);
         this.state = {
             username: '', password: '',
-            activeItem: 'Profile',
+            activeItem: 'Macros',
             selectedDate: new Date(),
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
             personal: { avatar: '', name: '', age: 0, height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 0, macroType: 0, carbPercent: 25.0, proteinPercent: 35.0, fatPercent: 20.0 },
@@ -309,12 +310,10 @@ class Personal extends React.Component<LoginProps, IState> {
             <div>
                 <Grid centered>
                     <Grid.Row>
-                        <Grid.Column verticalAlign='middle' floated='left' textAlign='left'>
-                            <Label size='large' as='a' color='pink' basic circular>Account</Label>
+                        <Grid.Column width={16}>
+                            <AppsMenu activeItem='Macro Details' logins={this.props.logins} clientDtos={this.state.clients} />
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column>
+                        <Grid.Column width={16}>
                             <div style={divLabelStyle}>
                                 <a>{this.state.savingStatus}</a>
                             </div>
@@ -322,27 +321,24 @@ class Personal extends React.Component<LoginProps, IState> {
                                 <PersonalHeader guides={this.state.macroGuides} personal={this.state.personal} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
                         <Grid.Column width={16}>
-                            <Menu attached='top' tabular compact>
+                            <Menu attached='top' pointing compact>
                                 <Menu.Item
-                                    name='Profile'
-                                    active={activeItem === 'Profile'}
+                                    name='Macros'
+                                    active={activeItem === 'Macros'}
                                     onClick={this.handleItemClick}
                                 />
                             </Menu>
-
                             <Segment textAlign='center' attached='bottom'>
                                 {this.getComponent()}
                             </Segment>
+                        </Grid.Column>
+                        <Grid.Column width={16}>
                             <div style={divStatusLabelStyle}>
                                 <a>Total Macros Calculation: {totalMacros} %</a>
                             </div>
                         </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <Grid.Column>
+                        <Grid.Column width={16}>
                             <Button.Group floated='left' fluid>
                                 <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Reset</Button>
                                 <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>

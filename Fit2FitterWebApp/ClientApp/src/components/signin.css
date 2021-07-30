@@ -6,3 +6,54 @@
     font-family: 'Arial Rounded MT';
     font-size: 30px;
 }
+
+.text-ida {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D1B000;
+    font-family: 'Arial Rounded MT';
+    font-size: 30px;
+}
+
+.text-join {
+    color: #D1B000;
+    font-family: 'Arial Rounded MT';
+    font-size: 15px;
+}
+
+.text-job {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D1B000;
+    font-family: 'Arial Rounded MT';
+    font-size: 20px;
+}
+
+.text-about {
+    display: flex;
+    justify-content: left;
+    color: #D1B000;
+    font-family: 'Arial Rounded MT';
+    font-size: 20px;
+}
+
+.text-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D1B000;
+    font-family: 'Arial Rounded MT';
+    font-size: 10px;
+}
+
+.text-specialist {
+    color: lightpink;
+    font-family: Arial;
+    font-size: 20px;
+}
+
+.div-background {
+    background-image: url('/ClientApp/public/veg_background_small.jpg');
+}

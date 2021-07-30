@@ -77,13 +77,12 @@ class EBook extends React.Component<LoginProps, IState> {
                         <Grid.Row>
                             <Grid.Column width={16}>
                                 <AppsMenu activeItem='EBook' logins={this.props.logins} clientDtos={this.state.clients} />
-                                <Divider />
+                            </Grid.Column>
+                            <Grid.Column width={16}>
                                 <div style={divLabelStyle}>
                                     <h5 color='red'>Click on the link below to read from the e-book. **Please refresh the page if the pdf file is not loaded.</h5>
                                 </div>
                             </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row>
                             <Grid.Column width={16}>
                                 <Segment>
                                     <Grid centered>

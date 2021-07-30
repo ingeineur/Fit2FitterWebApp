@@ -7,5 +7,6 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <_PublishTargetUrl>E:\projects\master\Fit2FitterWebApp\Fit2FitterWebApp\bin\Release\netcoreapp3.1\publish\</_PublishTargetUrl>
+    <History>True|2021-07-18T00:29:42.7743415Z;True|2021-07-18T00:53:37.6475754+10:00;True|2021-07-18T00:51:26.5859888+10:00;True|2021-07-18T00:45:43.0283315+10:00;True|2021-07-18T00:09:22.8447589+10:00;</History>
   </PropertyGroup>
 </Project>

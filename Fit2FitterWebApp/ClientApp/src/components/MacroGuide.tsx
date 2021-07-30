@@ -563,7 +563,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                         <Grid.Row>
                             <Grid.Column width={16}>
                                 <AppsMenu activeItem='New Meal' logins={this.props.logins} clientDtos={this.state.clientDtos} />
-                                <Divider />
                             </Grid.Column>
                             <Grid.Column width={16} verticalAlign='middle'>
                                 <Segment color='black' inverted attached='top'>
@@ -578,10 +577,8 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
                                 </Segment>
                             </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row>
                             <Grid.Column width={16}>
-                                <Menu attached='top' tabular compact>
+                                <Menu attached='top' pointing compact>
                                     <Menu.Item
                                         name='Breakfast'
                                         active={activeItem === 'Breakfast'}
@@ -609,9 +606,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     </Grid.Column>
                                 </Segment>
                             </Grid.Column>
-                        </Grid.Row>
-                        <Grid.Row>
-                            <Grid.Column textAlign='left' floated='left'>
+                            <Grid.Column width={16} textAlign='left' floated='left'>
                                 <Button.Group floated='left' fluid>
                                     <Button color='black' floated='left' size='tiny' onClick={this.onCancel} >Cancel</Button>
                                     <Button color='blue' floated='left' size='tiny' onClick={this.onSave} >Save</Button>
@@ -636,7 +631,6 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
-                    {this.showProgressBar()}
                 </div>);
         }
         return (<Redirect to="/" />);

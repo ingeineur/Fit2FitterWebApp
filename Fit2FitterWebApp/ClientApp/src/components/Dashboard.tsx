@@ -833,10 +833,9 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     <Grid.Row>
                         <Grid.Column width={16}>
                             <AppsMenu activeItem='Dashboard' logins={this.props.logins} clientDtos={this.state.clientDtos} />
-                            <Divider />
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <Menu color='pink' inverted attached='top' pointing>
+                            <Menu attached='top' pointing compact>
                                 <Menu.Item
                                     name='Leaderboard'
                                     active={activeItem === 'Leaderboard'}

@@ -659,7 +659,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     </Grid.Column>
                     <Grid.Column textAlign='center' width={16}>
                         <div style={this.getDivLabelStyle3()}>
-                            <a style={this.getDivLabelStyle3()}>Search for your recipes</a>
+                            <a style={this.getDivLabelStyle3()}>Search for your created recipes (Tips: Check Foods Menu)</a>
                         </div>
                         <Search
                             fluid

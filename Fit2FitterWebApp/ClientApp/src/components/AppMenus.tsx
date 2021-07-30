@@ -78,7 +78,10 @@ class AppMenus extends React.Component<IProps, IState > {
         if (name == 'MessagesMain' && this.state.activeItem == 'MessagesMain') {
             this.setState({ activeItem: this.state.prevActiveItem, prevActiveItem: this.state.activeItem })
         }
-        else if (name == 'FoodsDB' && this.state.activeItem == 'FoodsDB') {
+        else if (name == 'Nutritions' && this.state.activeItem == 'Nutritions') {
+            this.setState({ activeItem: this.state.prevActiveItem, prevActiveItem: this.state.activeItem })
+        }
+        else if (name == 'User' && this.state.activeItem == 'User') {
             this.setState({ activeItem: this.state.prevActiveItem, prevActiveItem: this.state.activeItem })
         }
         else {
@@ -208,7 +211,31 @@ class AppMenus extends React.Component<IProps, IState > {
     }
 
     getIconColor = (name: string) => {
-        if (this.props.activeItem === name) {
+        if (name === 'Nutritions') {
+            if (this.props.activeItem === 'New Meal' ||
+                this.props.activeItem === 'CreateRecipes' ||
+                this.props.activeItem === 'Macro Details' ||
+                this.props.activeItem === 'Nutrients Lookup') {
+                return 'orange';
+            }
+        }
+        else if (name === 'User') {
+            if (this.props.activeItem === 'Update Password' ||
+                this.props.activeItem === 'Logout') {
+                return 'orange';
+            }
+        }
+        else if (name === 'MessagesMain') {
+            if (this.props.activeItem === 'Messages' ||
+                this.props.activeItem === 'Meals Logger (Admin)' ||
+                this.props.activeItem === 'Meals Logger' ||
+                this.props.activeItem === 'Meals Logger by Date (Admin)' ||
+                this.props.activeItem === 'Measurements Logger (Admin)' ||
+                this.props.activeItem === 'Measurements Logger') {
+                return 'orange';
+            }
+        }
+        else if (this.props.activeItem === name) {
             return 'orange';
         }
 
@@ -235,22 +262,57 @@ class AppMenus extends React.Component<IProps, IState > {
         }
     }
 
-    getFoodsDBMenus = () => {
-        if (this.state.activeItem === 'FoodsDB') {
-            return (<Menu fluid widths={2} icon='labeled'>
+    getMealsMenus = () => {
+        if (this.state.activeItem === 'Nutritions') {
+            return (<Menu fluid widths={4} icon='labeled'>
+                <Menu.Item
+                    name='New Meal'
+                    disabled={this.isMenuDisable('New Meal')}
+                    onClick={this.handleItemClick}>
+                    <Icon name='edit outline' color={this.getIconColor('New Meal')} />
+                    Daily Macros
+                </Menu.Item>
+                <Menu.Item
+                    name='Macro Details'
+                    disabled={this.isMenuDisable('Macro Details')}
+                    onClick={this.handleItemClick}>
+                    <Icon name='weight' color={this.getIconColor('Macro Details')} />
+                    Macro Details
+                </Menu.Item>
                 <Menu.Item
                     name='CreateRecipes'
                     disabled={this.isMenuDisable('CreateRecipes')}
                     onClick={this.handleItemClick}>
                     <Icon name='edit outline' color={this.getIconColor('CreateRecipes')} />
-                    Create/Edit Recipes
+                    Recipes
                 </Menu.Item>
                 <Menu.Item
                     name='Nutrients Lookup'
                     disabled={this.isMenuDisable('Nutrients Lookup')}
                     onClick={this.handleItemClick}>
                     <Icon name='search' color={this.getIconColor('Nutrients Lookup')} />
-                    Search Foods
+                    Nutrients Lookup 
+                </Menu.Item>
+            </Menu>);
+        }
+    }
+
+    getUserMenus = () => {
+        if (this.state.activeItem === 'User') {
+            return (<Menu fluid widths={2} icon='labeled'>
+                <Menu.Item
+                    name='Update Password'
+                    disabled={this.isMenuDisable('Update Password')}
+                    onClick={this.handleItemClick}>
+                    <Icon name='keyboard' color={this.getIconColor('Update Password')} />
+                    Update Password
+                </Menu.Item>
+                <Menu.Item
+                    name='Logout'
+                    disabled={this.isMenuDisable('Logout')}
+                    onClick={this.handleItemClick}>
+                    <Icon name='log out' color={this.getIconColor('Logout')} />
+                    Logout
                 </Menu.Item>
             </Menu>);
         }
@@ -290,10 +352,6 @@ class AppMenus extends React.Component<IProps, IState > {
             return (<Redirect to="/measurements" />);
         }
 
-        if (this.state.activeItem === 'Meal') {
-            return (<Redirect to="/meals" />);
-        }
-
         if (this.state.activeItem === 'New Meal') {
             return (<Redirect to="/macroguide" />);
         }
@@ -310,8 +368,16 @@ class AppMenus extends React.Component<IProps, IState > {
             return (<Redirect to="/ebook" />);
         }
 
-        if (this.state.activeItem === 'Admin') {
+        if (this.state.activeItem === 'Update Password') {
             return (<Redirect to="/admin" />);
+        }
+
+        if (this.state.activeItem === 'Macro Details') {
+            return (<Redirect to="/personal" />);
+        }
+
+        if (this.state.activeItem === 'Logout') {
+            return (<Redirect to="/logout" />);
         }
 
         if (this.state.activeItem === 'Messages') {
@@ -350,11 +416,11 @@ class AppMenus extends React.Component<IProps, IState > {
             <div>
                 <Menu fluid widths={7} icon='labeled'>
                     <Menu.Item
-                        name='New Meal'
-                        disabled={this.isMenuDisable('New Meal')}
+                        name='Nutritions'
+                        disabled={this.isMenuDisable('Nutritions')}
                         onClick={this.handleItemClick}>
-                        <Icon name='food' color={this.getIconColor('New Meal')} />
-                        Meals
+                        <Icon name='food' color={this.getIconColor('Nutritions')} />
+                        Nutritions
                     </Menu.Item>
                     <Menu.Item
                         name='Activity'
@@ -388,22 +454,16 @@ class AppMenus extends React.Component<IProps, IState > {
                         </Label>
                     </Menu.Item>
                     <Menu.Item
-                        name='FoodsDB'
-                        disabled={this.isMenuDisable('FoodsDB')}
+                        name='User'
+                        disabled={this.isMenuDisable('User')}
                         onClick={this.handleItemClick}>
-                        <Icon name='database' color={this.getIconColor('FoodsDB')} />
-                        Foods
-                    </Menu.Item>
-                    <Menu.Item
-                        name='EBook'
-                        disabled={this.isMenuDisable('EBook')}
-                        onClick={this.handleItemClick}>
-                        <Icon name='book' color={this.getIconColor('EBook')} />
-                        EBook
+                        <Icon name='user' color={this.getIconColor('User')} />
+                        User
                     </Menu.Item>
                 </Menu>
                 {this.getMessagesMenus()}
-                {this.getFoodsDBMenus()}
+                {this.getMealsMenus()}
+                {this.getUserMenus()}
             </div>);
     }
 }
