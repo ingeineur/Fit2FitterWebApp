@@ -220,8 +220,7 @@ class AppMenus extends React.Component<IProps, IState > {
             }
         }
         else if (name === 'User') {
-            if (this.props.activeItem === 'Update Password' ||
-                this.props.activeItem === 'Logout') {
+            if (this.props.activeItem === 'Update Password') {
                 return 'orange';
             }
         }
@@ -306,13 +305,6 @@ class AppMenus extends React.Component<IProps, IState > {
                     onClick={this.handleItemClick}>
                     <Icon name='keyboard' color={this.getIconColor('Update Password')} />
                     Update Password
-                </Menu.Item>
-                <Menu.Item
-                    name='Logout'
-                    disabled={this.isMenuDisable('Logout')}
-                    onClick={this.handleItemClick}>
-                    <Icon name='log out' color={this.getIconColor('Logout')} />
-                    Logout
                 </Menu.Item>
             </Menu>);
         }
@@ -459,6 +451,13 @@ class AppMenus extends React.Component<IProps, IState > {
                         onClick={this.handleItemClick}>
                         <Icon name='user' color={this.getIconColor('User')} />
                         User
+                    </Menu.Item>
+                    <Menu.Item
+                        name='Logout'
+                        disabled={this.isMenuDisable('Logout')}
+                        onClick={this.handleItemClick}>
+                        <Icon name='log out' color={this.getIconColor('Logout')} />
+                        Exit
                     </Menu.Item>
                 </Menu>
                 {this.getMessagesMenus()}

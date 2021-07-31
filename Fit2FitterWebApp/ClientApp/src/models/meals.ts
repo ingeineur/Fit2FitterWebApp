@@ -47,6 +47,10 @@ export interface IMacrosPlanDto {
     carbPercent: number,
     proteinPercent: number,
     fatPercent: number,
+    carbWeight: number,
+    proteinWeight: number,
+    fatWeight: number,
+    manual: boolean,
     updated: string;
     created: string;
     clientId: number;

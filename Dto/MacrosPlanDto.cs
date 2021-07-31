@@ -13,6 +13,10 @@ namespace Fit2Fitter.Dto
         public double CarbPercent { get; set; }
         public double ProteinPercent { get; set; }
         public double FatPercent { get; set; }
+        public double? CarbWeight { get; set; }
+        public double? ProteinWeight { get; set; }
+        public double? FatWeight { get; set; }
+        public bool? Manual { get; set; }
         public DateTime Updated { get; set; }
         public DateTime Created { get; set; }
         public int ClientId { get; set; }

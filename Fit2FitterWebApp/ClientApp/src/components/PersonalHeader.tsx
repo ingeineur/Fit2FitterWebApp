@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
 import { Grid } from 'semantic-ui-react';
+import { IPersonal } from '../models/clients'
+import { isNull } from 'util';
 
 interface IProps {
     guides: IMacroGuides;
@@ -16,18 +16,6 @@ interface IMacroGuides {
     fat: number;
     veg: number;
     bodyFat: number;
-}
-
-interface IPersonal {
-    name: string;
-    age: number;
-    height: number;
-    weight: number;
-    activityLevel: number;
-    macroType: number;
-    carbPercent: number;
-    proteinPercent: number;
-    fatPercent: number;
 }
 
 interface IState {
@@ -88,13 +76,18 @@ class PersonalHeader extends React.Component<IProps, IState> {
             fontSize: '15px'
         };
 
-        const bmr = (10 * this.props.personal.weight) + (6.25 * this.props.personal.height) - (5 * this.props.personal.age) - 161;
-        const totalCalories = this.getActivityLevel() * bmr;
-        const carb = ((this.props.personal.carbPercent / 100.0 * totalCalories)/4).toFixed(2);
-        const protein = ((this.props.personal.proteinPercent / 100.0 * totalCalories)/4).toFixed(2);
-        const fat = ((this.props.personal.fatPercent / 100.0 * totalCalories)/9).toFixed(2);
-        const totalMacros = this.props.personal.carbPercent + this.props.personal.proteinPercent + this.props.personal.fatPercent;
+        let carb = isNull(this.props.personal.carbWeight) ? '0.0' : this.props.personal.carbWeight.toString();
+        let protein = isNull(this.props.personal.proteinWeight) ? '0.0' : this.props.personal.proteinWeight.toString();
+        let fat = isNull(this.props.personal.fatWeight) ? '0.0' : this.props.personal.fatWeight.toString();
 
+        if (isNull(this.props.personal.manualMacro) || this.props.personal.manualMacro === false) {
+            const bmr = (10 * this.props.personal.weight) + (6.25 * this.props.personal.height) - (5 * this.props.personal.age) - 161;
+            const totalCalories = this.getActivityLevel() * bmr;
+            carb = ((this.props.personal.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            protein = ((this.props.personal.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+            fat = ((this.props.personal.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+        }
+        
         return (
             <Grid centered>
                 <Grid.Row divided columns={3} textAlign='center'>

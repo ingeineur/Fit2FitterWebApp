@@ -13,6 +13,7 @@ import MacroGuideTable from './MacroGuideTable'
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
 import { IClientDto } from '../models/clients';
 import AppsMenu from './AppMenus';
+import { isNull } from 'util';
 
 interface IProps {
 }
@@ -196,11 +197,18 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
             const client = this.state.clientDtos[0];
             const macrosPlan = this.state.macrosPlanDtos[0];
-            const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
-            const totalCalories = this.getActivityLevel(macrosPlan.activityLevel) * bmr;
-            const carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
-            const protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
-            const fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+
+            let carb = isNull(macrosPlan.carbWeight) ? '0.0' : macrosPlan.carbWeight.toString();
+            let protein = isNull(macrosPlan.proteinWeight) ? '0.0' : macrosPlan.proteinWeight.toString();
+            let fat = isNull(macrosPlan.fatWeight) ? '0.0' : macrosPlan.fatWeight.toString();
+
+            if (isNull(macrosPlan.manual) || macrosPlan.manual === false) {
+                const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
+                const totalCalories = this.getActivityLevel(macrosPlan.activityLevel) * bmr;
+                carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+            }
 
             this.state.guides.carb = parseFloat(carb);
             this.state.guides.protein = parseFloat(protein);

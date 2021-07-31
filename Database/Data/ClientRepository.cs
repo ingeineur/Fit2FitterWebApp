@@ -164,6 +164,10 @@ namespace Fit2Fitter.Database.Data
                     result.CarbPercent = plan.CarbPercent;
                     result.ProteinPercent = plan.ProteinPercent;
                     result.FatPercent = plan.FatPercent;
+                    result.CarbWeight = plan.CarbWeight;
+                    result.ProteinWeight = plan.ProteinWeight;
+                    result.FatWeight = plan.FatWeight;
+                    result.Manual = plan.Manual;
                     result.Weight = plan.Weight;
                     result.Height = plan.Height;
                     result.TargetWeight = plan.TargetWeight;

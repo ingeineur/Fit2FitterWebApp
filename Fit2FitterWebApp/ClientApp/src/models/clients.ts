@@ -10,6 +10,10 @@
     carbPercent: number;
     proteinPercent: number;
     fatPercent: number;
+    carbWeight: number,
+    proteinWeight: number,
+    fatWeight: number,
+    manualMacro: boolean,
 }
 
 export interface IClient {

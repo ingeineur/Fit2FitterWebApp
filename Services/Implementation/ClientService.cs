@@ -265,6 +265,10 @@ namespace Fit2Fitter.Services.Implementation
                     CarbPercent = plan.CarbPercent,
                     ProteinPercent = plan.ProteinPercent,
                     FatPercent = plan.FatPercent,
+                    CarbWeight = plan.CarbWeight,
+                    ProteinWeight = plan.ProteinWeight,
+                    FatWeight = plan.FatWeight,
+                    Manual = plan.Manual,
                     Updated = DateTime.Now,
                     Created = plan.Created,
                     ClientId = plan.ClientId
@@ -498,6 +502,10 @@ namespace Fit2Fitter.Services.Implementation
                 CarbPercent = plan.CarbPercent,
                 ProteinPercent = plan.ProteinPercent,
                 FatPercent = plan.FatPercent,
+                CarbWeight = plan.CarbWeight,
+                ProteinWeight = plan.ProteinWeight,
+                FatWeight = plan.FatWeight,
+                Manual = plan.Manual,
                 Updated = plan.Updated,
                 Created = plan.Created,
                 ClientId = plan.ClientId

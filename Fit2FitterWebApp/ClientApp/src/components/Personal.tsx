@@ -6,7 +6,7 @@ import { Button, Segment, Grid, Menu, Label, Progress, Loader, Dimmer, Divider }
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import MeasurementsPersonalTable from './PersonalTable'
+import PersonalTable from './PersonalTable'
 import PersonalHeader from './PersonalHeader'
 import { IClient, IPersonal } from '../models/clients'
 import { IMacroGuides, IMacrosPlan } from '../models/macros'
@@ -187,6 +187,10 @@ class Personal extends React.Component<LoginProps, IState> {
                 carbPercent: this.state.personal.carbPercent,
                 proteinPercent: this.state.personal.proteinPercent,
                 fatPercent: this.state.personal.fatPercent,
+                carbWeight: this.state.personal.carbWeight,
+                proteinWeight: this.state.personal.proteinWeight,
+                fatWeight: this.state.personal.fatWeight,
+                manual: this.state.personal.manualMacro,
                 updated: new Date(),
                 created: new Date(),
                 clientId: this.props.logins[0].clientId,
@@ -204,7 +208,7 @@ class Personal extends React.Component<LoginProps, IState> {
 
     getComponent = () => {
         if (this.state.activeItem == 'Macros') {
-            return (<MeasurementsPersonalTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
+            return (<PersonalTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
         }
     }
 
@@ -212,7 +216,8 @@ class Personal extends React.Component<LoginProps, IState> {
         this.setState({
             personal: {
                 avatar: input.avatar, name: input.name, age: input.age, height: input.height, weight: input.weight, targetWeight: input.targetWeight, activityLevel: input.activityLevel, macroType: input.macroType,
-                carbPercent: input.carbPercent, proteinPercent: input.proteinPercent, fatPercent: input.fatPercent
+                carbPercent: input.carbPercent, proteinPercent: input.proteinPercent, fatPercent: input.fatPercent,
+                carbWeight: input.carbWeight, proteinWeight: input.proteinWeight, fatWeight: input.fatWeight, manualMacro: input.manualMacro
             }
         });
         this.setState({ updated: !this.state.updated, savingStatus:'Not Saved' });
@@ -226,7 +231,11 @@ class Personal extends React.Component<LoginProps, IState> {
             activeItem: 'Macros',
             selectedDate: new Date(),
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
-            personal: { avatar: '', name: '', age: 0, height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 0, macroType: 0, carbPercent: 25.0, proteinPercent: 35.0, fatPercent: 20.0 },
+            personal: {
+                avatar: '', name: '', age: 0, height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 0,
+                macroType: 0, carbPercent: 25.0, proteinPercent: 35.0, fatPercent: 20.0,
+                carbWeight: 0.0, proteinWeight: 0.0, fatWeight: 0.0, manualMacro: false
+            },
             clients: [],
             macrosPlans: [],
             updated: false,
@@ -254,6 +263,10 @@ class Personal extends React.Component<LoginProps, IState> {
             this.state.personal.carbPercent = plan.carbPercent;
             this.state.personal.proteinPercent = plan.proteinPercent;
             this.state.personal.fatPercent = plan.fatPercent;
+            this.state.personal.carbWeight = plan.carbWeight;
+            this.state.personal.proteinWeight = plan.proteinWeight;
+            this.state.personal.fatWeight = plan.fatWeight;
+            this.state.personal.manualMacro = plan.manual;
             this.state.personal.activityLevel = this.getActivityLevel(plan.activityLevel);
             this.state.personal.macroType = this.getMacroType(plan.macroType);
             this.setState({ personal: this.state.personal });
@@ -350,14 +363,6 @@ class Personal extends React.Component<LoginProps, IState> {
             </div>);
         }
         return (<Redirect to="/" />);
-    }
-
-    private getLoginCredentials = () => {
-        this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
     }
 }
 

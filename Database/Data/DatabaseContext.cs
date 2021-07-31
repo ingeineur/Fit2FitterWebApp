@@ -339,6 +339,18 @@ namespace Fit2Fitter.Database.Data
                     .IsRequired()
                     .HasMaxLength(8);
 
+                entity.Property(e => e.CarbWeight)
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.ProteinWeight)
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.FatWeight)
+                    .HasMaxLength(8);
+
+                entity.Property(e => e.Manual)
+                    .HasMaxLength(1);
+
                 entity.Property(e => e.Updated)
                       .IsRequired()
                       .HasMaxLength(8);

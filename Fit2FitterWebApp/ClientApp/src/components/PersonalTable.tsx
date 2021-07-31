@@ -1,8 +1,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Segment, Input, Grid, Dropdown, Image, Loader, Dimmer } from 'semantic-ui-react';
+import { Segment, Input, Grid, Dropdown, Image, Loader, Dimmer, Radio } from 'semantic-ui-react';
 import RangeSlider from 'react-bootstrap-range-slider';
 import { IPersonal } from '../models/clients'
+
+var divLabelStyle = {
+    color: 'blue',
+    fontSize: '10px',
+    verticalAlign: 'middle'
+};
 
 interface IProps {
     personal: IPersonal;
@@ -28,6 +34,10 @@ interface IState {
     fatPercent: number;
     imageUploadStatus: string;
     photo: string;
+    carbWeight: number;
+    proteinWeight: number;
+    fatWeight: number;
+    manualMacro: boolean;
 }
 
 const activityTypes = [
@@ -84,7 +94,7 @@ class PersonalTable extends React.Component<IProps, IState> {
             username: '', password: '', updated: false, name: '', age: 0,
             height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 'Sedentary', macroType: 'Lose Weight',
             carbPercent: 10.0, proteinPercent: 40.0, fatPercent: 30.0, dirty: false, imageUploadStatus: 'No Image',
-            photo: ''
+            photo: '', manualMacro: false, carbWeight: 0.0, proteinWeight: 0.0, fatWeight: 0.0
         };
     }
 
@@ -169,6 +179,31 @@ class PersonalTable extends React.Component<IProps, IState> {
         if (event.target.value === '' || re.test(event.target.value)) {
             this.setState({ targetWeight: event.target.value, updated: true });
         }
+    }
+
+    updateCarbWeight = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            this.setState({ carbWeight: event.target.value, updated: true });
+        }
+    }
+
+    updateProteinWeight = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            this.setState({ proteinWeight: event.target.value, updated: true });
+        }
+    }
+
+    updateFatWeight = (event: any) => {
+        const re = /^[-+,0-9,\.]+$/;
+        if (event.target.value === '' || re.test(event.target.value)) {
+            this.setState({ fatWeight: event.target.value, updated: true });
+        }
+    }
+
+    toggleManualMacro = () => {
+        this.setState({ manualMacro: !this.state.manualMacro, updated: true });
     }
 
     getActivityLevelText = (type: number) => {
@@ -395,6 +430,114 @@ class PersonalTable extends React.Component<IProps, IState> {
         return (this.state.imageUploadStatus.includes('Uploading')); 
     }
 
+    getMacroSetup = () => {
+        if (this.state.manualMacro) {
+            return (
+                <Grid.Row columns={2} stretched>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'/>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        <h4>Manual Macro Settings</h4>
+                    </Grid.Column>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                        <a>Carb Weight</a>
+                    </Grid.Column>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        <Input as='a' size='mini' value={this.state.carbWeight} placeholder='Weight' onChange={this.updateCarbWeight} />
+                    </Grid.Column>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                        <a>Protein Weight</a>
+                    </Grid.Column>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        <Input as='a' size='mini' value={this.state.proteinWeight} placeholder='Weight' onChange={this.updateProteinWeight} />
+                    </Grid.Column>
+                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                        <a>Fat Weight</a>
+                    </Grid.Column>
+                    <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                        <Input as='a' size='mini' value={this.state.fatWeight} placeholder='Weight' onChange={this.updateFatWeight} />
+                    </Grid.Column>
+                </Grid.Row>);
+        }
+        return (<Grid.Row columns={2} stretched>
+            <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle' />
+            <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                <h4>Auto Macro Settings</h4>
+            </Grid.Column>
+            <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                <a>Acivity Level</a>
+            </Grid.Column>
+            <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
+                <Dropdown id='activities' value={this.state.activityLevel} selection options={activityTypes} onChange={this.setActivityLevel} />
+            </Grid.Column>
+            <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
+                <a>Macro Type</a>
+            </Grid.Column>
+            <Grid.Column width={12} textAlign='left'>
+                <Dropdown id='plans' value={this.state.macroType} selection options={mealPlan} onChange={this.setMacroType} />
+            </Grid.Column>
+            <Grid.Column as='a' width={3} textAlign='left'>
+                <a>Carb</a>
+            </Grid.Column>
+            <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
+                <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['carb']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['carb']['max']}%]</a>
+            </Grid.Column>
+            <Grid.Column width={8} textAlign='left' verticalAlign='middle'>
+                <RangeSlider
+                    variant='success'
+                    value={this.state.carbPercent}
+                    onChange={this.setCarbPercent}
+                    tooltipLabel={currentValue => `${currentValue}%`}
+                    tooltip='off'
+                    min={this.getMinMaxMacroPortions(this.state.macroType)['carb']['min']}
+                    max={this.getMinMaxMacroPortions(this.state.macroType)['carb']['max']}
+                />
+            </Grid.Column>
+            <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
+                <a>{this.state.carbPercent}%</a>
+            </Grid.Column>
+            <Grid.Column as='a' width={3} textAlign='left'>
+                <a>Protein</a>
+            </Grid.Column>
+            <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
+                <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['protein']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['protein']['max']}%]</a>
+            </Grid.Column>
+            <Grid.Column width={8} textAlign='left'>
+                <RangeSlider
+                    variant='warning'
+                    value={this.state.proteinPercent}
+                    onChange={this.setProteinPercent}
+                    tooltipLabel={currentValue => `${currentValue}%`}
+                    tooltip='off'
+                    min={this.getMinMaxMacroPortions(this.state.macroType)['protein']['min']}
+                    max={this.getMinMaxMacroPortions(this.state.macroType)['protein']['max']}
+                />
+            </Grid.Column>
+            <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
+                <a>{this.state.proteinPercent}%</a>
+            </Grid.Column>
+            <Grid.Column as='a' width={3} textAlign='left'>
+                <a>Fat</a>
+            </Grid.Column>
+            <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
+                <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['fat']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['fat']['max']}%]</a>
+            </Grid.Column>
+            <Grid.Column width={8} textAlign='left'>
+                <RangeSlider
+                    variant='danger'
+                    value={this.state.fatPercent}
+                    onChange={this.setFatPercent}
+                    tooltipLabel={currentValue => `${currentValue}%`}
+                    tooltip='off'
+                    min={this.getMinMaxMacroPortions(this.state.macroType)['fat']['min']}
+                    max={this.getMinMaxMacroPortions(this.state.macroType)['fat']['max']}
+                />
+            </Grid.Column>
+            <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
+                <a>{this.state.fatPercent}%</a>
+            </Grid.Column>
+        </Grid.Row>)
+    }
+
     render() {
         var divUploadImageStyle = {
             display: 'flex',
@@ -422,6 +565,10 @@ class PersonalTable extends React.Component<IProps, IState> {
                 carbPercent: this.props.personal.carbPercent,
                 proteinPercent: this.props.personal.proteinPercent,
                 fatPercent: this.props.personal.fatPercent,
+                carbWeight: this.props.personal.carbWeight,
+                proteinWeight: this.props.personal.proteinWeight,
+                fatWeight: this.props.personal.fatWeight,
+                manualMacro: this.props.personal.manualMacro,
                 activityLevel: this.getActivityLevelText(this.props.personal.activityLevel),
                 macroType: this.getMacroTypeText(this.props.personal.macroType),
                 dirty: !this.state.dirty
@@ -436,14 +583,10 @@ class PersonalTable extends React.Component<IProps, IState> {
                 activityLevel: this.getActivityLevel(this.state.activityLevel),
                 macroType: this.getMacroType(this.state.macroType), carbPercent: this.state.carbPercent,
                 proteinPercent: this.state.proteinPercent, fatPercent: this.state.fatPercent,
+                carbWeight: this.state.carbWeight, proteinWeight: this.state.proteinWeight,
+                fatWeight: this.state.fatWeight, manualMacro: this.state.manualMacro
             });
         }
-
-        var divLabelStyle = {
-            color:'blue',
-            fontSize: '10px',
-            verticalAlign: 'middle'
-        };
 
         if (this.isLoadingData()) {
             return (<div style={divUploadImageStyle}>
@@ -509,78 +652,13 @@ class PersonalTable extends React.Component<IProps, IState> {
                         <Input as='a' size='mini' value={this.state.targetWeight} placeholder='Weight' onChange={this.updateTargetWeight} />
                     </Grid.Column>
                     <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
-                        <a>Acivity Level</a>
+                        <a>Manual Macro</a>
                     </Grid.Column>
                     <Grid.Column width={12} textAlign='left' verticalAlign='middle'>
-                        <Dropdown id='activities' value={this.state.activityLevel} selection options={activityTypes} onChange={this.setActivityLevel} />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={4} textAlign='left' verticalAlign='middle'>
-                        <a>Macro Type</a>
-                    </Grid.Column>
-                    <Grid.Column width={12} textAlign='left'>
-                        <Dropdown id='plans' value={this.state.macroType} selection options={mealPlan} onChange={this.setMacroType} />
-                    </Grid.Column>
-                    <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Carb</a>
-                    </Grid.Column>
-                    <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
-                        <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['carb']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['carb']['max']}%]</a>
-                    </Grid.Column>
-                    <Grid.Column width={8} textAlign='left' verticalAlign='middle'>
-                        <RangeSlider
-                            variant='success'
-                            value={this.state.carbPercent}
-                            onChange={this.setCarbPercent}
-                            tooltipLabel={currentValue => `${currentValue}%`}
-                            tooltip='off'
-                            min={this.getMinMaxMacroPortions(this.state.macroType)['carb']['min']}
-                            max={this.getMinMaxMacroPortions(this.state.macroType)['carb']['max']}
-                        />
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
-                        <a>{this.state.carbPercent}%</a>
-                    </Grid.Column>
-                    <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Protein</a>
-                    </Grid.Column>
-                    <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
-                        <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['protein']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['protein']['max']}%]</a>
-                    </Grid.Column>
-                    <Grid.Column width={8} textAlign='left'>
-                        <RangeSlider
-                            variant='warning'
-                            value={this.state.proteinPercent}
-                            onChange={this.setProteinPercent}
-                            tooltipLabel={currentValue => `${currentValue}%`}
-                            tooltip='off'
-                            min={this.getMinMaxMacroPortions(this.state.macroType)['protein']['min']}
-                            max={this.getMinMaxMacroPortions(this.state.macroType)['protein']['max']}
-                        />
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
-                        <a>{this.state.proteinPercent}%</a>
-                    </Grid.Column>
-                    <Grid.Column as='a' width={3} textAlign='left'>
-                        <a>Fat</a>
-                    </Grid.Column>
-                    <Grid.Column width={3} textAlign='left' verticalAlign='middle'>
-                        <a style={divLabelStyle}>[{this.getMinMaxMacroPortions(this.state.macroType)['fat']['min']}% - {this.getMinMaxMacroPortions(this.state.macroType)['fat']['max']}%]</a>
-                    </Grid.Column>
-                    <Grid.Column width={8} textAlign='left'>
-                        <RangeSlider
-                            variant='danger'
-                            value={this.state.fatPercent}
-                            onChange={this.setFatPercent}
-                            tooltipLabel={currentValue => `${currentValue}%`}
-                            tooltip='off'
-                            min={this.getMinMaxMacroPortions(this.state.macroType)['fat']['min']}
-                            max={this.getMinMaxMacroPortions(this.state.macroType)['fat']['max']}
-                        />
-                    </Grid.Column>
-                    <Grid.Column width={2} textAlign='right' verticalAlign='middle'>
-                        <a>{this.state.fatPercent}%</a>
+                        <Radio toggle checked={this.state.manualMacro} onChange={this.toggleManualMacro} />
                     </Grid.Column>
                 </Grid.Row>
+                {this.getMacroSetup()}
             </Grid>);
     }
 }

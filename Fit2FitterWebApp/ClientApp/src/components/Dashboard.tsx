@@ -11,6 +11,11 @@ import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '..
 import { getActivityLevel } from '../models/activities';
 import ChartistGraph from 'react-chartist';
 import AppsMenu from './AppMenus';
+import { isNull } from 'util';
+
+var divLabelStyle1 = {
+    color: '#0a0212',
+};
 
 interface IProps {
 }
@@ -54,6 +59,7 @@ interface IState {
     queryStatus: string;
     clientList: IOption[];
     toClientId: number;
+    bodyfatIndicator: string;
 }
 
 interface IOption {
@@ -316,7 +322,8 @@ class Dashboard extends React.Component<LoginProps, IState> {
             measurementDtosUpdated: false,
             queryStatus: 'no error',
             clientList: [],
-            toClientId: 3
+            toClientId: 3,
+            bodyfatIndicator: ''
         };
     }
 
@@ -545,6 +552,13 @@ class Dashboard extends React.Component<LoginProps, IState> {
         return name + ', last login: ' + lastSeen.toLocaleDateString();
     }
 
+    getBodyFatDivStyle = () => {
+        return {
+            color: this.getBodyfatForeColour(this.state.bodyfatIndicator),
+            backgroundColor: this.getBodyfatColour(this.state.bodyfatIndicator)
+        }
+    }
+
     getProgress = () => {
         return (<Grid centered>
             <Grid.Row columns={2}>
@@ -590,7 +604,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     <div>
                         <ChartistGraph data={this.getGraphData('Weight')} type={type} options={lineChartOptions} />
                     </div>
-                    <a>Body Fat</a>
+                    <a style={this.getBodyFatDivStyle()}>Body Fat: {this.state.bodyfatIndicator}</a>
                     <div>
                         <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
                     </div>
@@ -617,6 +631,161 @@ class Dashboard extends React.Component<LoginProps, IState> {
                 this.state.measurementDtosDownloaded == false || this.state.clientDownloaded == false ||
                 this.state.macrosPlanDtosDownloaded == false) 
         }
+    }
+
+    getBodyFatIndicator = (age: number, bodyFat: number) => {
+        if (age <= 20) {
+            if (11.3 <= bodyFat && bodyFat <= 15.7) {
+                return 'LEAN';
+            }
+            if (15.7 < bodyFat && bodyFat <= 21.5) {
+                return 'IDEAL';
+            }
+            if (21.5 < bodyFat && bodyFat <= 29.0) {
+                return 'AVERAGE';
+            }
+            if (29.0 < bodyFat && bodyFat <= 34.6) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (21 <= age && age <= 25) {
+            if (11.9 <= bodyFat && bodyFat <= 18.4) {
+                return 'LEAN';
+            }
+            if (18.4 < bodyFat && bodyFat <= 23.8) {
+                return 'IDEAL';
+            }
+            if (23.8 < bodyFat && bodyFat <= 29.6) {
+                return 'AVERAGE';
+            }
+            if (29.6 < bodyFat && bodyFat <= 35.2) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (26 <= age && age <= 30) {
+            if (12.5 <= bodyFat && bodyFat <= 19.0) {
+                return 'LEAN';
+            }
+            if (19.0 < bodyFat && bodyFat <= 24.5) {
+                return 'IDEAL';
+            }
+            if (24.5 < bodyFat && bodyFat <= 31.5) {
+                return 'AVERAGE';
+            }
+            if (31.5 < bodyFat && bodyFat <= 35.8) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (31 <= age && age <= 35) {
+            if (13.2 <= bodyFat && bodyFat <= 19.6) {
+                return 'LEAN';
+            }
+            if (19.6 < bodyFat && bodyFat <= 25.1) {
+                return 'IDEAL';
+            }
+            if (25.1 < bodyFat && bodyFat <= 32.1) {
+                return 'AVERAGE';
+            }
+            if (32.1 < bodyFat && bodyFat <= 36.4) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (36 <= age && age <= 40) {
+            if (13.8 <= bodyFat && bodyFat <= 22.2) {
+                return 'LEAN';
+            }
+            if (22.2 < bodyFat && bodyFat <= 27.3) {
+                return 'IDEAL';
+            }
+            if (27.3 < bodyFat && bodyFat <= 32.7) {
+                return 'AVERAGE';
+            }
+            if (32.7 < bodyFat && bodyFat <= 37.0) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (41 <= age && age <= 45) {
+            if (14.4 <= bodyFat && bodyFat <= 22.8) {
+                return 'LEAN';
+            }
+            if (22.8 < bodyFat && bodyFat <= 27.9) {
+                return 'IDEAL';
+            }
+            if (27.9 < bodyFat && bodyFat <= 34.4) {
+                return 'AVERAGE';
+            }
+            if (34.4 < bodyFat && bodyFat <= 37.7) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (46 <= age && age <= 50) {
+            if (15.0 <= bodyFat && bodyFat <= 23.4) {
+                return 'LEAN';
+            }
+            if (23.4 < bodyFat && bodyFat <= 28.6) {
+                return 'IDEAL';
+            }
+            if (28.6 < bodyFat && bodyFat <= 35.0) {
+                return 'AVERAGE';
+            }
+            if (35.0 < bodyFat && bodyFat <= 38.3) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (51 <= age && age <= 55) {
+            if (15.6 <= bodyFat && bodyFat <= 24.0) {
+                return 'LEAN';
+            }
+            if (24.0 < bodyFat && bodyFat <= 29.2) {
+                return 'IDEAL';
+            }
+            if (29.2 < bodyFat && bodyFat <= 35.6) {
+                return 'AVERAGE';
+            }
+            if (35.6 < bodyFat && bodyFat <= 38.9) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+        if (56 <= age) {
+            if (16.3 <= bodyFat && bodyFat <= 24.6) {
+                return 'LEAN';
+            }
+            if (24.6 < bodyFat && bodyFat <= 29.8) {
+                return 'IDEAL';
+            }
+            if (29.8 < bodyFat && bodyFat <= 37.2) {
+                return 'AVERAGE';
+            }
+            if (37.2 < bodyFat && bodyFat <= 39.5) {
+                return 'ABOVE AVERAGE';
+            }
+        }
+
+        return 'AVERAGE';
+    }
+
+    getBodyfatColour = (level: string) => {
+        if (level === 'LEAN') {
+            return 'blue';
+        }
+
+        if (level === 'IDEAL') {
+            return 'green';
+        }
+
+        if (level === 'AVERAGE') {
+            return 'yellow';
+        }
+
+        return 'red';
+    }
+
+    getBodyfatForeColour = (level: string) => {
+        if (level === 'AVERAGE') {
+            return 'black';
+        }
+
+        return 'white';
     }
 
     getGraphData = (measureType: string) => {
@@ -665,7 +834,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
         });
 
         arr.forEach(m => {
-            if (index === 0 || index === arr.length - 1) {
+            if (index === 0 || index === arr.length - 1 || index === (arr.length/2 - 1)) {
                 this.state.activityLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
             }
             else {
@@ -705,12 +874,19 @@ class Dashboard extends React.Component<LoginProps, IState> {
         if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
             var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)];
             const macrosPlan = this.state.macrosPlanDtos[0];
-            const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
-            const totalCalories = getActivityLevel(macrosPlan.activityLevel) * bmr;
-            const carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
-            const protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
-            const fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
 
+            let carb = isNull(macrosPlan.carbWeight) ? '0.0' : macrosPlan.carbWeight.toString();
+            let protein = isNull(macrosPlan.proteinWeight) ? '0.0' : macrosPlan.proteinWeight.toString();
+            let fat = isNull(macrosPlan.fatWeight) ? '0.0' : macrosPlan.fatWeight.toString();
+
+            if (isNull(macrosPlan.manual) || macrosPlan.manual === false) {
+                const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
+                const totalCalories = getActivityLevel(macrosPlan.activityLevel) * bmr;
+                carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+            }
+            
             this.state.macroGuides.carb = parseFloat(carb);
             this.state.macroGuides.protein = parseFloat(protein);
             this.state.macroGuides.fat = parseFloat(fat);
@@ -814,7 +990,10 @@ class Dashboard extends React.Component<LoginProps, IState> {
             }
 
             if (this.state.measurementDtosUpdated === true) {
-                this.setState({ measurementDtosDownloaded: true, measurementDtosUpdated: false });
+                const bodyFatPercent = (((parseFloat(this.state.measurementDtos[0].waist.toString()) + parseFloat(this.state.measurementDtos[0].hips.toString())) - parseFloat(this.state.measurementDtos[0].neck.toString())) / 2);
+                var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)];
+                const level = this.getBodyFatIndicator(client.age, bodyFatPercent);
+                this.setState({ measurementDtosDownloaded: true, measurementDtosUpdated: false, bodyfatIndicator: level });
             }
 
             this.setActivityGraphValues();
