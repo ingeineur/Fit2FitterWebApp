@@ -29,10 +29,6 @@ var divLabelStyle3 = {
 
 var options2 = {
     reverseData: true,
-    donut: true,
-    donutWidth: 60,
-    donutSolid: true,
-    startAngle: 270,
     showLabel: true
 };
 

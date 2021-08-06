@@ -93,7 +93,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             dirty: false,
-            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, photo:'' },
+            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, portion: 0, fv: 0, check: false, remove: false, photo: '' },
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus: 'No Image', searchFoodResults: [],
@@ -171,10 +171,10 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
     }
 
-    updateFv = (event: any) => {
+    updatePortion = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
-            this.state.meal.fv = event.target.value;
+            this.state.meal.portion = event.target.value;
             this.setState({ meal: this.state.meal, updated: true, status: 'Pending add to the list' });
         }
     }
@@ -186,9 +186,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
 
         this.setState({ status: 'Added to list' });
-        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove, photo: this.state.meal.photo });
+        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, portion: this.state.meal.portion, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove, photo: this.state.meal.photo });
         this.setState({ meals: this.state.meals, updated: true, imageUploadStatus: 'No Image' })
-        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, check: false, remove: false, photo: '' } });
+        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, portion: 0, fv: 0, check: false, remove: false, photo: '' } });
     }
 
     updateUsdaQuantity = (event: any) => {
@@ -322,7 +322,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                 this.setState({
                     meal: {
                         id: 0, food: meal.food, carb: meal.carb, protein: meal.protein,
-                        fat: meal.fat, fv: meal.fv, check: false, remove: false, photo: meal.photo
+                        fat: meal.fat, portion: meal.portion, fv: meal.fv, check: false, remove: false, photo: meal.photo
                     }, updated: true, imageUploadStatus: imageUploadStatus, status: 'Pending add to the list'
                 });
             }
@@ -342,6 +342,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     this.state.meal.protein = parseFloat((this.state.usdaQuantity * x.proteinValue * x.gramWeight).toFixed(2));
                     this.state.meal.fat = parseFloat((this.state.usdaQuantity * x.fatValue * x.gramWeight).toFixed(2));
                     var totalWeight = this.state.usdaQuantity * x.gramWeight;
+                    this.state.meal.portion = parseFloat(totalWeight.toFixed(2)); 
                     this.state.meal.food = this.state.selectedValue + ' (' + totalWeight.toFixed(2) + 'g)';
                 }
             });
@@ -350,6 +351,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.carb = 0.0;
             this.state.meal.protein = 0.0;
             this.state.meal.fat = 0.0;
+            this.state.meal.portion = 0.0;
             this.state.meal.fv = this.state.usdaQuantity;
         }
 
@@ -472,6 +474,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     this.state.meal.protein = parseFloat((this.state.anzQuantity * x.proteinValue * x.gramWeight).toFixed(2));
                     this.state.meal.fat = parseFloat((this.state.anzQuantity * x.fatValue * x.gramWeight).toFixed(2));
                     var totalWeight = this.state.anzQuantity * x.gramWeight;
+                    this.state.meal.portion = parseFloat(totalWeight.toFixed(2)); 
                     this.state.meal.food = this.state.selectedValueAnz + ' (' + totalWeight.toFixed(2) + 'g)';
 
                     if (x.modifier.includes('fruit')) {
@@ -487,6 +490,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.carb = 0.0;
             this.state.meal.protein = 0.0;
             this.state.meal.fat = 0.0;
+            this.state.meal.portion = 0.0;
             this.state.meal.fv = this.state.anzQuantity;
         }
 
@@ -710,6 +714,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     this.state.meal.protein = parseFloat((this.state.recipeQuantity * x.proteinValue * x.gramWeight).toFixed(2));
                     this.state.meal.fat = parseFloat((this.state.recipeQuantity * x.fatValue * x.gramWeight).toFixed(2));
                     var totalWeight = this.state.recipeQuantity * x.gramWeight;
+                    this.state.meal.portion = parseFloat(totalWeight.toFixed(2)); 
                     this.state.meal.food = this.state.selectedFoodValue + ' (' + totalWeight.toFixed(2) + 'g)';
                     this.state.meal.photo = this.state.recipeDto.photo;
                 }
@@ -719,6 +724,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             this.state.meal.carb = 0.0;
             this.state.meal.protein = 0.0;
             this.state.meal.fat = 0.0;
+            this.state.meal.portion = 0.0;
             this.state.meal.fv = 0;
         }
 
@@ -732,6 +738,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_food'} key={index + 1} width={8}>
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
+                    <Grid.Column className={'col_portion'} key={index + 5} width={2}>
+                        <a key={index + 5}>{parseFloat(item.portion.toString()).toFixed(2)}</a>
+                    </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
                         <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
@@ -741,9 +750,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
                         <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_fv'} key={index + 5} width={2}>
-                        <a key={index + 5}>{item.fv}</a>
-                    </Grid.Column>
                 </Grid.Row>
             ));
     }
@@ -752,7 +758,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         var totalCarb = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
         var totalProtein = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
         var totalFat = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-        var totalFv = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+        var totalPortion = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
         return (
             <div>
                 <Segment textAlign='center' attached='bottom'>
@@ -764,6 +770,9 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                 <div><a>Item's Name</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
+                                <div><a>Por(g)</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
                                 <div><a>Ca(g)</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
@@ -772,14 +781,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             <Grid.Column width={2} textAlign='left'>
                                 <div><a>Fa(g)</a></div>
                             </Grid.Column>
-                            <Grid.Column width={2} textAlign='left'>
-                                <div><a>FV</a></div>
-                            </Grid.Column>
                         </Grid.Row>
                         {this.getTableRows()}
                         <Grid.Row textAlign='left' color='black' className={'row'} key={1} columns={5} stretched>
                             <Grid.Column className={'col_food'} key={1} width={8} textAlign='left'>
                                 <a key={1}>Total Macros</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_portion'} key={5} width={2}>
+                                <a key={5}>{totalPortion.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={2} width={2}>
                                 <a key={2}>{totalCarb.toFixed(2)}</a>
@@ -789,9 +798,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                             </Grid.Column>
                             <Grid.Column className={'col_fat'} key={4} width={2}>
                                 <a key={4}>{totalFat.toFixed(2)}</a>
-                            </Grid.Column>
-                            <Grid.Column className={'col_fv'} key={5} width={2}>
-                                <a key={5}>{totalFv.toFixed(2)}</a>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -883,7 +889,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             <Grid centered>
                 <Grid.Row textAlign='center'>
                     <Grid.Column width={16}>
-                        <Menu color='pink' inverted attached='top' compact pointing>
+                        <Menu attached='top' compact pointing>
                             <Menu.Item
                                 name='Recipes'
                                 active={activeItem === 'Recipes'}
@@ -940,6 +946,12 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                         <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
                                     </Grid.Column>
                                     <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Portion (g)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <input value={this.state.meal.portion} onChange={this.updatePortion} placeholder='Portion' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
                                         <h5>Carb (g)</h5>
                                     </Grid.Column>
                                     <Grid.Column width={10} textAlign='left'>
@@ -956,12 +968,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                     </Grid.Column>
                                     <Grid.Column width={10} textAlign='left'>
                                         <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Fruit/Veg (serv)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
                                     </Grid.Column>
                                     <Grid.Column as='a' width={6} textAlign='left'>
                                         <h5>Image</h5>

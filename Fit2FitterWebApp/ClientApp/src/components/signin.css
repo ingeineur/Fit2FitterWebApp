@@ -57,3 +57,8 @@
 .div-background {
     background-image: url('/ClientApp/public/veg_background_small.jpg');
 }
+
+.text-app-menu {
+    color: black;
+    font-size: 10px;
+}

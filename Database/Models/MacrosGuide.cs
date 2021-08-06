@@ -10,6 +10,7 @@ namespace Fit2Fitter.Database.Models
         public double Carb { get; set; }
         public double Protein { get; set; }
         public double Fat { get; set; }
+        public double? Portion { get; set; }
         public int FV { get; set; }
         public DateTime Updated { get; set; }
         public DateTime Created { get; set; }

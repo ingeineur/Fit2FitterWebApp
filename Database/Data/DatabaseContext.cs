@@ -286,6 +286,9 @@ namespace Fit2Fitter.Database.Data
                     .IsRequired()
                     .HasMaxLength(8);
 
+                entity.Property(e => e.Portion)
+                    .HasMaxLength(8);
+
                 entity.Property(e => e.FV)
                     .IsRequired()
                     .HasMaxLength(4);
@@ -303,7 +306,6 @@ namespace Fit2Fitter.Database.Data
                     .HasMaxLength(4);
 
                 entity.Property(e => e.Photo)
-                    .IsRequired()
                     .HasMaxLength(255);
             });
 

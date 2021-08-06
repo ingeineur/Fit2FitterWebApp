@@ -338,6 +338,7 @@ namespace Fit2Fitter.Database.Data
                 result.Carb = macrosGuide.Carb;
                 result.Protein = macrosGuide.Protein;
                 result.Fat = macrosGuide.Fat;
+                result.Portion = macrosGuide.Portion;
                 result.FV = macrosGuide.FV;
                 result.Photo = macrosGuide.Photo;
                 result.Updated = macrosGuide.Updated;

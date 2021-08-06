@@ -11,7 +11,7 @@ import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '..
 import { getActivityLevel } from '../models/activities';
 import ChartistGraph from 'react-chartist';
 import AppsMenu from './AppMenus';
-import { isNull } from 'util';
+import { isNull, isNullOrUndefined } from 'util';
 
 var divLabelStyle1 = {
     color: '#0a0212',
@@ -872,7 +872,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
 
     setMacroGuides = () => {
         if (this.state.macrosPlanDtos.length > 0 && this.state.clientDtos.length > 0) {
-            var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)];
+            var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id == this.state.toClientId)];
             const macrosPlan = this.state.macrosPlanDtos[0];
 
             let carb = isNull(macrosPlan.carbWeight) ? '0.0' : macrosPlan.carbWeight.toString();
@@ -989,10 +989,10 @@ class Dashboard extends React.Component<LoginProps, IState> {
                 this.setMacroGuides();
             }
 
-            if (this.state.measurementDtosUpdated === true) {
+            if (this.state.measurementDtosUpdated === true && this.state.clientDownloaded === true) {
                 const bodyFatPercent = (((parseFloat(this.state.measurementDtos[0].waist.toString()) + parseFloat(this.state.measurementDtos[0].hips.toString())) - parseFloat(this.state.measurementDtos[0].neck.toString())) / 2);
-                var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id === this.props.logins[0].clientId)];
-                const level = this.getBodyFatIndicator(client.age, bodyFatPercent);
+                var client = this.state.clientDtos[this.state.clientDtos.findIndex(x => x.id == this.state.toClientId)];
+                var level = this.getBodyFatIndicator(client.age, bodyFatPercent);
                 this.setState({ measurementDtosDownloaded: true, measurementDtosUpdated: false, bodyfatIndicator: level });
             }
 

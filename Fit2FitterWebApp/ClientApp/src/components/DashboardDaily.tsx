@@ -150,12 +150,10 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
 
     updateInput = (event: any) => {
         this.setState({ username: event.target.value });
-        console.log(event.target.value);
     }
 
     updateInput2 = (event: any) => {
         this.setState({ password: event.target.value });
-        console.log(event.target.value);
     }
 
     constructor(props: LoginProps) {
@@ -285,21 +283,18 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         if (!isNullOrUndefined(this.state.graphActivityValues.carbs) && this.state.graphActivityValues.carbs.length > 0) {
             if (!isNaN(this.state.graphActivityValues.carbs[0]) && !isNullOrUndefined(this.state.graphActivityValues.carbs[0])) {
                 carbs = this.state.graphActivityValues.carbs[0];
-                //console.log(carbs);
             }
         }
 
         if (!isNullOrUndefined(this.state.graphActivityValues.protein) && this.state.graphActivityValues.protein.length > 0) {
             if (!isNaN(this.state.graphActivityValues.protein[0]) && !isNullOrUndefined(this.state.graphActivityValues.protein[0])) {
                 protein = this.state.graphActivityValues.protein[0];
-                //console.log(protein);
             }
         }
 
         if (!isNullOrUndefined(this.state.graphActivityValues.fat) && this.state.graphActivityValues.fat.length > 0) {
             if (!isNaN(this.state.graphActivityValues.fat[0]) && !isNullOrUndefined(this.state.graphActivityValues.fat[0])) {
                 fat = this.state.graphActivityValues.fat[0];
-                //console.log(fat);
             }
         }
         return { labels: ['Carb', 'Protein', 'Fat'], series: [carbs, protein, fat] };
@@ -310,7 +305,6 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         if (!isNullOrUndefined(values) && values.length > 0) {
             if (!isNaN(values[0]) && !isNullOrUndefined(values[0])) {
                 result = values[0];
-                console.log(result);
             }
         }
 
@@ -471,6 +465,26 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         return (<Icon name='thumbs up' size='large' color='green' />)
     }
 
+    getGraph = () => {
+        let data = this.getGraphData('Macros');
+        if (data.series.length > 2 && (data.series[0] > 0 || data.series[1] > 0 || data.series[2] > 0)) {
+            return (<Segment>
+                <span>
+                    <a>Macros Consumptions </a>
+                    <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a>
+                </span>
+                <div>
+                    <ChartistGraph data={data} type={bar} options={barChartOptions} />
+                </div>
+            </Segment>);
+        }
+        else {
+            return (<Segment inverted>
+                <h4>NO DAILY MACROS RECORDED TODAY</h4>
+            </Segment>);
+        }
+    }
+
     render() {
         var divLoaderStyle = {
             display: 'flex',
@@ -538,7 +552,7 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row textAlign='center'>
                         <Grid.Column width={16} textAlign='center'>
-                            <h2>Today's Summary...</h2>
+                            <h2>Today's Progress...</h2>
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='center'>
                             <Segment>
@@ -548,15 +562,7 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                             </Segment>
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='center'>
-                            <Segment>
-                                <span>
-                                    <a>Macros Consumptions </a>
-                                    <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a>
-                                </span>
-                                <div>
-                                    <ChartistGraph data={this.getGraphData('Macros')} type={bar} options={barChartOptions} />
-                                </div>
-                            </Segment>
+                            {this.getGraph()}
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Segment textAlign='center'>

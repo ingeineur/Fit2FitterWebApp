@@ -25,8 +25,8 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             dirty: false,
-            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo: '', check: false, remove: false },
-            prevMeal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo: '', check: false, remove: false },
+            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, portion: 0, photo: '', check: false, remove: false },
+            prevMeal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, portion: 0, photo: '', check: false, remove: false },
             updated: false, status: '', imageUploadStatus: 'No Image'
         };
     }
@@ -36,7 +36,14 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         if (meals.length > 0 && !isNullOrUndefined(meals[0])) {
 
             var mealSource = meals[0];
-            this.setState({ meal: { id: mealSource.id, food: mealSource.food, carb: mealSource.carb, protein: mealSource.protein, fat: mealSource.fat, fv: mealSource.fv, photo: mealSource.photo, check: mealSource.check, remove: mealSource.remove } });
+            this.setState({
+                meal: {
+                    id: mealSource.id, food: mealSource.food, carb: mealSource.carb,
+                    protein: mealSource.protein, fat: mealSource.fat,
+                    portion: mealSource.portion, fv: mealSource.fv,
+                    photo: mealSource.photo, check: mealSource.check, remove: mealSource.remove
+                }
+            });
             if (mealSource.photo != '') {
                 this.setState({ imageUploadStatus: 'Uploaded' });
             }
@@ -75,10 +82,10 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
         }
     }
 
-    updateFv = (event: any) => {
+    updatePortion = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
-            this.state.meal.fv = event.target.value;
+            this.state.meal.portion = event.target.value;
             this.setState({ meal: this.state.meal, updated: true });
             this.setState({ status: 'Require Update' });
         }
@@ -126,7 +133,14 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
 
         this.setState({ status: 'OK' });
         this.setState({ prevMeal: this.state.meal });
-        this.setState({ meal: { id: this.state.meal.id, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, fv: this.state.meal.fv, photo: this.state.meal.photo, check: this.state.meal.check, remove: this.state.meal.remove } });
+        this.setState({
+            meal: {
+                id: this.state.meal.id, food: this.state.meal.food, carb: this.state.meal.carb,
+                protein: this.state.meal.protein, fat: this.state.meal.fat,
+                portion: this.state.meal.portion, fv: this.state.meal.fv, photo: this.state.meal.photo,
+                check: this.state.meal.check, remove: this.state.meal.remove
+            }
+        });
         this.setState({ updated: true })
     }
 
@@ -174,7 +188,13 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
             var meals = this.props.meals.filter(x => x.check === true);
             if (meals.length > 0) {
                 var mealSource = meals[0];
-                this.setState({ meal: { id: mealSource.id, food: mealSource.food, carb: mealSource.carb, protein: mealSource.protein, fat: mealSource.fat, fv: mealSource.fv, photo: mealSource.photo, check: mealSource.check, remove: mealSource.remove } });
+                this.setState({
+                    meal: {
+                        id: mealSource.id, food: mealSource.food, carb: mealSource.carb, protein: mealSource.protein,
+                        fat: mealSource.fat, fv: mealSource.fv, photo: mealSource.photo,
+                        portion: mealSource.portion, check: mealSource.check, remove: mealSource.remove
+                    }
+                });
             }
         }
 
@@ -202,6 +222,12 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
                             <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Food' />
                         </Grid.Column>
                         <Grid.Column as='a' width={4} textAlign='left'>
+                            <h5>Portion (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={12} textAlign='left'>
+                            <input value={this.state.meal.portion} onChange={this.updatePortion} placeholder='Portion' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='left'>
                             <h5>Carb (g)</h5>
                         </Grid.Column>
                         <Grid.Column width={12} textAlign='left'>
@@ -218,12 +244,6 @@ class MacroGuideModifyModal extends React.Component<IProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={12} textAlign='left'>
                             <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
-                        </Grid.Column>
-                        <Grid.Column as='a' width={4} textAlign='left'>
-                            <h5>Fruit/Veg (serv)</h5>
-                        </Grid.Column>
-                        <Grid.Column width={12} textAlign='left'>
-                            <input value={this.state.meal.fv} onChange={this.updateFv} placeholder='Serving' />
                         </Grid.Column>
                         <Grid.Column as='a' width={4} textAlign='left'>
                             <h5>Image</h5>

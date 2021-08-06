@@ -54,7 +54,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         this.state = {
             username: '', password: '', updated: false, mealType: 1, meals: [],
             dirty: false, openAddMeal: false, updateMeal: false, addedMeals: [],
-            updateDetails: { index: -1, meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, fv: 0, photo:'', check: false, remove: false } }
+            updateDetails: { index: -1, meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, portion: 0, fv: 0, photo: '', check: false, remove: false } }
         };
     }
 
@@ -105,6 +105,9 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_food'} key={this.props.mealType + index + 1} width={6}>
                         <a key={this.props.mealType + index + 1}>{item.food}</a>
                     </Grid.Column>
+                    <Grid.Column className={'col_portion'} key={this.props.mealType + index + 5} width={2}>
+                        <a key={this.props.mealType + index + 5}>{parseFloat(item.portion.toString()).toFixed(2)}</a>
+                    </Grid.Column>
                     <Grid.Column className={'col_carb'} key={this.props.mealType + index + 2} width={2}>
                         <a key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
@@ -113,9 +116,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={this.props.mealType + index + 4} width={2}>
                         <a key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
-                    </Grid.Column>
-                    <Grid.Column className={'col_fv'} key={this.props.mealType + index + 5} width={2}>
-                        <a key={this.props.mealType + index + 5}>{item.fv}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -198,7 +198,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
             .then(data => {
                 data.forEach(meal => {
                     if (this.getMealType(meal.mealType) === this.props.mealType) {
-                        this.state.meals.push({ id: 0, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+                        this.state.meals.push({ id: 0, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, portion: meal.portion, fv: meal.fv, photo: meal.photo, check: false, remove: false });
                     }
                     this.setState({ meals: this.state.meals, updated: true });
                 });
@@ -260,11 +260,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         </Modal.Actions>
                                     </Modal>
                                 </Grid.Column>
-                                <Grid.Column width={5} floated='left'>
-                                    <Popup content='Auto populate from yesterday' trigger={<Button size='tiny' inverted color='black' fluid icon onClick={this.autoPopulateFromYesterday}>
-                                        Auto
-                                    </Button>} />
-                                </Grid.Column>
+                                <Grid.Column width={5} floated='left'/>
                                 <Grid.Column width={5} floated='right'>
                                     <Modal
                                         open={this.state.updateMeal}
@@ -301,6 +297,9 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                     <div><a>Foods or Drinks</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
+                                    <div><a>Por</a></div>
+                                </Grid.Column>
+                                <Grid.Column width={2} textAlign='left'>
                                     <div><a>Ca</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
@@ -308,9 +307,6 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
                                     <div><a>Fa</a></div>
-                                </Grid.Column>
-                                <Grid.Column width={2} textAlign='left'>
-                                    <div><a>FV</a></div>
                                 </Grid.Column>
                             </Grid.Row>
                             {this.getRows()}

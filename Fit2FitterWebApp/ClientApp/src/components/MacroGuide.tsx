@@ -247,9 +247,10 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                     id: x.id,
                     food: x.food,
                     mealType: this.getMealTypeString(i),
-                    carb: parseFloat(x.carb.toString()),
-                    protein: parseFloat(x.protein.toString()),
-                    fat: parseFloat(x.fat.toString()),
+                    carb: isNaN(parseFloat(x.carb.toString())) ? 0.0 : parseFloat(x.carb.toString()),
+                    protein: isNaN(parseFloat(x.protein.toString())) ? 0.0 : parseFloat(x.protein.toString()),
+                    fat: isNaN(parseFloat(x.fat.toString())) ? 0.0 : parseFloat(x.fat.toString()),
+                    portion: isNaN(parseFloat(x.portion.toString())) ? 0.0 : parseFloat(x.portion.toString()),
                     fv: parseFloat(x.fv.toString()),
                     photo: x.photo,
                     created: this.state.selectedDate.toISOString(),
@@ -294,6 +295,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                     carb: parseFloat(x.carb.toString()),
                     protein: parseFloat(x.protein.toString()),
                     fat: parseFloat(x.fat.toString()),
+                    portion: parseFloat(x.portion.toString()),
                     fv: parseFloat(x.fv.toString()),
                     photo: x.photo,
                     created: this.state.selectedDate.toISOString(),
@@ -459,7 +461,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             }
 
             this.state.mealDtos.forEach(meal => {
-                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, portion: meal.portion, fv: meal.fv, photo: meal.photo, check: false, remove: false });
             })
 
             this.setState({ meals: this.state.meals });

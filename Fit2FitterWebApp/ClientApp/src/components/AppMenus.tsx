@@ -412,35 +412,35 @@ class AppMenus extends React.Component<IProps, IState > {
                         disabled={this.isMenuDisable('Nutritions')}
                         onClick={this.handleItemClick}>
                         <Icon name='food' color={this.getIconColor('Nutritions')} />
-                        Nutritions
+                        <a className="text-app-menu">Nutritions</a>
                     </Menu.Item>
                     <Menu.Item
                         name='Activity'
                         disabled={this.isMenuDisable('Activity')}
                         onClick={this.handleItemClick}>
                         <Icon name='child' color={this.getIconColor('Activity')} />
-                        Activity
+                        <a className="text-app-menu">Activity</a>
                     </Menu.Item>
                     <Menu.Item
                         name='Body'
                         disabled={this.isMenuDisable('Body')}
                         onClick={this.handleItemClick}>
                         <Icon name='calculator' color={this.getIconColor('Body')} />
-                        Measure
+                        <a className="text-app-menu">Measure</a>
                     </Menu.Item>
                     <Menu.Item
                         name='Dashboard'
                         disabled={this.isMenuDisable('Dashboard')}
                         onClick={this.handleItemClick}>
                         <Icon name='chart bar' color={this.getIconColor('Dashboard')} />
-                        Reports
+                        <a className="text-app-menu">Reports</a>
                     </Menu.Item>
                     <Menu.Item
                         name='MessagesMain'
                         disabled={this.isMenuDisable('MessagesMain')}
                         onClick={this.handleItemClick}>
                         <Icon name='mail' color={this.getIconColor('MessagesMain')} />
-                        Msg
+                        <a className="text-app-menu">Msg</a>
                         <Label color='red' floating>
                             {this.state.unReadMessage + this.state.unReadMessageMeals + this.state.unReadMessageMeasurements}
                         </Label>
@@ -450,14 +450,14 @@ class AppMenus extends React.Component<IProps, IState > {
                         disabled={this.isMenuDisable('User')}
                         onClick={this.handleItemClick}>
                         <Icon name='user' color={this.getIconColor('User')} />
-                        User
+                        <a className="text-app-menu">User</a>
                     </Menu.Item>
                     <Menu.Item
                         name='Logout'
                         disabled={this.isMenuDisable('Logout')}
                         onClick={this.handleItemClick}>
                         <Icon name='log out' color={this.getIconColor('Logout')} />
-                        Exit
+                        <a className="text-app-menu">Exit</a>
                     </Menu.Item>
                 </Menu>
                 {this.getMessagesMenus()}

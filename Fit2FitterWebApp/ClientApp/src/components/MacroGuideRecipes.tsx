@@ -733,44 +733,47 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
     }
 
     getRecipeDetails = () => {
-        return (<Grid centered>
-            <Grid.Row stretched>
-                <Grid.Column as='a' width={6} textAlign='left'>
-                    <h5>Find Recipes (View)</h5>
-                </Grid.Column>
-                <Grid.Column width={10} textAlign='center'>
-                    {this.getRecipesSearch()}
-                </Grid.Column>
-                <Grid.Column as='a' width={6} textAlign='left'>
-                    <h5>Recipe's Name</h5>
-                </Grid.Column>
-                <Grid.Column width={10} textAlign='left'>
-                    <input disabled={this.state.readOnly} value={this.state.recipeDto.name} onChange={this.updateRecipeName} placeholder='Foods' />
-                </Grid.Column>
-                <Grid.Column as='a' width={6} textAlign='left'>
-                    <h5>Number of Servings</h5>
-                </Grid.Column>
-                <Grid.Column width={10} textAlign='center'>
-                    <input disabled={this.state.readOnly} value={this.state.numOfServings} onChange={this.updateNumOfServings} placeholder='number of servings' />
-                </Grid.Column>
-                <Grid.Column as='a' width={6} textAlign='left'>
-                    <h5>Image</h5>
-                </Grid.Column>
-                <Grid.Column width={10} textAlign='center'>
-                    <div>
-                        <div style={this.getDivUploadImageStyle()}>
-                            <a>{this.state.imageUploadStatus}</a>
+        return (
+        <Segment textAlign='center' attached='bottom'>
+             <Grid centered>
+                <Grid.Row stretched>
+                    <Grid.Column as='a' width={6} textAlign='left'>
+                        <h5>Find Recipes (View)</h5>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='center'>
+                        {this.getRecipesSearch()}
+                    </Grid.Column>
+                    <Grid.Column as='a' width={6} textAlign='left'>
+                        <h5>Recipe's Name</h5>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='left'>
+                        <input disabled={this.state.readOnly} value={this.state.recipeDto.name} onChange={this.updateRecipeName} placeholder='Foods' />
+                    </Grid.Column>
+                    <Grid.Column as='a' width={6} textAlign='left'>
+                        <h5>Number of Servings</h5>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='center'>
+                        <input disabled={this.state.readOnly} value={this.state.numOfServings} onChange={this.updateNumOfServings} placeholder='number of servings' />
+                    </Grid.Column>
+                    <Grid.Column as='a' width={6} textAlign='left'>
+                        <h5>Image</h5>
+                    </Grid.Column>
+                    <Grid.Column width={10} textAlign='center'>
+                        <div>
+                            <div style={this.getDivUploadImageStyle()}>
+                                <a>{this.state.imageUploadStatus}</a>
+                            </div>
+                            <input
+                                disabled={this.state.readOnly}
+                                type='file'
+                                accept="image/*"
+                                onChange={this.handleImageChange}
+                            />
                         </div>
-                        <input
-                            disabled={this.state.readOnly}
-                            type='file'
-                            accept="image/*"
-                            onChange={this.handleImageChange}
-                        />
-                    </div>
-                </Grid.Column>
-            </Grid.Row>
-        </Grid>);
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>);
     }
 
     isLoadingData = () => {
@@ -952,13 +955,13 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                             <AppsMenu activeItem='CreateRecipes' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            1. Create/Edit Your Recipes's
+                            <h5>Step 1. Create/View Your Recipe</h5>
                         </Grid.Column>
                         <Grid.Column width={16} verticalAlign='middle'>
                             {this.getRecipeDetails()}
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            2. Add Recipes's Ingredients
+                            <h5>Step 2. Add Ingredients</h5>
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Menu attached='top' pointing compact>
@@ -1000,7 +1003,7 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                             </Segment>
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            3. List of Ingredients
+                            <h5>Step 3. Review of Ingredients</h5>
                         </Grid.Column>
                         <Grid.Column width={16}>
                             {this.getRows()}

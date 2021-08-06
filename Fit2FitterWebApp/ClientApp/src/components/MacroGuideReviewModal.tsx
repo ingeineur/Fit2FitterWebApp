@@ -337,6 +337,9 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_food'} key={index + 1} width={8}>
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
+                    <Grid.Column className={'col_portion'} key={index + 5} width={2}>
+                        <a key={index + 5}>{item.portion}</a>
+                    </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
                         <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
@@ -346,9 +349,6 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
                         <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
-                    <Grid.Column className={'col_fv'} key={index + 5} width={2}>
-                        <a key={index + 5}>{item.fv}</a>
-                    </Grid.Column>
                 </Grid.Row>
             ));
     }
@@ -357,7 +357,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var totalCarb = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
         var totalProtein = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
         var totalFat = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-        var totalFv = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
+        var totalPortion = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
         return (
             <div>
                 <Segment textAlign='center' attached='top'>
@@ -376,6 +376,9 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                                 <div><a>Foods or Drinks</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
+                                <div><a>Por(g)</a></div>
+                            </Grid.Column>
+                            <Grid.Column width={2} textAlign='left'>
                                 <div><a>Ca(g)</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
@@ -384,14 +387,14 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                             <Grid.Column width={2} textAlign='left'>
                                 <div><a>Fa(g)</a></div>
                             </Grid.Column>
-                            <Grid.Column width={2} textAlign='left'>
-                                <div><a>FV</a></div>
-                            </Grid.Column>
                         </Grid.Row>
                         {this.getTableRows(mealType)}
                         <Grid.Row color='yellow' className={'row'} key={mealType + 1} columns={5} stretched>
                             <Grid.Column className={'col_food'} key={mealType + 1} width={8}>
                                 <a key={mealType + 1}>Sub-Total Macros</a>
+                            </Grid.Column>
+                            <Grid.Column className={'col_portion'} key={mealType + 5} width={2}>
+                                <a key={mealType + 5}>{totalPortion.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={mealType + 2} width={2}>
                                 <a key={mealType + 2}>{totalCarb.toFixed(2)}</a>
@@ -401,9 +404,6 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                             </Grid.Column>
                             <Grid.Column className={'col_fat'} key={mealType + 4} width={2}>
                                 <a key={mealType + 4}>{totalFat.toFixed(2)}</a>
-                            </Grid.Column>
-                            <Grid.Column className={'col_fv'} key={mealType + 5} width={2}>
-                                <a key={mealType + 5}>{totalFv.toFixed(2)}</a>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -439,7 +439,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
             }
 
             this.state.mealDtos.forEach(meal => {
-                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, portion: meal.portion, fv: meal.fv, photo: meal.photo, check: false, remove: false });
             })
 
             this.setState({ meals: this.state.meals });
@@ -552,19 +552,16 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var carbMacros: number[] = [];
         var proMacros: number[] = [];
         var fatMacros: number[] = [];
-        var vegMacros: number[] = [];
-
+        
         var totalC: number = 0.0;
         var totalP: number = 0.0;
         var totalF: number = 0.0;
-        var totalV: number = 0.0;
-
+        
         for (let i = 0; i < 4; i++) {
             var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
             totalC += (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
             totalP += (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
             totalF += (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-            totalV += (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
         }
 
         for (var i = 0; i < 4; i++) {
@@ -573,12 +570,10 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 var totalCarb = (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
                 var totalProtein = (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
                 var totalFat = (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-                var totalVeg = (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
 
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalProtein / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
-                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 1) {
                 var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
@@ -590,7 +585,6 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalProtein / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
-                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 2) {
                 var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
@@ -602,7 +596,6 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalProtein / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
-                vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else {
                 var meals = this.state.meals[this.getMealTypeIndex(i)].filter(x => x.remove !== true);
@@ -614,14 +607,13 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalProtein / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
-                vegMacros.push((totalVeg / totalV) * 100.0);
             }
         }
 
         var data2 = {
             labels: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
             series: [
-                carbMacros, proMacros, fatMacros, vegMacros
+                carbMacros, proMacros, fatMacros
             ]
         };
 
@@ -667,7 +659,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         </div>
                         <Segment attached='bottom' textAlign='center'>
                             <ChartistGraph data={data} options={lineChartOptions} type={type} />
-                            <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a><a style={divVeg}>col</a><a> Fruits/Veg%</a>
+                            <a style={divCarb}>col</a><a>Carb% </a><a style={divPro}>col</a><a>Protein%</a><a style={divFat}>col</a><a> Fat% </a>
                         </Segment>
                     </Grid.Column>
                     <Grid.Column width={16}>

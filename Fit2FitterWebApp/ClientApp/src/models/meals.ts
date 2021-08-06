@@ -12,6 +12,7 @@ export interface IMealDto {
     carb: number;
     protein: number;
     fat: number;
+    portion: number;
     fv: number;
     photo: string;
     updated: string;
@@ -32,6 +33,7 @@ export interface IMealDetails {
     carb: number;
     protein: number;
     fat: number;
+    portion: number;
     fv: number;
     photo: string;
     check: boolean;
