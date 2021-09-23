@@ -11,7 +11,11 @@ import ActivityWorkoutTable from './ActivityWorkoutTable';
 import ActivityHeader from './ActivityHeader';
 import AppsMenu from './AppMenus';
 import { IActivityGuides, ITotalDailyActivity, IActivity, IActivityDto, getStepIndicatorColour, getSleepColour } from '../models/activities'
-import { IClientDto} from '../models/clients';
+import { IMacroGuides, IMealDto, IMeals, IMealDetails, IMacrosPlanDto } from '../models/meals'
+import { IClientDto } from '../models/clients';
+import CaloriesRemainingHeader from './CaloriesRemainingHeader'
+import { isNull } from 'util';
+import './signin.css';
 
 interface IProps {
 }
@@ -41,6 +45,12 @@ interface IState {
     workoutUpdated: boolean;
     savingDone: boolean;
     updateAllInfo: boolean;
+    meals: IMeals;
+    mealDtos: IMealDto[];
+    macrosPlanDtos: IMacrosPlanDto[];
+    mealGuides: IMacroGuides;
+    mealsDownloaded: boolean;
+    macrosPlanDownloaded: boolean;
 }
 
 // At runtime, Redux will merge together...
@@ -71,6 +81,20 @@ class Activities extends React.Component<LoginProps, IState> {
                 .then(response => response.json() as Promise<IActivityDto[]>)
                 .then(data => this.setState({
                     activityDtos: data, activityDtosUpdated: true
+                })).catch(error => console.log(error));
+
+            //get macros plan
+            fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
+                .then(response => response.json() as Promise<IMacrosPlanDto[]>)
+                .then(data => this.setState({
+                    macrosPlanDtos: data, macrosPlanDownloaded: true
+                })).catch(error => console.log(error));
+
+            //get all meals
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + date.toISOString())
+                .then(response => response.json() as Promise<IMealDto[]>)
+                .then(data => this.setState({
+                    mealDtos: data, mealsDownloaded: true
                 })).catch(error => console.log(error));
         }
     }
@@ -134,7 +158,13 @@ class Activities extends React.Component<LoginProps, IState> {
             stepsStatus: '',
             sleepsStatus: '',
             savingDone: false,
-            updateAllInfo: false
+            updateAllInfo: false,
+            meals: { 0: [], 1: [], 2: [], 3: [] },
+            mealDtos: [],
+            macrosPlanDtos: [],
+            mealGuides: { carb: 0, protein: 0, fat: 0, fruits: 0 },
+            mealsDownloaded: false,
+            macrosPlanDownloaded: false
         };
     }
 
@@ -276,7 +306,10 @@ class Activities extends React.Component<LoginProps, IState> {
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
-            this.setState({ selectedDate: new Date(field['value']), activityDtos: [], dateChanged: true, activityDtosUpdated: false })
+            this.setState({
+                selectedDate: new Date(field['value']), activityDtos: [], dateChanged: true,
+                activityDtosUpdated: false, mealsDownloaded: false, mealDtos: []
+            })
         }
     }
 
@@ -428,7 +461,10 @@ class Activities extends React.Component<LoginProps, IState> {
             date.setFullYear(year - 1);
         }
 
-        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, activityDtosUpdated: false });
+        this.setState({
+            selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true,
+            activityDtosUpdated: false, mealsDownloaded: false, mealDtos: []
+        });
     }
 
     handleNextDate = (e: any) => {
@@ -449,15 +485,130 @@ class Activities extends React.Component<LoginProps, IState> {
             date.setFullYear(year + 1);
         }
 
-        this.setState({ selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true, activityDtosUpdated: false });
+        this.setState({
+            selectedDate: new Date(date), activityDtos: [], prevDate: prevDate, dateChanged: true,
+            activityDtosUpdated: false, mealsDownloaded: false, mealDtos: []
+        });
     }
 
     isLoadingData = () => {
-        if (!this.state.clientsUpdated || !this.state.activityDtosUpdated) {
+        if (!this.state.clientsUpdated || !this.state.activityDtosUpdated ||
+            !this.state.mealsDownloaded || !this.state.macrosPlanDownloaded) {
             return true;
         }
 
         return false;
+    }
+
+    getActivityLevel = (activityLevel: string) => {
+        if (activityLevel == 'Sedentary') {
+            return 1.2;
+        }
+
+        if (activityLevel == 'Lightly Active') {
+            return 1.375;
+        }
+
+        if (activityLevel == 'Moderately Active') {
+            return 1.55;
+        }
+
+        if (activityLevel == 'Very Active') {
+            return 1.725;
+        }
+
+        if (activityLevel == 'Extra Active') {
+            return 1.9;
+        }
+
+        return 0;
+    }
+
+    setMacroGuides = () => {
+        if (this.state.macrosPlanDtos.length > 0 && this.state.clients.length > 0) {
+            const client = this.state.clients[0];
+            const macrosPlan = this.state.macrosPlanDtos[0];
+
+            let carb = isNull(macrosPlan.carbWeight) ? '0.0' : macrosPlan.carbWeight.toString();
+            let protein = isNull(macrosPlan.proteinWeight) ? '0.0' : macrosPlan.proteinWeight.toString();
+            let fat = isNull(macrosPlan.fatWeight) ? '0.0' : macrosPlan.fatWeight.toString();
+
+            if (isNull(macrosPlan.manual) || macrosPlan.manual === false) {
+                const bmr = (10 * macrosPlan.weight) + (6.25 * macrosPlan.height) - (5 * client.age) - 161;
+                const totalCalories = this.getActivityLevel(macrosPlan.activityLevel) * bmr;
+                carb = ((macrosPlan.carbPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                protein = ((macrosPlan.proteinPercent / 100.0 * totalCalories) / 4).toFixed(2);
+                fat = ((macrosPlan.fatPercent / 100.0 * totalCalories) / 9).toFixed(2);
+            }
+
+            this.state.mealGuides.carb = parseFloat(carb);
+            this.state.mealGuides.protein = parseFloat(protein);
+            this.state.mealGuides.fat = parseFloat(fat);
+            this.state.mealGuides.fruits = 4;
+            this.setState({ mealGuides: this.state.mealGuides });
+        }
+    }
+
+    getMealTypeIndex = (type: number) => {
+        if (type == 1) {
+            return 1;
+        }
+        if (type == 2) {
+            return 2;
+        }
+        if (type == 3) {
+            return 3;
+        }
+
+        return 0;
+    }
+
+    getMealType = (type: string) => {
+        if (type == 'Lunch') {
+            return 1;
+        }
+        if (type == 'Dinner') {
+            return 2;
+        }
+        if (type == 'Snack') {
+            return 3;
+        }
+
+        return 0;
+    }
+
+    setMeals = () => {
+        if (this.state.mealDtos.length > 0) {
+
+            var totalMeals = 0;
+            for (let i = 0; i < 4; i++) {
+                totalMeals += this.state.meals[this.getMealTypeIndex(i)].length;
+            }
+
+            if (totalMeals === this.state.mealDtos.length) {
+                return;
+            }
+
+            this.state.mealDtos.forEach(meal => {
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, portion: meal.portion, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+            })
+
+            this.setState({ meals: this.state.meals });
+        }
+    }
+
+    getMeals = () => {
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/macrosguide?date=' + this.state.selectedDate.toISOString())
+            .then(response => response.json() as Promise<IMealDto[]>)
+            .then(data => this.setState({
+                mealDtos: data, mealsDownloaded: true
+            })).catch(error => console.log(error));
+    }
+
+    resetMeals = () => {
+        this.setState({
+            meals: { 0: [], 1: [], 2: [], 3: [] }
+        });
     }
 
     render() {
@@ -478,6 +629,8 @@ class Activities extends React.Component<LoginProps, IState> {
                 this.setState({ savingDone: false, dateChanged: false, updateAllInfo: false });
                 this.resetActivities();
                 this.getActivities();
+                this.resetMeals();
+                this.getMeals();
             }
 
             if (this.state.workoutUpdated === true) {
@@ -493,6 +646,8 @@ class Activities extends React.Component<LoginProps, IState> {
             }
             else if (!this.state.updateAllInfo) {
                 this.setActivities();
+                this.setMacroGuides();
+                this.setMeals();
                 if (this.state.clients.length > 0) {
                     const client = this.state.clients[0];
                     this.setState({ age: client.age });
@@ -520,6 +675,7 @@ class Activities extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
+                            <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.mealGuides} activities={this.state.activities} update={this.state.updated} />
                         </Grid.Column>
                         <Grid.Column width={16} verticalAlign='middle'>
                             <Grid celled columns={3} textAlign='center' key={100} centered>
@@ -527,17 +683,17 @@ class Activities extends React.Component<LoginProps, IState> {
                                     <Grid.Column key={100} textAlign='center'>
                                         <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} />
                                         <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
-                                        <div><a>Steps Count: {this.state.stepsStatus}</a></div>
+                                        <div><a className='text-table-row'>Steps Count: {this.state.stepsStatus}</a></div>
                                     </Grid.Column>
                                     <Grid.Column key={100 + 3} textAlign='center'>
                                         <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
                                         <div><Label color='black' horizontal>{this.getMaxHr()}</Label></div>
-                                        <div><a>{this.getHeartRateStatus()}</a></div>
+                                        <div><a className='text-table-row'>{this.getHeartRateStatus()}</a></div>
                                     </Grid.Column>
                                     <Grid.Column key={100 + 4} textAlign='center'>
                                         <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} />
                                         <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
-                                        <div><a>Sleep Hours: {this.state.sleepsStatus}</a></div>
+                                        <div><a className='text-table-row'>Sleep Hours: {this.state.sleepsStatus}</a></div>
                                     </Grid.Column>
                                 </Grid.Row>
                             </Grid>

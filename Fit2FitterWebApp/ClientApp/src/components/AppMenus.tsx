@@ -214,13 +214,13 @@ class AppMenus extends React.Component<IProps, IState > {
         if (name === 'Nutritions') {
             if (this.props.activeItem === 'New Meal' ||
                 this.props.activeItem === 'CreateRecipes' ||
-                this.props.activeItem === 'Macro Details' ||
                 this.props.activeItem === 'Nutrients Lookup') {
                 return 'orange';
             }
         }
         else if (name === 'User') {
-            if (this.props.activeItem === 'Update Password') {
+            if (this.props.activeItem === 'Macro Details' ||
+                this.props.activeItem === 'Update Password') {
                 return 'orange';
             }
         }
@@ -272,13 +272,6 @@ class AppMenus extends React.Component<IProps, IState > {
                     Daily Macros
                 </Menu.Item>
                 <Menu.Item
-                    name='Macro Details'
-                    disabled={this.isMenuDisable('Macro Details')}
-                    onClick={this.handleItemClick}>
-                    <Icon name='weight' color={this.getIconColor('Macro Details')} />
-                    Macro Details
-                </Menu.Item>
-                <Menu.Item
                     name='CreateRecipes'
                     disabled={this.isMenuDisable('CreateRecipes')}
                     onClick={this.handleItemClick}>
@@ -299,6 +292,13 @@ class AppMenus extends React.Component<IProps, IState > {
     getUserMenus = () => {
         if (this.state.activeItem === 'User') {
             return (<Menu fluid widths={2} icon='labeled'>
+                <Menu.Item
+                    name='Macro Details'
+                    disabled={this.isMenuDisable('Macro Details')}
+                    onClick={this.handleItemClick}>
+                    <Icon name='weight' color={this.getIconColor('Macro Details')} />
+                    Macro Details
+                </Menu.Item>
                 <Menu.Item
                     name='Update Password'
                     disabled={this.isMenuDisable('Update Password')}

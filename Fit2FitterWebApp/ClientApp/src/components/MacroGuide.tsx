@@ -8,9 +8,11 @@ import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import MacroGuideHeader from './MacroGuideHeader'
+import CaloriesRemainingHeader from './CaloriesRemainingHeader'
 import MacroGuideReviewModal from './MacroGuideReviewModal'
 import MacroGuideTable from './MacroGuideTable'
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
+import { IActivity, IActivityDto } from '../models/activities'
 import { IClientDto } from '../models/clients';
 import AppsMenu from './AppMenus';
 import { isNull } from 'util';
@@ -38,6 +40,9 @@ interface IState {
     openReview: boolean;
     savingDone: boolean;
     updateAllInfo: boolean;
+    activities: IActivity[];
+    activityDtos: IActivityDto[];
+    activitiesDownloaded: boolean;
 }
 
 // At runtime, Redux will merge together...
@@ -76,6 +81,13 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                 .then(response => response.json() as Promise<IMealDto[]>)
                 .then(data => this.setState({
                     mealDtos: data, mealDtosUpdated: true
+                })).catch(error => console.log(error));
+
+            //get all activities
+            fetch('api/tracker/' + this.props.logins[0].clientId + '/activity?date=' + date.toISOString())
+                .then(response => response.json() as Promise<IActivityDto[]>)
+                .then(data => this.setState({
+                    activityDtos: data, activitiesDownloaded: true
                 })).catch(error => console.log(error));
         }
     }
@@ -118,7 +130,10 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             dateChanged: false,
             openReview: false,
             savingDone: false,
-            updateAllInfo: false
+            updateAllInfo: false,
+            activities: [],
+            activityDtos: [],
+            activitiesDownloaded: false
         };
     }
 
@@ -377,12 +392,20 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             })).catch(error => console.log(error));
     }
 
+    getActivities = () => {
+        fetch('api/tracker/' + this.props.logins[0].clientId + '/activity?date=' + this.state.selectedDate.toISOString())
+            .then(response => response.json() as Promise<IActivityDto[]>)
+            .then(data => this.setState({
+                activityDtos: data, activitiesDownloaded: true
+            })).catch(error => console.log(error));
+    }
+
     handleDateChange = (event: any, field: any) => {
         var newDate = new Date(field['value']);
         var dayDiff = Math.abs((this.state.prevDate.getTime() - newDate.getTime()) / (1000 * 3600 * 24));
         if (dayDiff < 356) {
             this.setState({ prevDate: this.state.selectedDate });
-            this.setState({ selectedDate: new Date(field['value']), mealDtos: [], dateChanged: true, mealDtosUpdated: false })
+            this.setState({ selectedDate: new Date(field['value']), mealDtos: [], dateChanged: true, mealDtosUpdated: false, activitiesDownloaded: false })
         }
     }
 
@@ -404,7 +427,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             date.setFullYear(year - 1);
         }
 
-        this.setState({ savingStatus: 'Loading prev day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false });
+        this.setState({ savingStatus: 'Loading prev day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false, activitiesDownloaded: false });
     }
 
     handleNextDate = (e: any) => {
@@ -425,7 +448,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             date.setFullYear(year + 1);
         }
 
-        this.setState({ savingStatus: 'Loading next day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false });
+        this.setState({ savingStatus: 'Loading next day..', selectedDate: new Date(date), mealDtos: [], prevDate: prevDate, dateChanged: true, mealDtosUpdated: false, activitiesDownloaded: false });
     }
 
     handleOpen = (open: boolean) => {
@@ -468,8 +491,26 @@ class MacroGuide extends React.Component<LoginProps, IState> {
         }
     }
 
+    setActivities = () => {
+        if (this.state.activityDtos.length > 0) {
+
+            if ((this.state.activities.filter(x => x.id > 0)).length === this.state.activityDtos.length) {
+                return;
+            }
+
+            var activities: IActivity[] = [];
+            this.state.activityDtos.forEach(activity => {
+                if (activity.description !== 'sleeps' && activity.description !== 'steps') {
+                    activities.push({ id: activity.id, activityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, duration: activity.duration, check: false });
+                }
+            })
+
+            this.setState({ activities: activities });
+        }
+    }
+
     onCancel = () => {
-        this.setState({ savingStatus: 'Reverting..', mealDtosUpdated: false, updateAllInfo: false });
+        this.setState({ savingStatus: 'Reverting..', mealDtosUpdated: false, updateAllInfo: false, activitiesDownloaded: false });
         this.getMeals();
     }
 
@@ -527,7 +568,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
 
     isLoadingData = () => {
         if (!this.state.clientDtosUpdated || !this.state.macrosPlanUpdated ||
-            !this.state.mealDtosUpdated) {
+            !this.state.mealDtosUpdated || !this.state.activitiesDownloaded) {
             return true;
         }
 
@@ -535,6 +576,14 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     render() {
+        var divLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'black',
+            backgroundColor: 'white'
+        };
+
         var divDateStyle = {
             display: 'flex',
             justifyContent: 'center',
@@ -552,6 +601,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             if (this.state.savingDone || this.state.dateChanged) {
                 this.setState({ savingDone: false, dateChanged: false, updateAllInfo: false });
                 this.getMeals();
+                this.getActivities();
             }
 
             if (this.isLoadingData()) {
@@ -564,6 +614,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
             else if (!this.state.updateAllInfo) {
                 this.setMacroGuides();
                 this.setMeals();
+                this.setActivities();
                 this.setState({ updateAllInfo: true, updated: !this.state.updated, savingStatus: 'Info Updated' });
             }
 
@@ -584,8 +635,9 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                                 </Segment>
                                 <Segment textAlign='center' attached='bottom'>
-                                    <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
+                                    <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                                 </Segment>
+                                <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                             </Grid.Column>
                             <Grid.Column width={16}>
                                 <Menu attached='top' pointing compact>

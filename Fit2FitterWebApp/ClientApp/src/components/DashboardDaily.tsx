@@ -8,8 +8,9 @@ import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
-import { IActivityGuides, ITotalDailyActivity, IActivityDto, getStepIndicatorColour, getIndicatorColour, getMaxHrColour } from '../models/activities'
+import { IActivityGuides, ITotalDailyActivity, IActivityDto, getStepIndicatorColour, getIndicatorColour, getMaxHrColour, IActivity } from '../models/activities'
 import { getActivityLevel } from '../models/activities';
+import CaloriesRemainingHeader from './CaloriesRemainingHeader'
 import ChartistGraph from 'react-chartist';
 import AppsMenu from './AppMenus';
 import { isNullOrUndefined } from 'util';
@@ -31,9 +32,11 @@ interface IState {
     macrosPlanDtos: IMacrosPlanDto[];
     macrosPlanDtosUpdated: boolean;
     macrosPlanDtosDownloaded: boolean;
+    meals: IMeals;
     mealDtos: IMealDto[];
     mealDtosUpdated: boolean;
     mealDtosDownloaded: boolean;
+    activities: IActivity[];
     activity2Dtos: IActivityDto[];
     activity2DtosUpdated: boolean;
     activity2DtosDownloaded: boolean;
@@ -43,6 +46,7 @@ interface IState {
     graphActivityValues: IGraphActivity;
     queryStatus: string;
     toClientId: number;
+    updateAllInfo: boolean;
 }
 
 interface IClientDto {
@@ -171,9 +175,11 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             macrosPlanDtos: [],
             macrosPlanDtosUpdated: false,
             macrosPlanDtosDownloaded: false,
+            meals: { 0: [], 1: [], 2: [], 3: [] },
             mealDtos: [],
             mealDtosDownloaded: false,
             mealDtosUpdated: false,
+            activities: [],
             activity2Dtos: [],
             activity2DtosUpdated: false,
             activity2DtosDownloaded: false,
@@ -182,7 +188,8 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             activityLabel: [],
             graphActivityValues: { steps: [], calories: [], maxHr: [], weights: [], bodyFats: [], fat: [], carbs: [], protein: [] },
             queryStatus: 'no error',
-            toClientId: 3
+            toClientId: 3,
+            updateAllInfo: false
         };
     }
 
@@ -485,6 +492,72 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         }
     }
 
+    getMealTypeIndex = (type: number) => {
+        if (type == 1) {
+            return 1;
+        }
+        if (type == 2) {
+            return 2;
+        }
+        if (type == 3) {
+            return 3;
+        }
+
+        return 0;
+    }
+
+    getMealType = (type: string) => {
+        if (type == 'Lunch') {
+            return 1;
+        }
+        if (type == 'Dinner') {
+            return 2;
+        }
+        if (type == 'Snack') {
+            return 3;
+        }
+
+        return 0;
+    }
+
+    setMeals = () => {
+        if (this.state.mealDtos.length > 0) {
+
+            var totalMeals = 0;
+            for (let i = 0; i < 4; i++) {
+                totalMeals += this.state.meals[this.getMealTypeIndex(i)].length;
+            }
+
+            if (totalMeals === this.state.mealDtos.length) {
+                return;
+            }
+
+            this.state.mealDtos.forEach(meal => {
+                this.state.meals[this.getMealType(meal.mealType)].push({ id: meal.id, food: meal.food, carb: meal.carb, protein: meal.protein, fat: meal.fat, portion: meal.portion, fv: meal.fv, photo: meal.photo, check: false, remove: false });
+            })
+
+            this.setState({ meals: this.state.meals });
+        }
+    }
+
+    setActivities = () => {
+        if (this.state.activity2Dtos.length > 0) {
+
+            if ((this.state.activities.filter(x => x.id > 0)).length === this.state.activity2Dtos.length) {
+                return;
+            }
+
+            var activities: IActivity[] = [];
+            this.state.activity2Dtos.forEach(activity => {
+                if (activity.description !== 'sleeps' && activity.description !== 'steps') {
+                    activities.push({ id: activity.id, activityDesc: activity.description, calories: activity.calories, steps: activity.steps, maxHr: activity.maxHr, duration: activity.duration, check: false });
+                }
+            })
+
+            this.setState({ activities: activities });
+        }
+    }
+
     render() {
         var divLoaderStyle = {
             display: 'flex',
@@ -518,6 +591,12 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                 </div>);
             }
 
+            if (!this.state.updateAllInfo) {
+                this.setMeals();
+                this.setActivities();
+                this.setState({ updateAllInfo: true });
+            }
+            
             this.setActivityGraphValues();
 
             var options2 = {
@@ -555,11 +634,14 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                             <h2>Today's Progress...</h2>
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='center'>
-                            <Segment>
+                            <Segment attached='top'>
                                 <div style={divLoaderStyle}>
                                     {this.getStatistics()}
                                 </div>
                             </Segment>
+                        </Grid.Column>
+                        <Grid.Column width={16} textAlign='center'>
+                            <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.macroGuides} activities={this.state.activities} update={this.state.updated} />
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='center'>
                             {this.getGraph()}

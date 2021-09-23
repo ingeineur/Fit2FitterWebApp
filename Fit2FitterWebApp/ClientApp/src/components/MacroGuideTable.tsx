@@ -6,6 +6,7 @@ import MacroGuideModifyModal from './MacroGuideModifyModal'
 import { isNullOrUndefined } from 'util';
 import { IMealDto, IMealDetails } from '../models/meals';
 import { IClientDto } from '../models/clients';
+import './signin.css';
 
 interface IProps {
     meals: IMealDetails[] 
@@ -93,6 +94,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         </Label>);
     }
 
+    getTotalCal = (food: IMealDetails) => {
+        var carb = parseFloat(food.carb.toString());
+        var protein = parseFloat(food.protein.toString());
+        var fat = parseFloat(food.fat.toString());
+        return carb * 4 + protein * 4 + fat * 9;
+    }
+
     getRows = () => {
         var arr = this.state.meals.filter(x => x.remove !== true);
         return (
@@ -103,19 +111,19 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <Radio className={index.toString()} checked={item.check} key={index} onChange={this.handleCheckChange} />
                     </Grid.Column>
                     <Grid.Column className={'col_food'} key={this.props.mealType + index + 1} width={6}>
-                        <a key={this.props.mealType + index + 1}>{item.food}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_portion'} key={this.props.mealType + index + 5} width={2}>
-                        <a key={this.props.mealType + index + 5}>{parseFloat(item.portion.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 5}>{this.getTotalCal(item).toFixed(0)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={this.props.mealType + index + 2} width={2}>
-                        <a key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={this.props.mealType + index + 3} width={2}>
-                        <a key={this.props.mealType + index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={this.props.mealType + index + 4} width={2}>
-                        <a key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -232,7 +240,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <Grid centered>
                             <Grid.Row columns={4}>
                                 <Grid.Column width={3} floated='left'>
-                                    <Button size='tiny' color='red' fluid icon onClick={this.removeActivities}>
+                                    <Button size='tiny' inverted color='red' fluid icon onClick={this.removeActivities}>
                                         <Icon name='minus' />
                                     </Button>
                                 </Grid.Column>
@@ -241,7 +249,7 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         open={this.state.openAddMeal}
                                         onClose={() => this.handleOpen(false)}
                                         onOpen={() => this.handleOpen(true)}
-                                        trigger={<Button size='tiny' color='blue' fluid icon>
+                                        trigger={<Button size='tiny' inverted color='blue' fluid icon>
                                             <Icon name='plus' />
                                         </Button>}>
                                         <Modal.Header>Add Your Meal</Modal.Header>
@@ -294,19 +302,19 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                 <Grid.Column width={2}>
                                 </Grid.Column>
                                 <Grid.Column width={6} textAlign='left'>
-                                    <div><a>Foods or Drinks</a></div>
+                                    <div><a className="text-table-row">Foods</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
-                                    <div><a>Por</a></div>
+                                    <div><a className="text-app-menu">Calories</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
-                                    <div><a>Ca</a></div>
+                                    <div><a className="text-app-menu">Carb</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
-                                    <div><a>Pr</a></div>
+                                    <div><a className="text-app-menu">Protein</a></div>
                                 </Grid.Column>
                                 <Grid.Column width={2} textAlign='left'>
-                                    <div><a>Fa</a></div>
+                                    <div><a className="text-app-menu">Fat</a></div>
                                 </Grid.Column>
                             </Grid.Row>
                             {this.getRows()}

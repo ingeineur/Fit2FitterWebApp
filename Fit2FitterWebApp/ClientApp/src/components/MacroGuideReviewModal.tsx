@@ -7,9 +7,11 @@ import MessagesMealsChat from './MessagesMealsChat';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
 import ActivityHeader from './ActivityHeader'
-import { IMacroGuides, IMealDto, IMeals, IMacrosPlanDto } from '../models/meals'
+import CaloriesRemainingHeader from './CaloriesRemainingHeader'
+import { IMacroGuides, IMealDto, IMeals, IMealDetails, IMacrosPlanDto } from '../models/meals'
 import { IActivityGuides, IActivity, IActivityDto } from '../models/activities'
 import { isNull } from 'util';
+import './signin.css';
 
 interface IProps {
     update: boolean;
@@ -329,25 +331,32 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         }
     }
 
+    getTotalCal = (food: IMealDetails) => {
+        var carb = parseFloat(food.carb.toString());
+        var protein = parseFloat(food.protein.toString());
+        var fat = parseFloat(food.fat.toString());
+        return carb * 4 + protein * 4 + fat * 9;
+    }
+
     getTableRows = (mealType: number) => {
         var arr = this.state.meals[this.getMealTypeIndex(mealType)].filter(x => x.remove !== true);
         return (
             arr.map((item, index) =>
                 <Grid.Row className={'row'} key={index} columns={5} stretched>
                     <Grid.Column className={'col_food'} key={index + 1} width={8}>
-                        <a key={index + 1}>{item.food}</a>
+                        <a className="text-table-row" key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_portion'} key={index + 5} width={2}>
-                        <a key={index + 5}>{item.portion}</a>
+                        <a className="text-table-row" key={index + 5}>{this.getTotalCal(item).toFixed(0)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
-                        <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={index + 3} width={2}>
-                        <a key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={index + 4} width={2}>
-                        <a key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));
@@ -357,7 +366,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         var totalCarb = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
         var totalProtein = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
         var totalFat = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-        var totalPortion = (this.state.meals[this.getMealTypeIndex(mealType)].reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
+        var totalCalories = totalCarb * 4 + totalProtein * 4 + totalFat * 9;
         return (
             <div>
                 <Segment textAlign='center' attached='top'>
@@ -376,7 +385,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                                 <div><a>Foods or Drinks</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
-                                <div><a>Por(g)</a></div>
+                                <div><a>Cal</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
                                 <div><a>Ca(g)</a></div>
@@ -391,19 +400,19 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         {this.getTableRows(mealType)}
                         <Grid.Row color='yellow' className={'row'} key={mealType + 1} columns={5} stretched>
                             <Grid.Column className={'col_food'} key={mealType + 1} width={8}>
-                                <a key={mealType + 1}>Sub-Total Macros</a>
+                                <a className="text-table-row" key={mealType + 1}>Sub-Total Macros</a>
                             </Grid.Column>
                             <Grid.Column className={'col_portion'} key={mealType + 5} width={2}>
-                                <a key={mealType + 5}>{totalPortion.toFixed(2)}</a>
+                                <a className="text-table-row" key={mealType + 5}>{totalCalories.toFixed(0)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={mealType + 2} width={2}>
-                                <a key={mealType + 2}>{totalCarb.toFixed(2)}</a>
+                                <a className="text-table-row" key={mealType + 2}>{totalCarb.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_protein'} key={mealType + 3} width={2}>
-                                <a key={mealType + 3}>{totalProtein.toFixed(2)}</a>
+                                <a className="text-table-row" key={mealType + 3}>{totalProtein.toFixed(2)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_fat'} key={mealType + 4} width={2}>
-                                <a key={mealType + 4}>{totalFat.toFixed(2)}</a>
+                                <a className="text-table-row" key={mealType + 4}>{totalFat.toFixed(2)}</a>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
@@ -642,7 +651,7 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                             <a>Macros Balance Summary</a>
                         </div>
                         <Segment textAlign='center' attached='bottom'>
-                            <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} update={this.state.updated} />
+                            <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                         </Segment>
                         <div style={divLabelStyle}>
                             <a>Activities Summary</a>
@@ -650,6 +659,8 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         <Segment attached='bottom' textAlign='center'>
                             <ActivityHeader age={age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.activityGuides} update={this.state.updated} />
                         </Segment>
+
+                        <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>

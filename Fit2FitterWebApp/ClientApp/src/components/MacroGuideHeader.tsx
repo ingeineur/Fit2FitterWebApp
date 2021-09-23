@@ -2,10 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Grid } from 'semantic-ui-react'
 import { IMacroGuides, IMeals } from '../models/meals';
+import { IActivity } from '../models/activities'
 
 interface IProps {
     meals: IMeals;
     guides: IMacroGuides;
+    activities: IActivity[]
     update: boolean;
 }
 
@@ -62,6 +64,18 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         return 0;
     }
 
+    getDeficitColour = (remaining: number) => {
+        if (remaining < 1.0) {
+            return 'red';
+        }
+
+        if (remaining < 30.0) {
+            return 'orange';
+        }
+
+        return 'green';
+    }
+
     render() {
 
         var divLabelStyle1 = {
@@ -103,17 +117,20 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
             totalPortion += (meals.reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
         }
 
+        const totalBurntCalories = (this.props.activities.reduce(function (a, b) { return a + b.calories; }, 0));
+
         const totalRemCarb = this.props.guides.carb - totalCarb;
         const totalRemProtein = this.props.guides.protein - totalProtein;
         const totalRemFat = this.props.guides.fat - totalFat;
+        const totalCal = totalCarb * 4 + totalProtein * 4 + totalFat * 9;
+
+        const totalMacro = this.props.guides.carb*4 + this.props.guides.protein*4 + this.props.guides.fat*9;
+        const deficit = totalMacro - totalCal + totalBurntCalories;
+        const deficitPercentage = (deficit / totalMacro) * 100.00;
 
         return (
             <Grid centered>
                 <Grid.Row divided columns={4} textAlign='center'>
-                    <Grid.Column color={this.getColour2(totalPortion)} textAlign='center'>
-                        <div><a>Portion(g)</a></div>
-                        <div style={divLabelStyle5}><a>{totalPortion}</a></div>
-                    </Grid.Column>
                     <Grid.Column color={this.getColour(totalCarb / this.props.guides.carb)} textAlign='center'>
                         <div><a>Carb(g)</a></div>
                         <div style={divLabelStyle1}><a>{totalRemCarb.toFixed(2)}</a></div>
@@ -125,6 +142,10 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
                     <Grid.Column color={this.getColour(totalFat / this.props.guides.fat)} textAlign='center'>
                         <div><a>Fat(g)</a></div>
                         <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
+                    </Grid.Column>
+                    <Grid.Column color={this.getDeficitColour(deficitPercentage)} textAlign='center'>
+                        <div><a>Deficit(cal)</a></div>
+                        <div style={divLabelStyle3}><a>{deficitPercentage.toFixed(0)}%</a></div>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

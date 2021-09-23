@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { Button, Form, Input, Grid, Label, Icon, Card, Checkbox } from 'semantic-ui-react'
+import './signin.css';
 
 interface IProps {
     activities: IActivity[];
@@ -157,13 +158,13 @@ class ActivityWorkoutTable extends React.Component<IProps, IState> {
                     <Grid.Column width={2}>
                     </Grid.Column>
                     <Grid.Column width={6} textAlign='left'>
-                        <div><a>Workout Description</a></div>
+                        <div><a className='text-table-row'>Workout Description</a></div>
                     </Grid.Column>
                     <Grid.Column width={4} textAlign='left'>
-                        <div><a>Calories</a></div>
+                        <div><a className='text-table-row'>Calories(cal)</a></div>
                     </Grid.Column>
                     <Grid.Column width={4} textAlign='left'>
-                        <div><a>Max HR</a></div>
+                        <div><a className='text-table-row'>Max HR</a></div>
                     </Grid.Column>
                 </Grid.Row>
                 {this.getRows()}

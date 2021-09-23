@@ -125,7 +125,7 @@ class ActivityHeader extends React.Component<IProps, IState> {
                 <Grid.Row divided columns={4} textAlign='center'>
                     <Grid.Column color={this.getIndicatorColour(totalCaloriesPercent)} textAlign='center'>
                         <div><a>Calories</a></div>
-                        <div style={divLabelStyle3}><a>{totalCalories}/{this.props.guides.calories}</a></div>
+                        <div style={divLabelStyle3}><a>{totalCalories} cal</a></div>
                     </Grid.Column>
                     <Grid.Column color={this.getMaxHrColour(maxHr)} textAlign='center'>
                         <div><a>Max HR</a></div>

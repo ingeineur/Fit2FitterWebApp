@@ -731,6 +731,13 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         this.setState({ meal: this.state.meal, status: 'Pending add to the list', updated: true });
     }
 
+    getTotalCal = (food: IMealDetails) => {
+        var carb = parseFloat(food.carb.toString());
+        var protein = parseFloat(food.protein.toString());
+        var fat = parseFloat(food.fat.toString());
+        return carb * 4 + protein * 4 + fat * 9;
+    }
+
     getTableRows = () => {
         return (
             this.state.meals.map((item, index) =>
@@ -739,7 +746,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         <a key={index + 1}>{item.food}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_portion'} key={index + 5} width={2}>
-                        <a key={index + 5}>{parseFloat(item.portion.toString()).toFixed(2)}</a>
+                        <a key={index + 5}>{this.getTotalCal(item).toFixed(0)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={index + 2} width={2}>
                         <a key={index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
@@ -758,7 +765,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         var totalCarb = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
         var totalProtein = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
         var totalFat = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
-        var totalPortion = (this.state.meals.reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
+        var totalCalories = totalCarb * 4 + totalProtein * 4 + totalFat * 9;
         return (
             <div>
                 <Segment textAlign='center' attached='bottom'>
@@ -770,7 +777,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                 <div><a>Item's Name</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
-                                <div><a>Por(g)</a></div>
+                                <div><a>Cal</a></div>
                             </Grid.Column>
                             <Grid.Column width={2} textAlign='left'>
                                 <div><a>Ca(g)</a></div>
@@ -785,10 +792,10 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                         {this.getTableRows()}
                         <Grid.Row textAlign='left' color='black' className={'row'} key={1} columns={5} stretched>
                             <Grid.Column className={'col_food'} key={1} width={8} textAlign='left'>
-                                <a key={1}>Total Macros</a>
+                                <a key={1}>Total</a>
                             </Grid.Column>
                             <Grid.Column className={'col_portion'} key={5} width={2}>
-                                <a key={5}>{totalPortion.toFixed(2)}</a>
+                                <a key={5}>{totalCalories.toFixed(0)}</a>
                             </Grid.Column>
                             <Grid.Column className={'col_carb'} key={2} width={2}>
                                 <a key={2}>{totalCarb.toFixed(2)}</a>
@@ -910,11 +917,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                 active={activeItem === 'prev'}
                                 onClick={this.handleItemClick}
                             />
-                            <Menu.Item
-                                name='manual'
-                                active={activeItem === 'manual'}
-                                onClick={this.handleItemClick}
-                            />
                         </Menu>
                         {this.getSearchOption()}
                     </Grid.Column>
@@ -968,6 +970,12 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                                     </Grid.Column>
                                     <Grid.Column width={10} textAlign='left'>
                                         <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
+                                    </Grid.Column>
+                                    <Grid.Column as='a' width={6} textAlign='left'>
+                                        <h5>Calories (cal)</h5>
+                                    </Grid.Column>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <a>{(this.state.meal.carb * 4 + this.state.meal.protein * 4 + this.state.meal.fat * 9).toFixed(0)}</a>
                                     </Grid.Column>
                                     <Grid.Column as='a' width={6} textAlign='left'>
                                         <h5>Image</h5>
