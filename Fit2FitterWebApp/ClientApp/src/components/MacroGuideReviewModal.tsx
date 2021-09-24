@@ -167,6 +167,55 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
         }
     }
 
+    getActivityRows = () => {
+        var arr = this.state.activities.filter(x => x.activityDesc != 'steps' && x.activityDesc != 'sleeps');
+        return (
+            arr.map((item, index) =>
+                <Grid.Row textAlign='center' className={'row'} key={index} columns={3} stretched>
+                    <Grid.Column className={'col_activity'} key={index + 1} width={8}>
+                        <a className="text-table-row" key={index + 1}>{item.activityDesc}</a>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' className={'col_cal_burnt'} key={index + 5} width={4}>
+                        <a className="text-table-row" key={index + 5}>{item.calories}</a>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' className={'col_max_hr'} key={index + 2} width={4}>
+                        <a className="text-table-row" key={index + 2}>{item.maxHr}</a>
+                    </Grid.Column>
+                </Grid.Row>
+            ));
+    }
+
+    getActivityDetails = () => {
+        var arr = this.state.activities.filter(x => x.activityDesc != 'steps' && x.activityDesc != 'sleeps');
+        if (arr.length == 0) {
+            return (
+                <Grid centered>
+                    <Grid.Row color='black' textAlign='center' className={'row'} stretched>
+                        <Grid.Column textAlign='center' className={'col_activity'}>
+                            No Recorded Activities
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+            );
+        }
+        return (
+            <Grid centered>
+                <Grid.Row color='black' className={'row'} columns={3} stretched>
+                    <Grid.Column className={'col_activity'} width={8}>
+                        <a className="text-table-row-light">Activity</a>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' className={'col_cal_burnt'} width={4}>
+                        <a className="text-table-row-light">Calories</a>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' className={'col_max_hr'} width={4}>
+                        <a className="text-table-row-light">Max HR</a>
+                    </Grid.Column>
+                </Grid.Row>
+                {this.getActivityRows()}
+            </Grid>
+            );
+    }
+
     getActivityLevel = (activityLevel: string) => {
         if (activityLevel == 'Sedentary') {
             return 1.2;
@@ -658,6 +707,9 @@ class MacroGuideReviewModal extends React.Component<IProps, IState> {
                         </div>
                         <Segment attached='bottom' textAlign='center'>
                             <ActivityHeader age={age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.activityGuides} update={this.state.updated} />
+                        </Segment>
+                        <Segment textAlign='center'>
+                            {this.getActivityDetails()}
                         </Segment>
 
                         <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />

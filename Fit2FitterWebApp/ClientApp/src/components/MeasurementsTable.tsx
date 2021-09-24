@@ -231,6 +231,10 @@ class MeasurementsTable extends React.Component<IProps, IState> {
             <Grid centered>
                 <Grid.Row columns={2} stretched>
                     <Grid.Column width={10}>
+                        <Grid.Column as='a' width={4} textAlign='left'/>
+                        <Grid.Column as='a' width={12} textAlign='left'>
+                            <h4>All measurements are in inches (in)</h4>
+                        </Grid.Column>
                         <Grid.Column as='a' width={4} textAlign='left'>
                             <h5>Neck</h5>
                         </Grid.Column>

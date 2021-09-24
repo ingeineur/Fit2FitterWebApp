@@ -69,8 +69,8 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
             return 'red';
         }
 
-        if (remaining < 30.0) {
-            return 'orange';
+        if (remaining < 500.0) {
+            return 'yellow';
         }
 
         return 'green';
@@ -143,9 +143,9 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
                         <div><a>Fat(g)</a></div>
                         <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
                     </Grid.Column>
-                    <Grid.Column color={this.getDeficitColour(deficitPercentage)} textAlign='center'>
+                    <Grid.Column color={this.getDeficitColour(deficit)} textAlign='center'>
                         <div><a>Deficit(cal)</a></div>
-                        <div style={divLabelStyle3}><a>{deficitPercentage.toFixed(0)}%</a></div>
+                        <div style={divLabelStyle3}><a>{deficit.toFixed(0)}</a></div>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

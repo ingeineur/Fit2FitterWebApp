@@ -476,13 +476,6 @@ class MacroGuideModal extends React.Component<IProps, IState> {
                     var totalWeight = this.state.anzQuantity * x.gramWeight;
                     this.state.meal.portion = parseFloat(totalWeight.toFixed(2)); 
                     this.state.meal.food = this.state.selectedValueAnz + ' (' + totalWeight.toFixed(2) + 'g)';
-
-                    if (x.modifier.includes('fruit')) {
-                        this.state.meal.fv = this.state.anzQuantity;
-                    }
-                    else {
-                        this.state.meal.fv = 0;
-                    }
                 }
             });
         }
