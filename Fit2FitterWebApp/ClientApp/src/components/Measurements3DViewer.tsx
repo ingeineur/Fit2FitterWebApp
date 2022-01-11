@@ -14,10 +14,12 @@ var divStatusLabelStyle = {
 
 interface IProps {
     measurements: IMeasurements;
+    currentMeasurements: IMeasurements;
     update: boolean;
     type: string;
     updateMeasurements: Function;
     height: number;
+    date: string;
 }
 
 interface IMeasurements {
@@ -46,6 +48,7 @@ interface IState {
     dirty: boolean;
     startTime: Date;
     showProgress: boolean;
+    date: string;
 }
 
 class Measurements3DViewer extends React.Component<IProps, IState> {
@@ -55,7 +58,7 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
         this.state = {
             username: '', password: '', updated: false, neck: 0.0, upperArm:0.0, waist: 0.0,
             hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0, bodyfat: 0.0,
-            selected: 0, dirty: false, startTime: new Date(), showProgress: false
+            selected: 0, dirty: false, startTime: new Date(), showProgress: false, date: ''
         };
     }
 
@@ -66,7 +69,9 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
             hips: this.props.measurements.hips,
             thigh: this.props.measurements.thigh,
             chest: this.props.measurements.chest,
-            weight: this.props.measurements.weight
+            weight: this.props.measurements.weight,
+            upperArm: this.props.measurements.upperArm,
+            date: this.props.date
         });
     }
 
@@ -98,6 +103,7 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
                 thigh: this.props.measurements.thigh,
                 chest: this.props.measurements.chest,
                 weight: this.props.measurements.weight,
+                date: this.props.date,
                 dirty: this.props.update
             });
         }
@@ -107,7 +113,10 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
             this.props.updateMeasurements({ neck: this.state.neck, waist: this.state.waist, upperArm: this.state.upperArm, hips: this.state.hips, thigh: this.state.thigh, chest: this.state.chest, weight: this.state.weight });
         }
 
-        var values = 'Neck=' + this.state.neck * 2.54 + '&Chest=' + this.state.chest * 2.54 + '&Waist=' + this.state.waist * 2.54 + '&Hips=' + this.state.hips * 2.54 + '&Height=' + this.props.height + '&Thigh=' + this.state.thigh * 2.54;
+        var currentValues = 'Neck=' + this.props.currentMeasurements.neck * 2.54 + '&Chest=' + this.props.currentMeasurements.chest * 2.54 + '&Waist=' + this.props.currentMeasurements.waist * 2.54 + '&Hips=' + this.props.currentMeasurements.hips * 2.54 + '&Height=' + this.props.height + '&Thigh=' + this.props.currentMeasurements.thigh * 2.54 + '&UpperArm=' + this.props.currentMeasurements.upperArm * 2.54;
+        var currentUrl = 'bodyapps-viz-master/female.html?' + currentValues;
+
+        var values = 'Neck=' + this.state.neck * 2.54 + '&Chest=' + this.state.chest * 2.54 + '&Waist=' + this.state.waist * 2.54 + '&Hips=' + this.state.hips * 2.54 + '&Height=' + this.props.height + '&Thigh=' + this.state.thigh * 2.54 + '&UpperArm=' + this.state.upperArm * 2.54;
         var url = 'bodyapps-viz-master/female.html?' + values;
 
         var currTime = new Date();
@@ -137,13 +146,23 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
             showProgress = false;
         }
 
-        console.log('--> ' + showProgress);
+        var date = new Date();
+
         return (
             <Grid centered>
                 {this.showProgress(showProgress)}
-                <Grid.Row stretched>
-                    <Grid.Column>
+                <Grid.Row columns={2} stretched>
+                    <Grid.Column width={8}>
+                        <a>{this.state.date}</a>
+                    </Grid.Column>
+                    <Grid.Column width={8}>
+                        <a>{date.toDateString()} - Today</a>
+                    </Grid.Column>
+                    <Grid.Column width={8}>
                         <iframe src={url} className="Viewer" />
+                    </Grid.Column>
+                    <Grid.Column width={8}>
+                        <iframe src={currentUrl} className="Viewer" />
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

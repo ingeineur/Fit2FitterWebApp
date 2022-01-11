@@ -445,6 +445,7 @@ class Home extends React.Component<LoginProps, IState > {
                                                 </Modal.Actions>
                                             </Modal>
                                         </div>
+                                        <a href="mailto:techsupport@idafit2fitter.com?subject=Support Issues">Email Technical Support</a>
                                     </Form>
                                 </Grid.Column>
                                 <Grid.Column textAlign='center' width={2}/>

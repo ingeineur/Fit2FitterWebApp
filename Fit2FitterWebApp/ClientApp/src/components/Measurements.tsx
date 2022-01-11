@@ -25,7 +25,9 @@ interface IState {
     prevDate: Date;
     macroGuides: IMacroGuides;
     measurements: IMeasurements;
+    currentMeasurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
+    currentMeasurementDtos: IMeasurementDto[];
     measurementDtosUpdated: boolean;
     graphs: IGraphMeasurements;
     graphsData: [IMeta[]];
@@ -133,7 +135,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             fetch('api/client/' + this.props.logins[0].clientId + '/measurements/closest?date=' + (date).toISOString())
                 .then(response => response.json() as Promise<IMeasurementDto[]>)
                 .then(data => this.setState({
-                    measurementDtos: data, measurementDtosUpdated: true
+                    measurementDtos: data, currentMeasurementDtos: data, measurementDtosUpdated: true
                 })).catch(error => console.log(error));
 
             fetch('api/client/' + this.props.logins[0].clientId + '/macrosplan')
@@ -161,7 +163,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             return (<MeasurementsTable type='Body' measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
         }
         else if (this.state.activeItem == '3DScanner') {
-            return (<Measurements3DViewer type='3DScanner' height={this.state.macrosPlans[0].height} measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
+            return (<Measurements3DViewer date={this.state.selectedDate.toDateString()} type='3DScanner' height={this.state.macrosPlans[0].height} measurements={this.state.measurements} currentMeasurements={this.state.currentMeasurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
         }
     }
 
@@ -179,8 +181,10 @@ class Measurements extends React.Component<LoginProps, IState> {
             selectedDate: new Date(),
             prevDate: new Date(),
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
-            measurements: { neck: 0.0, upperArm:0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
+            measurements: { neck: 0.0, upperArm: 0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
+            currentMeasurements: { neck: 0.0, upperArm: 0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
+            currentMeasurementDtos: [],
             measurementDtosUpdated: false,
             clients: [],
             clientsUpdated: false,
@@ -228,6 +232,18 @@ class Measurements extends React.Component<LoginProps, IState> {
         if (this.state.macrosPlans.length > 0) {
             const plan = this.state.macrosPlans[0];
             this.setState({ targetWeight: plan.targetWeight });
+        }
+
+        if (this.state.currentMeasurementDtos.length > 0) {
+            const measurement = this.state.currentMeasurementDtos[0];
+            this.state.currentMeasurements.neck = measurement.neck;
+            this.state.currentMeasurements.upperArm = measurement.upperArm;
+            this.state.currentMeasurements.chest = measurement.chest;
+            this.state.currentMeasurements.waist = measurement.waist;
+            this.state.currentMeasurements.hips = measurement.hips;
+            this.state.currentMeasurements.thigh = measurement.thigh;
+            this.state.currentMeasurements.weight = measurement.weight;
+            this.setState({ currentMeasurements: this.state.currentMeasurements });
         }
 
         if (this.state.measurementDtos.length > 0) {

@@ -52,7 +52,7 @@
 			// CHARACTER
 			character = new THREE.prototype();
 			character.onLoadComplete = function () {
-				console.log("Load Complete -->");
+				console.log("Load Complete 123 -->");
 				console.log(character.numSkins + " skins and " + character.numMorphs + " morphtargets loaded.");
 				//gui = new dat.GUI();
 				//setupMorphsGUI();
@@ -102,6 +102,9 @@
 				else if (morphName == "Hip Girth") {
 					morphConfig[morphName] = parseFloat(measuresFromApp["Hips"]);
 				}
+                else if (morphName == "Upper Arm Girth") {
+                    morphConfig[morphName] = parseFloat(measuresFromApp["UpperArm"]);
+                }
 				else {
 					morphConfig[morphName] = character.morphslimit[i];
 				}
@@ -137,6 +140,9 @@
 				}
                 else if (morphName == "Thigh Girth") {
                     morphConfig[morphName] = parseFloat(measuresFromApp["Thigh"]);
+				}
+                else if (morphName == "Upper Arm Girth") {
+                    morphConfig[morphName] = parseFloat(measuresFromApp["UpperArm"]);
                 }
 				else {
 					morphConfig[morphName] = character.morphslimit[i];

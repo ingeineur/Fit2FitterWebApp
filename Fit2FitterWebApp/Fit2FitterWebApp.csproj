@@ -18,19 +18,17 @@
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
-    <Compile Remove="ClientApp\build\**" />
     <Content Remove="$(SpaRoot)**" />
-    <Content Remove="ClientApp\build\**" />
-    <EmbeddedResource Remove="ClientApp\build\**" />
     <None Remove="$(SpaRoot)**" />
-    <None Remove="ClientApp\build\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\Activities.tsx~RF571aa85c.TMP" />
     <None Remove="ClientApp\src\components\DashboardDaily.tsx~RF27d0de0.TMP" />
+    <None Remove="ClientApp\src\components\DashboardDaily.tsx~RF3b6d7b01.TMP" />
     <None Remove="ClientApp\src\components\Home.tsx~RF1b859b79.TMP" />
+    <None Remove="ClientApp\src\components\Home.tsx~RF70ab7e9.TMP" />
     <None Remove="ClientApp\src\components\MacroGuideRecipes.tsx~RFac51b65.TMP" />
     <None Remove="ClientApp\src\components\NavMenu.tsx~RF6a83d8d9.TMP" />
     <None Remove="ClientApp\src\models\activities.ts" />
