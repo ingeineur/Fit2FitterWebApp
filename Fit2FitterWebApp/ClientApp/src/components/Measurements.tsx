@@ -13,6 +13,8 @@ import MeasurementsHeader from './MeasurementsHeader';
 import MeasurementsReviewModal from './MeasurementsReviewModal'
 import AppsMenu from './AppMenus';
 import { IClientDto } from '../models/clients';
+import { IMeasurements, IMeasurementDto, IGraphMeasurements } from '../models/measurement';
+import { IMacroGuides, IMacrosPlan } from '../models/macros';
 
 interface IProps {
 }
@@ -46,67 +48,9 @@ interface IState {
     updateAllInfo: boolean;
 }
 
-interface IMacroGuides {
-    carb: number;
-    protein: number;
-    fat: number;
-    veg: number;
-    bodyFat: number;
-}
-
 interface IMeta {
     meta: string,
     value: number
-}
-
-interface IMeasurements {
-    neck: number;
-    upperArm: number;
-    waist: number;
-    hips: number;
-    thigh: number;
-    chest: number;
-    weight: number;
-}
-
-interface IGraphMeasurements {
-    neck: number[];
-    upperArm: number[];
-    waist: number[];
-    hips: number[];
-    thigh: number[];
-    chest: number[];
-    weight: number[];
-}
-
-interface IMeasurementDto {
-    id: number;
-    neck: number;
-    upperArm: number;
-    waist: number;
-    hips: number;
-    thigh: number;
-    chest: number;
-    weight: number;
-    bodyFat: number;
-    updated: string;
-    created: string;
-    clientId: number;
-}
-
-interface IMacrosPlan {
-    id: number,
-    height: number,
-    weight: number,
-    targetWeight: number,
-    macroType: string;
-    activityLevel: string;
-    carbPercent: number,
-    proteinPercent: number,
-    fatPercent: number,
-    updated: string;
-    created: string;
-    clientId: number;
 }
 
 // At runtime, Redux will merge together...
@@ -163,7 +107,7 @@ class Measurements extends React.Component<LoginProps, IState> {
             return (<MeasurementsTable type='Body' measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
         }
         else if (this.state.activeItem == '3DScanner') {
-            return (<Measurements3DViewer date={this.state.selectedDate.toDateString()} type='3DScanner' height={this.state.macrosPlans[0].height} measurements={this.state.measurements} currentMeasurements={this.state.currentMeasurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
+            return (<Measurements3DViewer date={this.state.selectedDate.toDateString()} type='3DScanner' height={this.getHeight()} measurements={this.state.measurements} currentMeasurements={this.state.currentMeasurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />);
         }
     }
 
@@ -202,7 +146,8 @@ class Measurements extends React.Component<LoginProps, IState> {
                 hips: [],
                 thigh: [],
                 chest: [],
-                weight: []
+                weight: [],
+                bodyFat: []
             },
             graphsData: [[]],
             weightLabel: [],
@@ -407,6 +352,14 @@ class Measurements extends React.Component<LoginProps, IState> {
         return 'save';
     }
 
+    getHeight = () => {
+        if (this.state.macrosPlans.length > 0) {
+            return this.state.macrosPlans[0].height;
+        }
+
+        return 0;
+    }
+
     render() {
         var divLabelStyle = {
             display: 'flex',
@@ -462,7 +415,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                                 <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                             </Segment>
                             <Segment textAlign='center' attached='bottom'>
-                                <MeasurementsHeader targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
+                                <MeasurementsHeader height={this.getHeight()} targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
                         <Grid.Column width={16}>
@@ -495,7 +448,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                                     <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                     <Modal.Content scrolling>
                                         <Modal.Description>
-                                            <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
+                                            <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} height={this.getHeight()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
                                         </Modal.Description>
                                     </Modal.Content>
                                     <Modal.Actions>

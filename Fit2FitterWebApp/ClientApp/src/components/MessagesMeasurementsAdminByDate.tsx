@@ -329,7 +329,7 @@ class MessagesMeasurementsAdminByDate extends React.Component<LoginProps, IState
                                                 <Modal.Header key={index}>Measurements Asessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} age={client.age} senderId={2} clientId={item.clientId} update={this.state.updated} />
+                                                        <MeasurementsReviewModal height={0} date={this.state.selectedDate.toISOString()} age={client.age} senderId={2} clientId={item.clientId} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>

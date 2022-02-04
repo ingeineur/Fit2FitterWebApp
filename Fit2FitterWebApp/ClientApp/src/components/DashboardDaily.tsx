@@ -5,10 +5,8 @@ import { RouteComponentProps } from 'react-router';
 import { Menu, Segment, Grid, Dimmer, Label, Loader, Image, List, Flag, Dropdown, Divider, Statistic, Icon } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
-import SemanticDatepicker from 'react-semantic-ui-datepickers';
-import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import { IMacroGuides, IMacrosPlanDto, IMealDto, IMealDetails, IMeals } from '../models/meals';
-import { IActivityGuides, ITotalDailyActivity, IActivityDto, getStepIndicatorColour, getIndicatorColour, getMaxHrColour, IActivity } from '../models/activities'
+import { IMacroGuides, IMacrosPlanDto, IMealDto, IMeals } from '../models/meals';
+import { IActivityGuides, IActivityDto, getStepIndicatorColour, getIndicatorColour, getMaxHrColour, IActivity } from '../models/activities'
 import { getActivityLevel } from '../models/activities';
 import CaloriesRemainingHeader from './CaloriesRemainingHeader'
 import ChartistGraph from 'react-chartist';
@@ -605,23 +603,6 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             }
             
             this.setActivityGraphValues();
-
-            var options2 = {
-                reverseData: true,
-                donut: true,
-                donutWidth: 30,
-                startAngle: 270,
-                showLabel: true,
-                total: 200
-            };
-
-            var divLabelStyle = {
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: '#fffafa',
-                backgroundColor: 'black'
-            };
 
         return (
             <div>

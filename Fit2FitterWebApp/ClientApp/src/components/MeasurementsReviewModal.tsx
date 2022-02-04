@@ -4,12 +4,14 @@ import { Button, Icon, Dimmer, Grid, Loader, Header, Segment } from 'semantic-ui
 import ChartistGraph from 'react-chartist';
 import MeasurementsChat from './MeasurementsChat';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
+import { IMeasurements, IMeasurementDto, IGraphMeasurements, calcBodyFatPercent, getBodyFatIndicator, getColour, getBodyfatForeColour } from '../models/measurement';
 
 interface IProps {
     update: boolean;
     senderId: number;
     clientId: number;
     age: number;
+    height: number;
     date: string;
 }
 
@@ -34,42 +36,6 @@ interface IState {
 interface IMeta {
     meta: string,
     value: number
-}
-
-interface IMeasurements {
-    neck: number;
-    upperArm: number;
-    waist: number;
-    hips: number;
-    thigh: number;
-    chest: number;
-    weight: number;
-}
-
-interface IGraphMeasurements {
-    neck: number[];
-    upperArm: number[];
-    waist: number[];
-    hips: number[];
-    thigh: number[];
-    chest: number[];
-    weight: number[];
-    bodyFat: number[];
-}
-
-interface IMeasurementDto {
-    id: number;
-    neck: number;
-    upperArm: number;
-    waist: number;
-    hips: number;
-    thigh: number;
-    chest: number;
-    weight: number;
-    bodyFat: number;
-    updated: string;
-    created: string;
-    clientId: number;
 }
 
 class MeasurementsReviewModal extends React.Component<IProps, IState> {
@@ -123,153 +89,6 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
             })).catch(error => console.log(error));
 
         this.setGraphValues();
-    }
-
-    getBodyFatIndicator = (age: number, bodyFat: number) => {
-        if (age <= 20) {
-            if (11.3 <= bodyFat && bodyFat <= 15.7) {
-                return 'LEAN';
-            }
-            if (15.7 < bodyFat && bodyFat <= 21.5) {
-                return 'IDEAL';
-            }
-            if (21.5 < bodyFat && bodyFat <= 29.0) {
-                return 'AVERAGE';
-            }
-            if (29.0 < bodyFat && bodyFat <= 34.6) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (21 <= age && age <= 25) {
-            if (11.9 <= bodyFat && bodyFat <= 18.4) {
-                return 'LEAN';
-            }
-            if (18.4 < bodyFat && bodyFat <= 23.8) {
-                return 'IDEAL';
-            }
-            if (23.8 < bodyFat && bodyFat <= 29.6) {
-                return 'AVERAGE';
-            }
-            if (29.6 < bodyFat && bodyFat <= 35.2) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (26 <= age && age <= 30) {
-            if (12.5 <= bodyFat && bodyFat <= 19.0) {
-                return 'LEAN';
-            }
-            if (19.0 < bodyFat && bodyFat <= 24.5) {
-                return 'IDEAL';
-            }
-            if (24.5 < bodyFat && bodyFat <= 31.5) {
-                return 'AVERAGE';
-            }
-            if (31.5 < bodyFat && bodyFat <= 35.8) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (31 <= age && age <= 35) {
-            if (13.2 <= bodyFat && bodyFat <= 19.6) {
-                return 'LEAN';
-            }
-            if (19.6 < bodyFat && bodyFat <= 25.1) {
-                return 'IDEAL';
-            }
-            if (25.1 < bodyFat && bodyFat <= 32.1) {
-                return 'AVERAGE';
-            }
-            if (32.1 < bodyFat && bodyFat <= 36.4) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (36 <= age && age <= 40) {
-            if (13.8 <= bodyFat && bodyFat <= 22.2) {
-                return 'LEAN';
-            }
-            if (22.2 < bodyFat && bodyFat <= 27.3) {
-                return 'IDEAL';
-            }
-            if (27.3 < bodyFat && bodyFat <= 32.7) {
-                return 'AVERAGE';
-            }
-            if (32.7 < bodyFat && bodyFat <= 37.0) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (41 <= age && age <= 45) {
-            if (14.4 <= bodyFat && bodyFat <= 22.8) {
-                return 'LEAN';
-            }
-            if (22.8 < bodyFat && bodyFat <= 27.9) {
-                return 'IDEAL';
-            }
-            if (27.9 < bodyFat && bodyFat <= 34.4) {
-                return 'AVERAGE';
-            }
-            if (34.4 < bodyFat && bodyFat <= 37.7) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (46 <= age && age <= 50) {
-            if (15.0 <= bodyFat && bodyFat <= 23.4) {
-                return 'LEAN';
-            }
-            if (23.4 < bodyFat && bodyFat <= 28.6) {
-                return 'IDEAL';
-            }
-            if (28.6 < bodyFat && bodyFat <= 35.0) {
-                return 'AVERAGE';
-            }
-            if (35.0 < bodyFat && bodyFat <= 38.3) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (51 <= age && age <= 55) {
-            if (15.6 <= bodyFat && bodyFat <= 24.0) {
-                return 'LEAN';
-            }
-            if (24.0 < bodyFat && bodyFat <= 29.2) {
-                return 'IDEAL';
-            }
-            if (29.2 < bodyFat && bodyFat <= 35.6) {
-                return 'AVERAGE';
-            }
-            if (35.6 < bodyFat && bodyFat <= 38.9) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-        if (56 <= age) {
-            if (16.3 <= bodyFat && bodyFat <= 24.6) {
-                return 'LEAN';
-            }
-            if (24.6 < bodyFat && bodyFat <= 29.8) {
-                return 'IDEAL';
-            }
-            if (29.8 < bodyFat && bodyFat <= 37.2) {
-                return 'AVERAGE';
-            }
-            if (37.2 < bodyFat && bodyFat <= 39.5) {
-                return 'ABOVE AVERAGE';
-            }
-        }
-
-        return 'AVERAGE';
-    }
-
-    getColour = (level: string) => {
-        if (level === 'LEAN') {
-            return 'blue';
-        }
-
-        if (level === 'IDEAL') {
-            return 'green';
-        }
-
-        if (level === 'AVERAGE') {
-            return 'yellow';
-        }
-
-        return 'red';
     }
 
     getGraphData = (measureType: string) => {
@@ -414,13 +233,23 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         return false;
     }
 
+    getWeightProgress = (prevWeight: number, currWeight: number) => {
+        var diff = currWeight - prevWeight;
+
+        if (diff > 0.0) {
+            return (<a>Weight Gain: {(diff).toFixed(2)}kg</a>)
+        }
+
+        return (<a>Weight Loss: {(diff).toFixed(2)}kg</a>)
+    }
+
     render() {
-        const bodyFatPercent = (((parseFloat(this.state.measurements.waist.toString()) + parseFloat(this.state.measurements.hips.toString())) - parseFloat(this.state.measurements.neck.toString())) / 2);
-        const level = this.getBodyFatIndicator(this.props.age, bodyFatPercent);
+        const bodyFatPercent = calcBodyFatPercent(this.props.height, parseFloat(this.state.measurements.neck.toString()), parseFloat(this.state.measurements.waist.toString()), parseFloat(this.state.measurements.hips.toString()));
+        const level = getBodyFatIndicator(this.props.age, bodyFatPercent);
 
         var divLabelStyle1 = {
-            color: 'black',
-            background: this.getColour(level)
+            color: getBodyfatForeColour(level),
+            background: getColour(level)
         };
 
         var divLoaderStyle = {
@@ -477,35 +306,35 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <a>Weight Progress: : {(this.state.measurements.weight - this.state.graphs.weight[0]).toFixed(2)}kg from start weight</a>
+                        {this.getWeightProgress(this.state.graphs.weight[0], this.state.measurements.weight)}
                         <div>
                             <ChartistGraph data={data2} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Body Fat: </a><a style={divLabelStyle1}>{level}</a>
+                        <a>Body Fat Type: </a><a style={divLabelStyle1}>{level}</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Neck</a>
+                        <a>Neck (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('Neck')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Waist</a>
+                        <a>Waist (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('Waist')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Hips</a>
+                        <a>Hips (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('Hips')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Chest</a>
+                        <a>Chest (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('Chest')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>UpperArm</a>
+                        <a>UpperArm (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('UpperArm')} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Thigh</a>
+                        <a>Thigh (in)</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('Thigh')} type={type} options={lineChartOptions} />
                         </div>

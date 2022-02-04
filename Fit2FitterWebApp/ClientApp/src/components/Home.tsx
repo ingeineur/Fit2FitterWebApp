@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect, Link } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Label, Image, Loader, Dimmer, Divider, Segment } from 'semantic-ui-react'
+import { Button, Form, Input, Grid, Icon, Menu, Dropdown, Modal, Image, Loader, Dimmer, Segment } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import { IVersion, UpdateVersionText, DivRequireUpdateLabelStyle, CurrentVersion } from '../models/version';
 import { IClientDto, LoginDto } from '../models/clients';
-import { IMessageDto } from '../models/messages';
 import { requireVersionUpdate } from '../services/utilities'
 import AdminResetPwd from './AdminResetPwd';
 import './signin.css';
@@ -22,15 +21,6 @@ interface IState {
     error: string;
     login: string;
     checkMail: boolean;
-    unReadMessage: number;
-    unReadMessageMeals: number;
-    unReadMessageMeasurements: number;
-    messageDtos: IMessageDto[];
-    messagesUpdated: boolean;
-    messageMealsDtos: IMessageDto[];
-    mealMessagesUpdated: boolean;
-    messageMeasurementsDtos: IMessageDto[];
-    measurementMessagesUpdated: boolean;
     clientDtos: IClientDto[];
     clientList: IOption[],
     clientUpdated: boolean;
@@ -107,26 +97,6 @@ class Home extends React.Component<LoginProps, IState > {
                 .then(data => this.setState({
                     clientDtos: data, clientUpdated: true
                 })).catch(error => console.log(error));
-
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments?readStatus=' + false)
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    messageDtos: data, messagesUpdated: true, unReadMessage: data.length
-                })).catch(error => console.log(error));
-
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/meals?readStatus=' + false)
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    messageMealsDtos: data, mealMessagesUpdated: true, unReadMessageMeals: data.length
-                })).catch(error => console.log(error));
-
-            var date = new Date();
-            date.setHours(0, 0, 0, 0);
-            fetch('api/tracker/' + this.props.logins[0].clientId + '/status/comments/measurements?dateString=' + date.toISOString() + '&readStatus=' + false)
-                .then(response => response.json() as Promise<IMessageDto[]>)
-                .then(data => this.setState({
-                    messageMeasurementsDtos: data, measurementMessagesUpdated: true, unReadMessageMeasurements: data.length
-                })).catch(error => console.log(error));
         }
     }
 
@@ -164,10 +134,9 @@ class Home extends React.Component<LoginProps, IState > {
         super(props);
         this.state = {
             username: '', password: '', activeItem: '', error: '', login: '',
-            messageDtos: [], messagesUpdated: false, checkMail: false, unReadMessage: 0, unReadMessageMeals: 0,
+            checkMail: false,
             clientDtos: [], clientList: [], clientUpdated: false, toClientId: 2, checkClients: false,
-            loginDtos: [], messageMealsDtos: [], mealMessagesUpdated: false, messageMeasurementsDtos: [],
-            measurementMessagesUpdated: false, unReadMessageMeasurements: 0,
+            loginDtos: [],
             version: { major: 0, minor: 0, build: 0 },
             versionDto: { major: 0, minor: 0, build: 0 },
             apiVersionUpdate: false, openResetPwd: false, fetchAllData: false
@@ -185,77 +154,6 @@ class Home extends React.Component<LoginProps, IState > {
                     <Icon color='olive' name='power' />
                     Master View
                     </Menu.Item>);
-        }
-    }
-
-    getMealsReview = () => {
-        if (this.props.logins[0].username === 'admin') {
-            return (
-                <Menu.Item
-                    name='Meals Logger (Admin)'
-                    onClick={this.handleItemClick}>
-                    <Icon name='clipboard outline'/>
-                    <div>Meals</div><div>Logs</div>
-                    <Label color='red' floating>
-                        {this.state.unReadMessageMeals}
-                    </Label>
-                    </Menu.Item>);
-        }
-
-        return (
-            <Menu.Item
-                name='Meals Logger'
-                onClick={this.handleItemClick}>
-                <Icon name='clipboard outline'/>
-                <div>Meals</div><div>Logs</div>
-                <Label color='red' floating>
-                    {this.state.unReadMessageMeals}
-                </Label>
-                </Menu.Item>
-        );
-    }
-
-    getMeasurementsReview = () => {
-        if (this.props.logins[0].username === 'admin') {
-            return (
-                <Menu.Item
-                    name='Measurements Logger Admin'
-                    onClick={this.handleItemClick}>
-                    <Icon name='clipboard outline'/>
-                    <div>Measurements</div><div>Logs</div>
-                    <Label color='red' floating>
-                        {this.state.unReadMessageMeasurements}
-                    </Label>
-                    </Menu.Item>);
-        }
-
-        return (
-            <Menu.Item
-                name='Measurements Logger'
-                onClick={this.handleItemClick}>
-                <Icon name='clipboard outline'/>
-                <div>Measurements</div><div>Logs</div>
-                <Label color='red' floating>
-                    {this.state.unReadMessageMeasurements}
-                </Label>
-                </Menu.Item>
-        );
-    }
-
-    getMealsReviewByDate = () => {
-        if (this.props.logins[0].username === 'admin') {
-            return (
-                <Menu fluid vertical icon='labeled' color='teal' inverted>
-                    <Menu.Item
-                        name='Meals Logger by Date (Admin)'
-                        onClick={this.handleItemClick}>
-                        <Icon name='clipboard outline'/>
-                        Logged Meals by Date
-                        <Label color='red' floating>
-                            {this.state.unReadMessageMeals}
-                        </Label>
-                    </Menu.Item>
-                </Menu>);
         }
     }
 
@@ -304,15 +202,6 @@ class Home extends React.Component<LoginProps, IState > {
     }
 
     render() {
-        var divStyle2 = {
-            fontStyle: 'italic',
-            fontFamily: 'Comic Sans MS',
-            fontSize: '13px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-        };
-
         var divLabelStyle2 = {
             display: 'flex',
             justifyContent: 'center',
@@ -347,10 +236,7 @@ class Home extends React.Component<LoginProps, IState > {
                 this.fetchAllData();
                 this.setState({ fetchAllData: true });
             }
-            if (!this.state.messagesUpdated ||
-                !this.state.mealMessagesUpdated ||
-                !this.state.measurementMessagesUpdated ||
-                !this.state.clientUpdated) {
+            if (!this.state.clientUpdated) {
                 return (<div style={divLoaderStyle}>
                     <Dimmer active inverted>
                         <Loader content='Loading' />
@@ -445,7 +331,7 @@ class Home extends React.Component<LoginProps, IState > {
                                                 </Modal.Actions>
                                             </Modal>
                                         </div>
-                                        <a href="mailto:techsupport@idafit2fitter.com?subject=Support Issues">Email Technical Support</a>
+                                        <a href="mailto:techsupport@idafit2fitter.com?subject=SupportIssues">Email Technical Support</a>
                                     </Form>
                                 </Grid.Column>
                                 <Grid.Column textAlign='center' width={2}/>
@@ -487,22 +373,11 @@ class Home extends React.Component<LoginProps, IState > {
         }
         this.setState({
             error: 'loading..', login: 'logging', checkMail: false,
-            clientUpdated: false, messagesUpdated: false,
-            mealMessagesUpdated: false, measurementMessagesUpdated: false,
+            clientUpdated: false,
             fetchAllData: false
         });
         this.props.requestLogout(this.state.username, this.state.password);
         this.props.requestLogins(this.state.username, this.state.password);
-    }
-
-    private clearCredentials = () => {
-        this.props.requestLogout(this.state.username, this.state.password);
-        this.setState({
-            login: 'logout',
-            error: 'Logout is Successfull', checkMail: false,
-            clientUpdated: false, messagesUpdated: false,
-            mealMessagesUpdated: false, measurementMessagesUpdated: false, fetchAllData: false
-        });
     }
 }
 

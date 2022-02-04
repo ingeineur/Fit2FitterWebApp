@@ -12,7 +12,7 @@
     justify-content: center;
     align-items: center;
     color: #D1B000;
-    font-family: 'Arial Rounded MT';
+    font-family: sans-serif;
     font-size: 30px;
 }
 
@@ -27,7 +27,7 @@
     justify-content: center;
     align-items: center;
     color: #D1B000;
-    font-family: 'Arial Rounded MT';
+    font-family: Courier New, Courier, monospace;
     font-size: 20px;
 }
 
@@ -35,7 +35,7 @@
     display: flex;
     justify-content: left;
     color: #D1B000;
-    font-family: 'Arial Rounded MT';
+    font-family: Courier New, Courier, monospace;
     font-size: 20px;
 }
 
@@ -49,8 +49,11 @@
 }
 
 .text-specialist {
-    color: lightpink;
-    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D1B000;
+    font-family: sans-serif;
     font-size: 20px;
 }
 
@@ -71,4 +74,22 @@
 .text-table-row-light {
     color: white;
     font-size: 12px;
+}
+
+.text-step {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D1B000;
+    font-family: Courier New, Courier, monospace;
+    font-size: 30px;
+}
+
+.text-step-desc {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    font-family: Courier New, Courier, monospace;
+    font-size: 20px;
 }

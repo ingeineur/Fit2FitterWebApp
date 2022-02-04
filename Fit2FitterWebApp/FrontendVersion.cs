@@ -4,7 +4,7 @@
     {
         public int Major { get { return 2; } }
 
-        public int Minor { get { return 6; } }
+        public int Minor { get { return 7; } }
 
         public int Build { get { return 0; } }
     }

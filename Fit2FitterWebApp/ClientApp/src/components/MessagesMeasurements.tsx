@@ -280,7 +280,7 @@ class MessagesMeasurements extends React.Component<LoginProps, IState> {
                                                 <Modal.Header key={index}>Measurements Assessments Until {this.getDate(item.created)}</Modal.Header>
                                                 <Modal.Content key={index + 1} scrolling>
                                                     <Modal.Description key={index}>
-                                                        <MeasurementsReviewModal date={item.created} age={client.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
+                                                        <MeasurementsReviewModal height={0} date={item.created} age={client.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
                                                     </Modal.Description>
                                                 </Modal.Content>
                                                 <Modal.Actions key={index + 2}>
