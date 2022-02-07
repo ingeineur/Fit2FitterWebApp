@@ -510,7 +510,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
     }
 
     onCancel = () => {
-        this.setState({ savingStatus: 'Reverting..', mealDtosUpdated: false, updateAllInfo: false, activitiesDownloaded: false });
+        this.setState({ savingStatus: 'Reverting..', mealDtosUpdated: false, updateAllInfo: false });
         this.getMeals();
     }
 
@@ -626,18 +626,17 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                 <AppsMenu activeItem='New Meal' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                             </Grid.Column>
                             <Grid.Column width={16} verticalAlign='middle'>
-                                <Segment color='black' inverted attached='top'>
+                                <Segment attached='top'>
                                     <div style={divDateStyle}>
-                                        <Button color='black' inverted className='prev' onClick={this.handlePrevDate} attached='left' icon='chevron left' />
+                                        <Button className='prev' onClick={this.handlePrevDate} attached='left' icon='chevron left' />
                                         <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
-                                        <Button color='black' inverted className='next' onClick={this.handleNextDate} attached='right' icon='chevron right' />
+                                        <Button className='next' onClick={this.handleNextDate} attached='right' icon='chevron right' />
                                     </div>
                                     <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                                 </Segment>
                                 <Segment textAlign='center' attached='bottom'>
                                     <MacroGuideHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                                 </Segment>
-                                <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.guides} activities={this.state.activities} update={this.state.updated} />
                             </Grid.Column>
                             <Grid.Column width={16}>
                                 <Menu attached='top' pointing compact>
@@ -668,28 +667,30 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                                     </Grid.Column>
                                 </Segment>
                             </Grid.Column>
-                            <Grid.Column width={16} textAlign='left' floated='left'>
-                                <Button.Group floated='left' fluid>
-                                    <Button color='black' floated='left' size='tiny' onClick={this.onCancel} >Cancel</Button>
-                                    <Button color='blue' floated='left' size='tiny' onClick={this.onSave} >Save</Button>
-                                    <Modal
-                                        open={this.state.openReview}
-                                        onClose={() => this.handleOpen(false)}
-                                        onOpen={() => this.handleOpen(true)}
-                                        trigger={<Button basic color='pink' size='tiny'>Review</Button>}>
-                                        <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
-                                        <Modal.Content scrolling>
-                                            <Modal.Description>
-                                                <MacroGuideReviewModal senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
-                                            </Modal.Description>
-                                        </Modal.Content>
-                                        <Modal.Actions>
-                                            <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                                Close <Icon name='chevron right' />
-                                            </Button>
-                                        </Modal.Actions>
-                                    </Modal>
-                                </Button.Group>
+                            <Grid.Column width={16} textAlign='center' verticalAlign='middle'>
+                                <div style={divDateStyle}>
+                                    <Button.Group floated='left' fluid>
+                                        <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onCancel} ><Icon size='large' name='cancel' color='red' />Cancel</Button>
+                                        <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onSave} ><Icon size='large' name='check' color='green' />Save</Button>
+                                        <Modal
+                                            open={this.state.openReview}
+                                            onClose={() => this.handleOpen(false)}
+                                            onOpen={() => this.handleOpen(true)}
+                                            trigger={<Button labelPosition='left' size='tiny' icon ><Icon size='large' name='spinner' color='blue' />Review</Button>}>
+                                            <Modal.Header>Meals Summary for {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
+                                            <Modal.Content scrolling>
+                                                <Modal.Description>
+                                                    <MacroGuideReviewModal senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} mealDate={this.state.selectedDate.toISOString()} update={this.state.updated} />
+                                                </Modal.Description>
+                                            </Modal.Content>
+                                            <Modal.Actions>
+                                                <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
+                                                    Close <Icon name='chevron right' />
+                                                </Button>
+                                            </Modal.Actions>
+                                        </Modal>
+                                    </Button.Group>
+                                </div>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>

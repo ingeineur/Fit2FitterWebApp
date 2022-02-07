@@ -310,7 +310,7 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                         <div>
                             <ChartistGraph data={data2} type={type} options={lineChartOptions} />
                         </div>
-                        <a>Body Fat Type: </a><a style={divLabelStyle1}>{level}</a>
+                        <a>Body Type: </a><a style={divLabelStyle1}>{level}</a>
                         <div>
                             <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
                         </div>

@@ -408,7 +408,7 @@ class Measurements extends React.Component<LoginProps, IState> {
                             <AppsMenu activeItem='Body' logins={this.props.logins} clientDtos={this.state.clients} />
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <Segment inverted attached='top'>
+                            <Segment attached='top'>
                                 <div style={divLoaderStyle}>
                                     <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
                                 </div>
@@ -438,13 +438,13 @@ class Measurements extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
-                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Cancel</Button>
-                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onCancel} ><Icon size='large' name='cancel' color='red' />Cancel</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onSave} ><Icon size='large' name='check' color='green' />Save</Button>
                                 <Modal
                                     open={this.state.openReview}
                                     onClose={() => this.handleOpen(false)}
                                     onOpen={() => this.handleOpen(true)}
-                                    trigger={<Button size='tiny' basic color='pink'>Review</Button>}>
+                                    trigger={<Button labelPosition='left' size='tiny' icon ><Icon size='large' name='file alternate outline' color='black' />Review</Button>}>
                                     <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
                                     <Modal.Content scrolling>
                                         <Modal.Description>

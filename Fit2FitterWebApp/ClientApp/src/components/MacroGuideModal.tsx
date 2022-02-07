@@ -4,6 +4,9 @@ import { Button, Icon, Input, Grid, Image, List, Search, Dropdown, Menu, Segment
 import { isNullOrUndefined } from 'util';
 import { IMealDto, IMealDetails, IRecipeDto, IRecipeItemDto } from '../models/meals';
 import { IClientDto } from '../models/clients';
+import Resizer from "react-image-file-resizer";
+import { DataURIToBlob } from '../services/utilities'
+import './signin.css';
 
 interface IProps {
     client: IClientDto;
@@ -79,9 +82,24 @@ interface IState {
     foodPortionDtosRecipe: IFoodPortionDto[],
     portionsRecipe: IOption[],
     apiUpdatedRecipe: boolean,
+    cupCount: number,
+    palmCount: number,
+    thumbCount: number
 }
 
 var divFoodLogoStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+};
+
+var divInputPortionStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+};
+
+var foodPortionStyle = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
@@ -97,13 +115,13 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             updated: false, meals: [], status: 'Ready', loading: false, searchResults: [], selectedValue: 'No Selection',
             portions: [], selectedPortion: '', apiUpdated: false, foodPortionDtos: [], usdaQuantity: 1.0,
             searchText: '', selectedFdcId: '', usdaUpdated: false, imageUploadStatus: 'No Image', searchFoodResults: [],
-            searchFoodText: '', selectedFoodValue: '', dropDownString: [], activeItem: 'Recipes',
+            searchFoodText: '', selectedFoodValue: '', dropDownString: [], activeItem: 'HandPortion',
             loadingAnz: false, searchResultsAnz: [], selectedValueAnz: 'No Selection',
             portionsAnz: [], selectedPortionAnz: '', foodPortionDtosAnz: [], anzQuantity: 1.0, selectedFdcIdAnz: '', searchTextAnz: '',
             anzUpdated: false, apiUpdatedAnz: false, searchedRecipeDtos: [],
             recipeDto: { id: 0, name: '', carbs: 0, protein: 0, fat: 0, serving: 0, photo: '', updated: '', created: '', clientId: 0 },
             recipeQuantity: 1, recipeUpdated: false, selectedPortionRecipe: '', foodPortionDtosRecipe: [],
-            portionsRecipe: [], apiUpdatedRecipe: false
+            portionsRecipe: [], apiUpdatedRecipe: false, cupCount: 0, thumbCount: 0, palmCount: 0
         };
     }
 
@@ -124,8 +142,7 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColour()
+            color: this.getColour()
         });
     }
 
@@ -171,6 +188,36 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         }
     }
 
+    updateCup = (event: any) => {
+        var count = parseInt(event.target.value);
+        if (count == 0 || isNaN(count)) {
+            count = 0;
+        }
+
+        this.state.meal.carb = count * 30;
+        this.setState({ cupCount: count, meal: this.state.meal, updated: true, status: 'Pending add to the list' });
+    }
+
+    updatePalm = (event: any) => {
+        var count = parseInt(event.target.value);
+        if (count == 0 || isNaN(count)) {
+            count = 0;
+        }
+
+        this.state.meal.protein = count * 30;
+        this.setState({ palmCount: count, meal: this.state.meal, updated: true, status: 'Pending add to the list' });
+    }
+
+    updateThumb = (event: any) => {
+        var count = parseInt(event.target.value);
+        if (count == 0 || isNaN(count)) {
+            count = 0;
+        }
+
+        this.state.meal.fat = count * 12;
+        this.setState({ thumbCount: count, meal: this.state.meal, updated: true, status: 'Pending add to the list' });
+    }
+
     updatePortion = (event: any) => {
         const re = /^[-+,0-9,\.]+$/;
         if (event.target.value === '' || re.test(event.target.value)) {
@@ -180,15 +227,14 @@ class MacroGuideModal extends React.Component<IProps, IState> {
     }
 
     addMeal = () => {
-        if (this.state.meal.food.trim().length < 1) {
-            this.setState({ status: 'Error: No Food Description' });
-            return;
-        }
-
-        this.setState({ status: 'Added to list' });
-        this.state.meals.push({ id: 0, food: this.state.meal.food, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, portion: this.state.meal.portion, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove, photo: this.state.meal.photo });
-        this.setState({ meals: this.state.meals, updated: true, imageUploadStatus: 'No Image' })
-        this.setState({ meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, portion: 0, fv: 0, check: false, remove: false, photo: '' } });
+        var meal = this.getDefaultFood();
+        this.state.meals.push({ id: 0, food: meal, carb: this.state.meal.carb, protein: this.state.meal.protein, fat: this.state.meal.fat, portion: this.state.meal.portion, fv: this.state.meal.fv, check: this.state.meal.check, remove: this.state.meal.remove, photo: this.state.meal.photo });
+        this.setState({
+            status: 'Added to list',
+            meals: this.state.meals, updated: true, imageUploadStatus: 'No Image',
+            meal: { id: 0, food: '', carb: 0, protein: 0, fat: 0, portion: 0, fv: 0, check: false, remove: false, photo: '' },
+            thumbCount: 0, palmCount: 0, cupCount: 0
+        })
     }
 
     updateUsdaQuantity = (event: any) => {
@@ -358,10 +404,28 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         this.setState({ meal: this.state.meal, status: 'Pending add to the list', updated: true });
     }
 
-    handleImageChange = (event: any) => {
+    resizeFile = (file: any) =>
+        new Promise ((resolve) => {
+            Resizer.imageFileResizer(
+                file,
+                500,
+                500,
+                "JPEG",
+                70,
+                0,
+                (uri) => {
+                    return resolve(uri);
+                },
+                "base64",
+            );
+        });
+
+    handleImageChange = async (event: any) => {
         const formData = new FormData()
         formData.append('Filename', event.target.files[0]['name'])
-        formData.append('FormFile', event.target.files[0])
+        const file = event.target.files[0];
+        var image = await this.resizeFile(file);
+        formData.append('FormFile', DataURIToBlob(image))
         this.setState({ imageUploadStatus: 'Uploading..' });
         fetch('api/Utilities/image/meal/upload',
             {
@@ -813,6 +877,165 @@ class MacroGuideModal extends React.Component<IProps, IState> {
         return;
     }
 
+    getDefaultFood = () => {
+        if (this.state.meal.food == '') {
+            return 'Meal ' + (this.state.meals.length + 1);
+        }
+
+        return this.state.meal.food;
+    } 
+
+    getUserFields = () => {
+        if (this.state.activeItem == 'HandPortion') {
+            return (
+                <Grid centered>
+                    <Grid.Row stretched>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Foods or Drinks</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.getDefaultFood()} onChange={this.updateFood} placeholder='Foods' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Image</h5>
+                        </Grid.Column>
+                        <Grid.Column stretched width={10} textAlign='left'>
+                            <div>
+                                <div style={this.getDivUploadImageStyle()}>
+                                    <a>{this.state.imageUploadStatus}</a>
+                                </div>
+                                <input
+                                    type='file'
+                                    accept="image/*"
+                                    onChange={this.handleImageChange}
+                                />
+                            </div>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row stretched textAlign='right'>
+                        <Grid.Column as='a' verticalAlign='middle' width={16} textAlign='left'>
+                            <h5>Enter your hand portions:</h5>
+                        </Grid.Column>
+                        <Grid.Column as='a' verticalAlign='middle' width={6} textAlign='left'>
+                            <div style={divInputPortionStyle}>
+                            </div>
+                            <h5>Carb (count):</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <input style={{ 'width': '100%' }}  value={this.state.cupCount} onChange={this.updateCup} placeholder='Carb Macro' />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column width={2} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <h5>X</h5>
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='right'>
+                            <div style={foodPortionStyle}>
+                                <img src='cup.PNG' width='50' height='50' />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column as='a' verticalAlign='middle' width={6} textAlign='left'>
+                            <h5>Protein (count):</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <input style={{ 'width': '100%' }} value={this.state.palmCount} onChange={this.updatePalm} placeholder='Protein Macro' />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column width={2} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <h5>X</h5>
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='right'>
+                            <div style={foodPortionStyle}>
+                                <img src='palm.PNG' width='50' height='50' />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column verticalAlign='middle' as='a' width={6} textAlign='left'>
+                            <h5>Fat (count):</h5>
+                        </Grid.Column>
+                        <Grid.Column width={4} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <input style={{ 'width': '100%' }} value={this.state.thumbCount} onChange={this.updateThumb} placeholder='Fat Macro' />
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column width={2} textAlign='center'>
+                            <div style={divInputPortionStyle}>
+                                <h5>X</h5>
+                            </div>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={4} textAlign='right'>
+                            <div style={foodPortionStyle}>
+                                <img style={foodPortionStyle} src={'thumb.PNG'} width='50' height='50' />
+                            </div>
+                        </Grid.Column>
+                    </Grid.Row>
+            </Grid>);
+        }
+        else {
+            return (
+                <Grid centered>
+                    <Grid.Row stretched>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Foods or Drinks</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Portion (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.state.meal.portion} onChange={this.updatePortion} placeholder='Portion' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Carb (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Protein (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Fat (g)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Calories (cal)</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <a>{(this.state.meal.carb * 4 + this.state.meal.protein * 4 + this.state.meal.fat * 9).toFixed(0)}</a>
+                        </Grid.Column>
+                        <Grid.Column as='a' width={6} textAlign='left'>
+                            <h5>Image</h5>
+                        </Grid.Column>
+                        <Grid.Column width={10} textAlign='left'>
+                            <div>
+                                <div style={this.getDivUploadImageStyle()}>
+                                    <a>{this.state.imageUploadStatus}</a>
+                                </div>
+                                <input
+                                    type='file'
+                                    accept="image/*"
+                                    onChange={this.handleImageChange}
+                                />
+                            </div>
+                        </Grid.Column>
+                    </Grid.Row>
+                </Grid>
+                );
+        }
+    }
+
     render() {
 
         if (this.state.dirty !== this.props.update) {
@@ -889,101 +1112,62 @@ class MacroGuideModal extends React.Component<IProps, IState> {
             <Grid centered>
                 <Grid.Row textAlign='center'>
                     <Grid.Column width={16}>
-                        <Menu attached='top' compact pointing>
+                        <Menu attached='top' fluid icon='labeled'>
+                            <Menu.Item
+                                name='HandPortion'
+                                active={activeItem === 'HandPortion'}
+                                onClick={this.handleItemClick}>
+                                <Icon name='hand point up outline' color='blue' />
+                                <a className="text-app-menu">HandPortion</a>
+                            </Menu.Item>
                             <Menu.Item
                                 name='Recipes'
                                 active={activeItem === 'Recipes'}
-                                onClick={this.handleItemClick}
-                            />
+                                onClick={this.handleItemClick}>
+                                <Icon name='book' color='blue' />
+                                <a className="text-app-menu">Recipes</a>
+                            </Menu.Item>
                             <Menu.Item
                                 name='ANZ'
                                 active={activeItem === 'ANZ'}
-                                onClick={this.handleItemClick}
-                            />
+                                onClick={this.handleItemClick}>
+                                <Icon name='database' color='blue' />
+                                <a className="text-app-menu">ANZ</a>
+                            </Menu.Item>
                             <Menu.Item
                                 name='USDA'
                                 active={activeItem === 'USDA'}
-                                onClick={this.handleItemClick}
-                            />
+                                onClick={this.handleItemClick}>
+                                <Icon name='database' color='blue' />
+                                <a className="text-app-menu">USDA</a>
+                            </Menu.Item>
                             <Menu.Item
                                 name='prev'
                                 active={activeItem === 'prev'}
-                                onClick={this.handleItemClick}
-                            />
+                                onClick={this.handleItemClick}>
+                                <Icon name='food' color='blue' />
+                                <a className="text-app-menu">PreviousMeals</a>
+                            </Menu.Item>
                         </Menu>
                         {this.getSearchOption()}
                     </Grid.Column>
                     <Grid.Column width={16}>
-                        <Segment attached='top' inverted color='grey'>
+                        <Segment attached='top'>
+                            {this.getUserFields()}
+                        </Segment>
+                        <Segment attached='bottom'>
                             <Grid centered>
                                 <Grid.Row stretched>
-                                    <Grid.Column width={4}>
-                                        <Button size='tiny' inverted fluid color={this.getColour()} onClick={this.addMeal}>Add</Button>
+                                    <Grid.Column stretched width={4}>
+                                        <Button circular size='tiny' icon fluid onClick={this.addMeal}><Icon color='black' name='add' /></Button>
                                     </Grid.Column>
-                                    <Grid.Column width={4}>
-                                        <Button size='tiny' inverted fluid color='black' onClick={this.removeLastAddedMeal}>Undo</Button>
+                                    <Grid.Column stretched width={4}>
+                                        <Button circular size='tiny' icon fluid onClick={this.removeLastAddedMeal}><Icon color='black' name='undo' /></Button>
                                     </Grid.Column>
                                     <Grid.Column width={8}>
                                         <span style={this.getDivLabelStyle()}>
                                             <a>{this.state.status}</a>
                                         </span>
-                                    </Grid.Column>
-                                </Grid.Row>
-                            </Grid>
-                        </Segment>
-                        <Segment attached='bottom'>
-                            <Grid centered>
-                                <Grid.Row stretched>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Foods or Drinks</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.food} onChange={this.updateFood} placeholder='Foods' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Portion (g)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.portion} onChange={this.updatePortion} placeholder='Portion' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Carb (g)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.carb} onChange={this.updateCarb} placeholder='Carb Macro' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Protein (g)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.protein} onChange={this.updateProtein} placeholder='Protein Macro' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Fat (g)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <input value={this.state.meal.fat} onChange={this.updateFat} placeholder='Fat Macro' />
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Calories (cal)</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <a>{(this.state.meal.carb * 4 + this.state.meal.protein * 4 + this.state.meal.fat * 9).toFixed(0)}</a>
-                                    </Grid.Column>
-                                    <Grid.Column as='a' width={6} textAlign='left'>
-                                        <h5>Image</h5>
-                                    </Grid.Column>
-                                    <Grid.Column width={10} textAlign='left'>
-                                        <div>
-                                            <div style={this.getDivUploadImageStyle()}>
-                                                <a>{this.state.imageUploadStatus}</a>
-                                            </div>
-                                            <input
-                                                type='file'
-                                                accept="image/*"
-                                                onChange={this.handleImageChange}
-                                            />
-                                        </div>
                                     </Grid.Column>
                                 </Grid.Row>
                             </Grid>

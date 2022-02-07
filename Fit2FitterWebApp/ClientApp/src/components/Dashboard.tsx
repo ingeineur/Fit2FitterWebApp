@@ -124,6 +124,9 @@ interface IGraphActivity {
     carbs: number[];
     protein: number[];
     fat: number[];
+    cup: number[];
+    palm: number[];
+    thumb: number[];
 }
 
 var type = 'Line';
@@ -298,7 +301,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
             fromDate: new Date(),
             weightLabel: [],
             activityLabel: [],
-            graphActivityValues: { steps: [], calories: [], weights: [], bodyFats: [], fat: [], carbs: [], protein: [] },
+            graphActivityValues: { steps: [], calories: [], weights: [], bodyFats: [], fat: [], carbs: [], protein: [], cup: [], palm: [], thumb: [] },
             measurementDtos: [],
             measurementDtosDownloaded: false,
             measurementDtosUpdated: false,
@@ -574,6 +577,13 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     <div>
                         <ChartistGraph data={this.getGraphData('Macros')} type={bar} options={barChartOptions} />
                     </div>
+                    <span>
+                        <a>Portions </a>
+                        <a style={divCarb}>col</a><a>Carb </a><a style={divPro}>col</a><a>Protein</a><a style={divFat}>col</a><a> Fat </a>
+                    </span>
+                    <div>
+                        <ChartistGraph data={this.getGraphData('Portions')} type={bar} options={barChartOptions} />
+                    </div>
                     <a>Steps (Count)</a>
                     <div>
                         <ChartistGraph data={this.getGraphData('Steps')} type={type} options={lineChartOptions} />
@@ -590,7 +600,7 @@ class Dashboard extends React.Component<LoginProps, IState> {
                     <div>
                         <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
                     </div>
-                    <a style={this.getBodyFatDivStyle()}>Body Fat Type: {this.state.bodyfatIndicator}</a>
+                    <a style={this.getBodyFatDivStyle()}>Body Type: {this.state.bodyfatIndicator}</a>
                 </Grid.Column>
             </Grid.Row>
         </Grid>)
@@ -625,6 +635,10 @@ class Dashboard extends React.Component<LoginProps, IState> {
             return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.carbs, this.state.graphActivityValues.protein, this.state.graphActivityValues.fat] };
         }
 
+        if (measureType === 'Portions') {
+            return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.cup, this.state.graphActivityValues.palm, this.state.graphActivityValues.thumb] };
+        }
+
         if (measureType === 'Weight') {
             return { labels: this.state.activityLabel, series: [this.state.graphActivityValues.weights] };
         }
@@ -654,6 +668,9 @@ class Dashboard extends React.Component<LoginProps, IState> {
         this.state.graphActivityValues.carbs = [];
         this.state.graphActivityValues.protein = [];
         this.state.graphActivityValues.fat = [];
+        this.state.graphActivityValues.cup = [];
+        this.state.graphActivityValues.palm = [];
+        this.state.graphActivityValues.thumb = [];
 
         var index: number = 0;
         var arr = this.state.activity2Dtos.sort((a: IActivityDto, b: IActivityDto) => {
@@ -693,6 +710,10 @@ class Dashboard extends React.Component<LoginProps, IState> {
             this.state.graphActivityValues.carbs.push((m.carb / this.state.macroGuides.carb) * 100.0);
             this.state.graphActivityValues.protein.push((m.protein / this.state.macroGuides.protein) * 100.0);
             this.state.graphActivityValues.fat.push((m.fat / this.state.macroGuides.fat) * 100.0);
+
+            this.state.graphActivityValues.cup.push(m.carb / 30);
+            this.state.graphActivityValues.palm.push(m.protein / 30);
+            this.state.graphActivityValues.thumb.push(m.fat / 12);
         });
 
         this.setState({ graphActivityValues: this.state.graphActivityValues, activityLabel: this.state.activityLabel });
@@ -749,6 +770,9 @@ class Dashboard extends React.Component<LoginProps, IState> {
         this.state.graphActivityValues.carbs = [];
         this.state.graphActivityValues.fat = [];
         this.state.graphActivityValues.protein = [];
+        this.state.graphActivityValues.cup = [];
+        this.state.graphActivityValues.thumb = [];
+        this.state.graphActivityValues.palm = [];
         this.state.graphActivityValues.steps = [];
         this.state.graphActivityValues.weights = [];
         this.setState({

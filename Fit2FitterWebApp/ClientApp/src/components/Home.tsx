@@ -308,7 +308,7 @@ class Home extends React.Component<LoginProps, IState > {
                                             <Input type="password" value={this.state.password} placeholder='Password' onChange={this.updateInput2} />
                                         </Form.Field>
                                         <div>
-                                            <Button fluid type='submit' primary onClick={this.getLoginCredentials}>Log in</Button>
+                                            <Button basic circular fluid type='submit' color='pink' onClick={this.getLoginCredentials}>Log in</Button>
                                         </div>
                                         <div>
                                             <Modal

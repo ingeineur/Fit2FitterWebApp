@@ -16,11 +16,20 @@ html { font-size: 14px; }
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fa93a8;
-    font-family: 'Arial Rounded MT';
+    color: #D1B000;
+    font-family: 'Courier New, Courier, monospace';
     font-size: 20px;
 }
 
 .navbar-bg {
-    background-color: black;
+    background-color: #fee7ea;
+}
+
+.byida {
+    font-family: 'sans-serif';
+    font-size: 15px;
+    display: flex;
+    color: #D1B000;
+    justify-content: center;
+    align-items: center
 }

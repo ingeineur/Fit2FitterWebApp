@@ -10,27 +10,9 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
     };
 
     public render() {
-        var divStyle2 = {
-            fontStyle: 'italic',
-            fontFamily: 'Comic Sans MS',
-            fontSize: '13px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-        };
-
-        var divLabelStyle2 = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fa93a8',
-            fontStyle: 'italic',
-            fontFamily: 'Arial Rounded MT'
-        };
-
         return (
             <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3 navbar-bg" light>
+                <Navbar className="navbar-expand-sm navbar-toggleable-sm mb-3 navbar-bg" light>
                     <Container>
                         <NavbarBrand tag={Link} to="/myapp">
                             <Grid>
@@ -38,8 +20,8 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                                     <div>
                                         <h3 className="text-app">Nutrition & Fitness Centre</h3>
                                     </div>
-                                    <div id='text' style={divStyle2}>
-                                        <a>by Ida</a>
+                                    <div id='text' className="byida">
+                                        <a>By IDA</a>
                                     </div>
                                 </Grid.Column>
                             </Grid>
@@ -48,10 +30,10 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                         <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={this.state.isOpen} navbar>
                             <ul className="navbar-nav flex-grow">
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/">Home</NavLink>
+                                    <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/myapp">MyApp</NavLink>
+                                    <NavLink tag={Link} className="text-dark" to="/myapp">MyApp</NavLink>
                                 </NavItem>
                             </ul>
                         </Collapse>

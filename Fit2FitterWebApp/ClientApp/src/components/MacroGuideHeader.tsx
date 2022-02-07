@@ -90,13 +90,10 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
             color: 'black'
         };
 
-        var divLabelStyle4 = {
-            color: '#fffafa',
-            fontSize: '20px'
-        };
-
-        var divLabelStyle5 = {
-            color: 'black'
+        var foodPortionStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
         };
 
         if (this.state.updated !== this.props.update)
@@ -124,28 +121,48 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         const totalRemFat = this.props.guides.fat - totalFat;
         const totalCal = totalCarb * 4 + totalProtein * 4 + totalFat * 9;
 
+        const totalCup = totalCarb / 30;
+        const totalPalm = totalProtein/30;
+        const totalThumb = totalFat/12;
+
         const totalMacro = this.props.guides.carb*4 + this.props.guides.protein*4 + this.props.guides.fat*9;
         const deficit = totalMacro - totalCal + totalBurntCalories;
         const deficitPercentage = (deficit / totalMacro) * 100.00;
 
         return (
             <Grid centered>
-                <Grid.Row divided columns={4} textAlign='center'>
+                <Grid.Row columns={3} stretched textAlign='center'>
+                    <Grid.Column textAlign='center'>
+                        <div style={foodPortionStyle}>
+                            <img style={foodPortionStyle} src={'cup.PNG'} width='50' height='50' />
+                        </div>
+                        <div><a>Carb</a></div>
+                        <div style={divLabelStyle1}>{totalCup.toFixed(0)}</div>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center'>
+                        <div style={foodPortionStyle}>
+                            <img style={foodPortionStyle} src={'palm.PNG'} width='50' height='50' />
+                        </div>
+                        <div><a>Protein</a></div>
+                        <div style={divLabelStyle1}>{totalPalm.toFixed(0)}</div>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center'>
+                        <div style={foodPortionStyle}>
+                            <img style={foodPortionStyle} src={'thumb.PNG'} width='50' height='50' />
+                        </div>
+                        <div><a>Fat</a></div>
+                        <div style={divLabelStyle1}>{totalThumb.toFixed(0)}</div>
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row columns={3} stretched textAlign='center'>
                     <Grid.Column color={this.getColour(totalCarb / this.props.guides.carb)} textAlign='center'>
-                        <div><a>Carb(g)</a></div>
-                        <div style={divLabelStyle1}><a>{totalRemCarb.toFixed(2)}</a></div>
+                        <div style={divLabelStyle1}><a>{totalRemCarb.toFixed(2)}g</a></div>
                     </Grid.Column>
                     <Grid.Column color={this.getColour(totalProtein / this.props.guides.protein)} textAlign='center'>
-                        <div><a>Protein(g)</a></div>
-                        <div style={divLabelStyle2}><a>{totalRemProtein.toFixed(2)}</a></div>
+                        <div style={divLabelStyle2}><a>{totalRemProtein.toFixed(2)}g</a></div>
                     </Grid.Column>
                     <Grid.Column color={this.getColour(totalFat / this.props.guides.fat)} textAlign='center'>
-                        <div><a>Fat(g)</a></div>
-                        <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}</a></div>
-                    </Grid.Column>
-                    <Grid.Column color={this.getDeficitColour(deficit)} textAlign='center'>
-                        <div><a>Deficit(cal)</a></div>
-                        <div style={divLabelStyle3}><a>{deficit.toFixed(0)}</a></div>
+                        <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}g</a></div>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

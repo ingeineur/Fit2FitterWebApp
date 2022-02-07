@@ -122,7 +122,7 @@ class ActivityHeader extends React.Component<IProps, IState> {
 
         return (
             <Grid centered>
-                <Grid.Row divided columns={4} textAlign='center'>
+                <Grid.Row columns={4} textAlign='center'>
                     <Grid.Column color={this.getIndicatorColour(totalCaloriesPercent)} textAlign='center'>
                         <div><a>Calories</a></div>
                         <div style={divLabelStyle3}><a>{totalCalories} cal</a></div>

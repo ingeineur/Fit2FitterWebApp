@@ -236,12 +236,12 @@ class MacroGuideTable extends React.Component<IProps, IState> {
         return (
             <Grid centered>
                 <Grid.Column>
-                    <Segment inverted color='grey' attached='top'>
+                    <Segment attached='top'>
                         <Grid centered>
                             <Grid.Row columns={4}>
                                 <Grid.Column width={3} floated='left'>
-                                    <Button size='tiny' inverted color='red' fluid icon onClick={this.removeActivities}>
-                                        <Icon name='minus' />
+                                    <Button circular size='tiny' fluid icon onClick={this.removeActivities}>
+                                        <Icon color='black' name='minus' />
                                     </Button>
                                 </Grid.Column>
                                 <Grid.Column width={3} floated='left'>
@@ -249,8 +249,8 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         open={this.state.openAddMeal}
                                         onClose={() => this.handleOpen(false)}
                                         onOpen={() => this.handleOpen(true)}
-                                        trigger={<Button size='tiny' inverted color='blue' fluid icon>
-                                            <Icon name='plus' />
+                                        trigger={<Button circular size='tiny' fluid icon>
+                                            <Icon color='black' name='plus' />
                                         </Button>}>
                                         <Modal.Header>Add Your Meal</Modal.Header>
                                         <Modal.Content scrolling>
@@ -274,8 +274,8 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                                         open={this.state.updateMeal}
                                         onClose={() => this.handleUpdateOpen(false)}
                                         onOpen={() => this.handleUpdateOpen(true)}
-                                        trigger={<Button size='tiny' inverted color='black' fluid icon>
-                                            Modify
+                                        trigger={<Button size='tiny' fluid icon>
+                                            EDIT
                                         </Button>}>
                                         <Modal.Header>Update Your Meal</Modal.Header>
                                         <Modal.Content scrolling>

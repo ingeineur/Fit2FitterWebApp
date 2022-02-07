@@ -47,7 +47,7 @@ class LandingPage extends React.Component<IProps, IState> {
         let ladies: GalleryImage[] = [];
         let apps: GalleryImage[] = [];
         let i: number = 0;
-        for (i = 1; i < 18; i++) {
+        for (i = 1; i < 23; i++) {
             var img = 'ladies/img' + i + '.jpg';
             ladies.push({
                 original: img,

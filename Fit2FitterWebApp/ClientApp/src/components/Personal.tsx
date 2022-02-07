@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Menu, Label, Progress, Loader, Dimmer, Divider } from 'semantic-ui-react'
+import { Button, Segment, Grid, Menu, Label, Progress, Icon, Dimmer, Divider } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
@@ -353,8 +353,8 @@ class Personal extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Button.Group floated='left' fluid>
-                                <Button floated='left' size='tiny' onClick={this.onCancel} secondary>Reset</Button>
-                                <Button floated='left' size='tiny' onClick={this.onSave} primary>Save</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onCancel} ><Icon size='large' name='cancel' color='red' />Cancel</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onSave} ><Icon size='large' name='check' color='green' />Save</Button>
                             </Button.Group>
                         </Grid.Column>
                     </Grid.Row>

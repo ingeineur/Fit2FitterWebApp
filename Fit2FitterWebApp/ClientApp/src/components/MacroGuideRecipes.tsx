@@ -8,6 +8,8 @@ import { IClientDto } from '../models/clients';
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import AppsMenu from './AppMenus';
+import Resizer from "react-image-file-resizer";
+import { DataURIToBlob } from '../services/utilities'
 
 interface IProps {
 }
@@ -111,8 +113,8 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColour()
+            color: this.getColour(),
+            backgroundColor: '#fffafa'
         });
     }
 
@@ -409,10 +411,28 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
         this.setState({ recipeItemDto: this.state.recipeItemDto, status: 'Pending add to the ingredients', updated: true });
     }
 
-    handleImageChange = (event: any) => {
+    resizeFile = (file: any) =>
+        new Promise((resolve) => {
+            Resizer.imageFileResizer(
+                file,
+                500,
+                500,
+                "JPEG",
+                70,
+                0,
+                (uri) => {
+                    return resolve(uri);
+                },
+                "base64",
+            );
+        });
+
+    handleImageChange = async (event: any) => {
         const formData = new FormData()
         formData.append('Filename', event.target.files[0]['name'])
-        formData.append('FormFile', event.target.files[0])
+        const file = event.target.files[0];
+        var image = await this.resizeFile(file);
+        formData.append('FormFile', DataURIToBlob(image))
         this.setState({ imageUploadStatus: 'Uploading..' });
         fetch('api/Utilities/image/meal/upload',
             {
@@ -984,14 +1004,14 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                             {this.getSearchOption()}
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <Segment inverted color='grey'>
+                            <Segment>
                                 <Grid centered>
                                     <Grid.Row stretched>
                                         <Grid.Column width={4}>
-                                            <Button disabled={this.state.readOnly} size='tiny' inverted fluid color={this.getColour()} onClick={this.addMeal}>Add</Button>
+                                            <Button circular disabled={this.state.readOnly} size='tiny' fluid onClick={this.addMeal}>Add</Button>
                                         </Grid.Column>
                                         <Grid.Column width={4}>
-                                            <Button disabled={this.state.readOnly} size='tiny' inverted fluid color='black' onClick={this.removeLastAddedMeal}>Undo</Button>
+                                            <Button circular disabled={this.state.readOnly} size='tiny' fluid onClick={this.removeLastAddedMeal}>Undo</Button>
                                         </Grid.Column>
                                         <Grid.Column width={8}>
                                             <span style={this.getDivLabelStyle()}>
@@ -1010,9 +1030,9 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='left' floated='left'>
                             <Button.Group floated='left' fluid>
-                                <Button color='black' floated='left' size='tiny' onClick={this.onClear}>New</Button>
-                                <Button disabled={this.state.readOnly} color='blue' floated='left' size='tiny' onClick={this.onSave}>Save</Button>
-                                <Button color='red' floated='left' size='tiny' onClick={this.onDelete}>Delete</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onClear} ><Icon size='large' name='file alternate outline' color='black' />New</Button>
+                                <Button disabled={this.state.readOnly} labelPosition='left' icon floated='left' size='tiny' onClick={this.onSave} ><Icon size='large' name='check' color='green' />Save</Button>
+                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onDelete} ><Icon size='large' name='delete' color='red' />Delete</Button>
                             </Button.Group>
                         </Grid.Column>
                     </Grid.Row>

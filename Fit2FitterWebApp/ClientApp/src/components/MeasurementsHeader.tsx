@@ -41,13 +41,13 @@ class MeasurementsHeader extends React.Component<IProps, IState> {
         const level = getBodyFatIndicator(this.props.age, bodyFatPercent);
         return (
             <Grid centered>
-                <Grid.Row divided columns={3} textAlign='center'>
+                <Grid.Row columns={3} textAlign='center'>
                     <Grid.Column color={getColour(level)} textAlign='center'>
                         <div><a>Body Fat %:</a></div>
                         <div style={divLabelStyle1}><a>{bodyFatPercent.toFixed(3)}</a></div>
                     </Grid.Column>
                     <Grid.Column color={getColour(level)} textAlign='center'>
-                        <div><a>Body Fat:</a></div>
+                        <div><a>Body Type:</a></div>
                         <div style={divLabelStyle1}><a>{level}</a></div>
                     </Grid.Column>
                     <Grid.Column color={getColour(level)} textAlign='center'>
