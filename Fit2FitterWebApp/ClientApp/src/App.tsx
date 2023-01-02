@@ -34,7 +34,7 @@ import './custom.css'
 
 export default () => (
     <Layout>
-        <Route exact path='/' component={LandingPage} />
+        <Route exact path='/' component={Home} />
         <Route exact path='/myapp' component={Home} />
         <Route path='/dashboard' component={Dashboard} />
         <Route path='/dashboarddaily' component={DashboardDaily} />
