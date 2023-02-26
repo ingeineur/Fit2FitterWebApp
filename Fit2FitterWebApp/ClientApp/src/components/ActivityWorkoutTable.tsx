@@ -161,10 +161,10 @@ class ActivityWorkoutTable extends React.Component<IProps, IState> {
                         <div><a className='text-table-row'>Workout Description</a></div>
                     </Grid.Column>
                     <Grid.Column width={4} textAlign='left'>
-                        <div><a className='text-table-row'>Calories(cal)</a></div>
+                        <div><a className='text-table-row'>Calories(kcal)</a></div>
                     </Grid.Column>
                     <Grid.Column width={4} textAlign='left'>
-                        <div><a className='text-table-row'>Max HR</a></div>
+                        <div><a className='text-table-row'>Max Hr(bpm)</a></div>
                     </Grid.Column>
                 </Grid.Row>
                 {this.getRows()}

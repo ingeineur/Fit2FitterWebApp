@@ -17,6 +17,7 @@ import ActivivtyHeader from './components/ActivityHeader';
 import ActivivtyTable from './components/ActivityTable';
 import Measurements from './components/Measurements';
 import Personal from './components/Personal';
+import PersonalMacro from './components/PersonalMacro';
 import EBook from './components/EBook';
 import Admin from './components/Admin';
 import AdminResetPwd from './components/AdminResetPwd';
@@ -31,12 +32,20 @@ import MessagesMealsAdminByDate from './components/MessagesMealsAdminByDate';
 import MessagesMeasurementsAdminByDate from './components/MessagesMeasurementsAdminByDate';
 
 import './custom.css'
+import '@tremor/react/dist/esm/tremor.css';
+import Leaderboard from './components/Leaderboard';
+import Measurements3DView from './components/Measurements3DView';
+import MacroGuideDashboard from './components/MacroGuideDashboard';
+import AdminUserManagement from './components/AdminUserManagement';
 
 export default () => (
     <Layout>
         <Route exact path='/' component={Home} />
+        <Route path='/landingpage' component={LandingPage} />
+        <Route path='/adminusermanagement' component={AdminUserManagement} />
         <Route exact path='/myapp' component={Home} />
         <Route path='/dashboard' component={Dashboard} />
+        <Route path='/leaderboard' component={Leaderboard} />
         <Route path='/dashboarddaily' component={DashboardDaily} />
         <Route path='/activities' component={Activities} />
         <Route path='/meals' component={Meals} />
@@ -45,7 +54,9 @@ export default () => (
         <Route path='/activityheader' component={ActivivtyHeader} />
         <Route path='/activitytable' component={ActivivtyTable} />
         <Route path='/measurements' component={Measurements} />
+        <Route path='/measurements3Dview' component={Measurements3DView} />
         <Route path='/personal' component={Personal} />
+        <Route path='/personalmacro' component={PersonalMacro} />
         <Route path='/ebook' component={EBook} />
         <Route path='/admin' component={Admin} />
         <Route path='/adminresetpwd' component={AdminResetPwd} />
@@ -61,6 +72,7 @@ export default () => (
         <Route path='/macroguide' component={MacroGuide} />
         <Route path='/macroguiderecipes' component={MacroGuideRecipes} />
         <Route path='/macroguidesearch' component={MacroGuideSearch} />
+        <Route path='/macroguidedashboard' component={MacroGuideDashboard} />
         <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     </Layout>
 );

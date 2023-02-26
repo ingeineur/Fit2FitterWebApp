@@ -60,7 +60,7 @@ type LoginProps =
     & typeof LoginStore.actionCreators // ... plus action creators we've requested
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
 
-class Measurements extends React.Component<LoginProps, IState> {
+class Measurements3DView extends React.Component<LoginProps, IState> {
 
     public componentDidMount() {
         this.props.getLogin();
@@ -361,14 +361,6 @@ class Measurements extends React.Component<LoginProps, IState> {
     }
 
     render() {
-        var divLabelStyle = {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#fffafa',
-            backgroundColor: this.getColour()
-        };
-
         var divLoaderStyle = {
             display: 'flex',
             justifyContent: 'center',
@@ -405,44 +397,21 @@ class Measurements extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeParentItem='Body' activeItem='Measure' logins={this.props.logins} clientDtos={this.state.clients} />
+                            <AppsMenu activeParentItem='Body' activeItem='View3D' logins={this.props.logins} clientDtos={this.state.clients} />
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Segment attached='top'>
                                 <div style={divLoaderStyle}>
                                     <SemanticDatepicker value={this.state.selectedDate} date={new Date()} onChange={this.handleDateChange} showToday />
                                 </div>
-                                <Label key='saveicon' corner='right' color={this.getColour()} icon={this.getSaveIcon()}/>
+                                <Label corner='right' color={this.getColour()} icon><Icon name={this.getSaveIcon()} /></Label>
                             </Segment>
                             <Segment textAlign='center' attached='bottom'>
                                 <MeasurementsHeader height={this.getHeight()} targetWeight={this.state.targetWeight} measurements={this.state.measurements} age={this.state.age} update={this.state.updated} />
                             </Segment>
                         </Grid.Column>
                         <Grid.Column width={16}>
-                            <MeasurementsTable type='Body' measurements={this.state.measurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />
-                        </Grid.Column>
-                        <Grid.Column width={16} textAlign='left' floated='left'>
-                            <Button.Group floated='left' fluid>
-                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onCancel} ><Icon size='large' name='cancel' color='red' />Cancel</Button>
-                                <Button labelPosition='left' icon floated='left' size='tiny' onClick={this.onSave} ><Icon size='large' name='check' color='green' />Save</Button>
-                                <Modal
-                                    open={this.state.openReview}
-                                    onClose={() => this.handleOpen(false)}
-                                    onOpen={() => this.handleOpen(true)}
-                                    trigger={<Button labelPosition='left' size='tiny' icon ><Icon size='large' name='file alternate outline' color='black' />Review</Button>}>
-                                    <Modal.Header>Body assessments until {this.state.selectedDate.toLocaleDateString()}</Modal.Header>
-                                    <Modal.Content scrolling>
-                                        <Modal.Description>
-                                            <MeasurementsReviewModal date={this.state.selectedDate.toISOString()} height={this.getHeight()} age={this.state.age} senderId={this.props.logins[0].clientId} clientId={this.props.logins[0].clientId} update={this.state.updated} />
-                                        </Modal.Description>
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button size='tiny' onClick={() => this.handleOpen(false)} primary>
-                                            Close <Icon name='chevron right' />
-                                        </Button>
-                                    </Modal.Actions>
-                                </Modal>
-                            </Button.Group>
+                            <Measurements3DViewer date={this.state.selectedDate.toDateString()} type='3DScanner' height={this.getHeight()} measurements={this.state.measurements} currentMeasurements={this.state.currentMeasurements} updateMeasurements={this.updateMeasurements} update={this.state.updated} />
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
@@ -456,4 +425,4 @@ class Measurements extends React.Component<LoginProps, IState> {
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props
-)(Measurements as any);
+)(Measurements3DView as any);

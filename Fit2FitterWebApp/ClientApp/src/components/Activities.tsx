@@ -1,8 +1,8 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Button, Segment, Grid, Progress, Label, Input, Icon, Image, Loader, Dimmer, Divider, Header } from 'semantic-ui-react'
+import { Button, Segment, Grid, Progress, Label, Input, Icon, Image, Loader, Dimmer, Modal, Header, ButtonGroup } from 'semantic-ui-react'
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
@@ -14,8 +14,11 @@ import { IActivityGuides, ITotalDailyActivity, IActivity, IActivityDto, getStepI
 import { IMacroGuides, IMealDto, IMeals, IMealDetails, IMacrosPlanDto } from '../models/meals'
 import { IClientDto } from '../models/clients';
 import CaloriesRemainingHeader from './CaloriesRemainingHeader'
-import { isNull } from 'util';
+import { isNull, isNullOrUndefined } from 'util';
 import './signin.css';
+//import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { GoogleLoginFunction } from './GoogleLoginFunction';
 
 interface IProps {
 }
@@ -51,7 +54,16 @@ interface IState {
     mealGuides: IMacroGuides;
     mealsDownloaded: boolean;
     macrosPlanDownloaded: boolean;
+    googleProfile: any;
+    googleUser: any;
+    openGoogleFit: boolean;
 }
+
+interface IHealth {
+    type: string,
+    value: number[]
+}
+
 
 // At runtime, Redux will merge together...
 type LoginProps =
@@ -119,9 +131,6 @@ class Activities extends React.Component<LoginProps, IState> {
     removeActivities = (event: any) => {
         var arr = this.state.activities.filter(obj => obj.check === false);
         var removed = this.state.activities.filter(obj => obj.check === true);
-        console.log(arr);
-        console.log(this.state.activities);
-        console.log(removed);
         this.setState({ updated: !this.state.updated, activities: arr, removedActivities: removed, workoutUpdated: true });
     }
 
@@ -132,9 +141,47 @@ class Activities extends React.Component<LoginProps, IState> {
         this.setState({ updated: !this.state.updated, savingStatus: 'Not Saved', workoutUpdated: true });
     }
 
+    addGoogleFitEntries = (input: IHealth[]) => {
+        console.log(input);
+        let steps = input.find(_ => _.type === 'com.google.step_count.delta');
+        var stepInt = 0
+        if (steps != null && steps.value.length > 0) {
+            stepInt = steps.value[0]
+            var index = this.state.activities.findIndex(x => x.activityDesc === 'steps');
+            if (index > -1) {
+                this.state.activities[index].steps = stepInt;
+            }
+        }
+
+        let cal = input.find(_ => _.type === 'com.google.calories.expended');
+        var totalCal = 0;
+        if (cal != null && cal.value.length > 0) {
+            cal.value.forEach(x => totalCal += x);
+        }
+
+        let hr = input.find(_ => _.type === 'com.google.heart_rate.bpm');
+        var maxHr = 0;
+        if (hr != null && hr.value.length > 0) {
+            maxHr = hr.value.reduce((a, b) => Math.max(a, b), -Infinity);;
+        }
+
+        var index = this.state.activities.findIndex(x => x.activityDesc.toLowerCase().includes('google'));
+        if (index != -1) {
+            this.state.activities[index].calories = totalCal;
+            this.state.activities[index].maxHr = maxHr;
+        }
+        else {
+            this.state.activities.push({ id: 0, activityDesc: 'GoogleFit Activities', steps: 0, calories: totalCal, maxHr: maxHr, duration: 0, check: false });
+        }
+
+        this.setState({ steps: stepInt, updated: !this.state.updated, openGoogleFit: false });
+        this.onSave();
+    }
+
     constructor(props: LoginProps) {
         super(props);
         this.updateActivities = this.updateActivities.bind(this);
+        this.addGoogleFitEntries = this.addGoogleFitEntries.bind(this);
         this.state = {
             username: '', password: '',
             selectedDate: new Date(),
@@ -164,7 +211,10 @@ class Activities extends React.Component<LoginProps, IState> {
             macrosPlanDtos: [],
             mealGuides: { carb: 0, protein: 0, fat: 0, fruits: 0 },
             mealsDownloaded: false,
-            macrosPlanDownloaded: false
+            macrosPlanDownloaded: false,
+            googleProfile: null,
+            googleUser: null,
+            openGoogleFit: true
         };
     }
 
@@ -417,7 +467,7 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     showProgressBar = () => {
-        if (this.state.savingStatus == 'Saving in progress') {
+        if (this.state.savingStatus === 'Saving in progress') {
             return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'}/>);
         }
     }
@@ -501,23 +551,23 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     getActivityLevel = (activityLevel: string) => {
-        if (activityLevel == 'Sedentary') {
+        if (activityLevel === 'Sedentary') {
             return 1.2;
         }
 
-        if (activityLevel == 'Lightly Active') {
+        if (activityLevel === 'Lightly Active') {
             return 1.375;
         }
 
-        if (activityLevel == 'Moderately Active') {
+        if (activityLevel === 'Moderately Active') {
             return 1.55;
         }
 
-        if (activityLevel == 'Very Active') {
+        if (activityLevel === 'Very Active') {
             return 1.725;
         }
 
-        if (activityLevel == 'Extra Active') {
+        if (activityLevel === 'Extra Active') {
             return 1.9;
         }
 
@@ -550,13 +600,13 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     getMealTypeIndex = (type: number) => {
-        if (type == 1) {
+        if (type === 1) {
             return 1;
         }
-        if (type == 2) {
+        if (type === 2) {
             return 2;
         }
-        if (type == 3) {
+        if (type === 3) {
             return 3;
         }
 
@@ -564,13 +614,13 @@ class Activities extends React.Component<LoginProps, IState> {
     }
 
     getMealType = (type: string) => {
-        if (type == 'Lunch') {
+        if (type === 'Lunch') {
             return 1;
         }
-        if (type == 'Dinner') {
+        if (type === 'Dinner') {
             return 2;
         }
-        if (type == 'Snack') {
+        if (type === 'Snack') {
             return 3;
         }
 
@@ -609,6 +659,59 @@ class Activities extends React.Component<LoginProps, IState> {
         this.setState({
             meals: { 0: [], 1: [], 2: [], 3: [] }
         });
+    }
+
+    responseMessage = (response: any) => {
+        console.log(response);
+        this.setState({ googleUser: response });
+        this.fetchGoogleProfile(response);
+    }
+
+    errorMessage = () => {
+        console.log("error login to google");
+    };
+
+    googleLogin = () => {
+        if (!isNullOrUndefined(this.state.googleProfile)) {
+            return (<div>
+                <h4>Logged in: {this.state.googleProfile.name}</h4>
+            </div>);
+        }
+        else {
+            return (<div>
+                <GoogleLogin onSuccess={this.responseMessage} onError={this.errorMessage} />
+                <Button onClick={() => googleLogout()} >Logout Google</Button>
+            </div>);
+        }
+    }
+
+    //loginToGoogle = () => useGoogleLogin({
+    //    onSuccess: (codeResponse) => {
+    //        this.setState({ googleUser: codeResponse });
+    //        this.fetchGoogleProfile(codeResponse);
+    //    },
+    //    onError: (error) => console.log('Login Failed:', error)
+    //});
+
+    fetchGoogleProfile = (googleUser: any) => {
+        var fetchStr = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + googleUser.credential;
+        if (googleUser) {
+            fetch(fetchStr,
+                {
+                    headers: {
+                        Authorization: `Bearer ${googleUser.credential}`,
+                        Accept: 'application/json'
+                    }
+                })
+                .then((res) => {
+                    this.setState({ googleProfile: res });
+                })
+                .catch((err) => console.log(err));
+        }
+    }
+
+    openGoogleFit = (open: boolean) => {
+        this.setState({ openGoogleFit: open });
     }
 
     render() {
@@ -661,7 +764,7 @@ class Activities extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='Activity' logins={this.props.logins} clientDtos={this.state.clients} />
+                            <AppsMenu activeParentItem='Activity' activeItem='Activity' logins={this.props.logins} clientDtos={this.state.clients} />
                         </Grid.Column>
                         <Grid.Column width={16} verticalAlign='middle'>
                             <Segment attached='top'>
@@ -675,35 +778,46 @@ class Activities extends React.Component<LoginProps, IState> {
                             <Segment textAlign='center' attached='bottom'>
                                 <ActivityHeader age={this.state.age} activities={this.state.activities} steps={this.state.steps} sleeps={this.state.sleeps} guides={this.state.guides} update={this.state.updated} />
                             </Segment>
-                            <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.mealGuides} activities={this.state.activities} update={this.state.updated} />
                         </Grid.Column>
                         <Grid.Column width={16} verticalAlign='middle'>
                             <Segment>
+                                <Modal
+                                    onClose={() => this.openGoogleFit(false)}
+                                    onOpen={() => this.openGoogleFit(true)}
+                                    open={this.state.openGoogleFit}
+                                    trigger={<Button labelPosition='left' basic icon size='tiny'><Icon inverted size='large' name='google' color='blue' /> Fetch From Google-Fit 🚀 </Button>}
+                                >
+                                    <Modal.Header>Fetch your activity from Google Fit</Modal.Header>
+                                    <Modal.Content image>
+                                        <Image size='medium' src='googlefit.PNG' wrapped />
+                                        <Modal.Description>
+                                            <Header><Icon color='red' inverted name='attention' />Before Click To Proceed..</Header>
+                                            <p>
+                                                Open your Google Fit on your mobile to ensure latest info has been synched.
+                                            </p>
+                                            <Header><Icon color='blue' inverted name='info' />Info..</Header>
+                                            <p>
+                                                Calories, Max HR and Steps will be combined into one entry: "GoogleFit Activities".
+                                            </p>
+                                        </Modal.Description>
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <ButtonGroup>
+                                            <Button labelPosition='left' basic icon size='tiny' color='grey' onClick={() => this.openGoogleFit(false)} ><Icon inverted size='large' name='cancel' color='red' />Skip</Button>
+                                            <GoogleLoginFunction date={this.state.selectedDate} updateGoogleFitEntries={this.addGoogleFitEntries} />
+                                        </ButtonGroup>
+                                    </Modal.Actions>
+                                </Modal>
                                 <Grid textAlign='center' centered>
-                                    <Grid.Row columns={3} verticalAlign='middle'>
+                                    <Grid.Row columns={2} verticalAlign='middle'>
                                         <Grid.Column textAlign='center'>
-                                            <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} />
+                                            <Icon name='paw' size='big' color={getStepIndicatorColour(this.state.steps / this.state.guides.steps)} /> STEPS COUNT:
                                         </Grid.Column>
                                         <Grid.Column textAlign='center'>
-                                            <Icon name='heartbeat' size='big' color={this.getMaxHrColour(this.getMaxHr())} />
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} />
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <div><a className='text-table-row'>Steps Count: {this.state.stepsStatus}</a></div>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <div><a className='text-table-row'>{this.getHeartRateStatus()}</a></div>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <div><a className='text-table-row'>Sleep Hours: {this.state.sleepsStatus}</a></div>
+                                            <Icon name='hotel' size='big' color={getSleepColour(this.state.sleeps)} /> SLEEP HOURS:
                                         </Grid.Column>
                                         <Grid.Column textAlign='center'>
                                             <Input as='a' fluid size='mini' value={this.state.steps} placeholder='Steps Count' onChange={this.updateSteps} />
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <div><Label color='black' horizontal>{this.getMaxHr()}</Label></div>
                                         </Grid.Column>
                                         <Grid.Column textAlign='center'>
                                             <Input size='mini' fluid value={this.state.sleeps} placeholder='Sleep Hours' onChange={this.updateSleeps} />
@@ -727,7 +841,7 @@ class Activities extends React.Component<LoginProps, IState> {
                                             </Button>
                                         </Grid.Column>
                                         <Grid.Column verticalAlign='middle'>
-                                            <h2>Workouts</h2>
+                                            <h2 className='text-workouts'>WORKOUTS</h2>
                                         </Grid.Column>
                                         <Grid.Column>
                                         </Grid.Column>

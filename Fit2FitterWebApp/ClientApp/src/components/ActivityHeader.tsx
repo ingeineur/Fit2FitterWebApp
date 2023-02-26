@@ -1,9 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
-import { Button, Form, Input, Grid, Label, Icon, Card, Header } from 'semantic-ui-react'
-import { getSleepColour, getStepIndicatorColour } from '../models/activities';
+import { Grid } from 'semantic-ui-react'
+import { getSleepColour, getStepIndicatorColour, getIndicatorColour, getMaxHrColour } from '../models/activities';
+import {
+    Card,
+    Metric,
+    Text,
+    Flex
+} from '@tremor/react';
 
 interface IProps {
     activities: IActivity[];
@@ -41,45 +45,6 @@ class ActivityHeader extends React.Component<IProps, IState> {
         };
     }
 
-    getColour = (total: number) => {
-        if (total > 50.0 && total < 100) {
-            return 'orange';
-        }
-
-        if (total === 100) {
-            return 'green';
-        }
-
-        if (total > 100.0) {
-            return 'red';
-        }
-
-        return 'black';
-    }
-
-    getMaxHrColour = (maxHr: number) => {
-        var calcMaxHr = 220 - this.props.age;
-        var minMaxHr = 0.65 * calcMaxHr;
-        var maxMaxHr = 0.85 * calcMaxHr;
-
-        if (maxHr >= minMaxHr && maxHr <= maxMaxHr) {
-            return 'green';
-        }
-        else if (maxHr > maxMaxHr && maxHr <= calcMaxHr) {
-            return 'orange';
-        }
-        
-        return 'red';
-    }
-
-    getIndicatorColour = (percent: number) => {
-        if (percent >= 1.0) {
-            return 'green';
-        }
-
-        return 'red';
-    }
-
     getWarningText = () => {
         return (<Grid.Row>
             <a>Warning Text</a>
@@ -87,21 +52,132 @@ class ActivityHeader extends React.Component<IProps, IState> {
             )
     }
 
+    getStepsStatus = (steps: number) => {
+        var status = 'Keep Moving';
+        if (steps >= this.props.guides.steps) {
+            status = 'Excellent!! Target Achieved';
+        }
+        else if (steps > this.props.guides.steps / 2) {
+            status = 'Great!! Almost There';
+        }
+        return status;
+    }
+
+    getSleepsStatus = (sleeps: number) => {
+        var status = 'You need more rest';
+        if (sleeps >= 6.5) {
+            status = 'Excellent!! Your Body is Well Rested';
+        }
+
+        return status;
+    }
+
+    getHeartRateStatus = (maxHr: number) => {
+        if (maxHr > (220 - this.props.age)) {
+            return 'Warning!!!: Exceeding your max heart-rate is not advisable';
+        }
+        else if (maxHr === (220 - this.props.age)) {
+            return 'Awesome!!!: Your body will keep burning for the next 24 Hours';
+        }
+        else if (maxHr > (0.65 * (220 - this.props.age))) {
+            return 'Excellent: Your body will keep burning for the next 12 Hours';
+        }
+        else if (maxHr > 0) {
+            return 'Great work so far';
+        }
+        else {
+            return 'No MAX HR detected!!';
+        }
+    }
+
+    GetStepMetric = () => {
+        return (
+            <Card key="Steps">
+                <Flex alignItems="items-center">
+                    <Text>STEPS</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getStepIndicatorColour(this.props.steps / this.props.guides.steps)}>{this.props.steps}</Metric>
+                </Flex>
+                <Flex>
+                    <div>
+                        <Text> {this.getStepsStatus(this.props.steps)} </Text>
+                    </div>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetCaloriesMetric = (coloriesPercent: number, totalCalories: number) => {
+        return (
+            <Card key="Calories">
+                <Flex alignItems="items-center">
+                    <Text>CALORIES</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getIndicatorColour(coloriesPercent)}>{totalCalories}</Metric>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetMaxHrMetric = (maxHr: number) => {
+        return (
+            <Card key="MAXHR">
+                <Flex alignItems="items-center">
+                    <Text>MAX HR</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getMaxHrColour(maxHr, this.props.age)}>{maxHr}/{220 - this.props.age}</Metric>
+                </Flex>
+                <Flex>
+                    <div>
+                        <Text color={getMaxHrColour(maxHr, this.props.age)}> {this.getHeartRateStatus(maxHr)} </Text>
+                    </div>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetSleepMetric = () => {
+        return (
+            <Card key="SLEEP">
+                <Flex alignItems="items-center">
+                    <Text>SLEEP</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getSleepColour(this.props.sleeps)}>{this.props.sleeps}</Metric>
+                </Flex>
+                <Flex>
+                    <div>
+                        <Text> {this.getSleepsStatus(this.props.sleeps)} </Text>
+                    </div>
+                </Flex>
+            </Card>
+        );
+    }
+
     render() {
-        var divLabelStyle2 = {
-            color: '#0a0212'
-        };
-
-        var divLabelStyle3 = {
-            color: '#fffafa'
-        };
-
-        var divLabelStyle4 = {
-            color: '#fffafa',
-            fontFamily: 'Comic Sans MS',
-            fontSize: '20px'
-        };
-
         if (this.state.updated !== this.props.update)
         {
             this.setState({ updated: this.props.update });
@@ -114,30 +190,33 @@ class ActivityHeader extends React.Component<IProps, IState> {
         }
 
         const totalCaloriesPercent = (totalCalories / this.props.guides.calories);
-        const totalStepsPercent = (this.props.steps / this.props.guides.steps);
-
-        var divLabelStyle5 = {
-            color: '#fffafa'
-        };
-
+        
         return (
             <Grid centered>
-                <Grid.Row columns={4} textAlign='center'>
-                    <Grid.Column color={this.getIndicatorColour(totalCaloriesPercent)} textAlign='center'>
-                        <div><a>Calories</a></div>
-                        <div style={divLabelStyle3}><a>{totalCalories} cal</a></div>
+                <Grid.Row textAlign='center'>
+                    <Grid.Column width={16} textAlign='center'>
+                        <Grid centered>
+                            <Grid.Row textAlign='center' columns={2} stretched={true}>
+                                <Grid.Column textAlign='center' stretched={true}>
+                                    {this.GetStepMetric()}
+                                </Grid.Column>
+                                <Grid.Column textAlign='center' stretched={true}>
+                                    {this.GetCaloriesMetric(totalCaloriesPercent, totalCalories)}
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
-                    <Grid.Column color={this.getMaxHrColour(maxHr)} textAlign='center'>
-                        <div><a>Max HR</a></div>
-                        <div style={divLabelStyle5}><a>{maxHr}/{220 - this.props.age}</a></div>
-                    </Grid.Column>
-                    <Grid.Column color={getStepIndicatorColour(totalStepsPercent)} textAlign='center'>
-                        <div><a>Steps</a></div>
-                        <div style={divLabelStyle3}><a>{this.props.steps}/{this.props.guides.steps}</a></div>
-                    </Grid.Column>
-                    <Grid.Column color={getSleepColour(this.props.sleeps)} textAlign='center'>
-                        <div><a>Sleep</a></div>
-                        <div style={divLabelStyle5}><a>{this.props.sleeps}</a></div>
+                    <Grid.Column width={16} textAlign='center'>
+                        <Grid centered>
+                            <Grid.Row textAlign='center' stretched={true} columns={2}>
+                                <Grid.Column stretched={true} textAlign='center'>
+                                    {this.GetMaxHrMetric(maxHr)}
+                                </Grid.Column>
+                                <Grid.Column stretched={true} textAlign='center'>
+                                    {this.GetSleepMetric()}
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

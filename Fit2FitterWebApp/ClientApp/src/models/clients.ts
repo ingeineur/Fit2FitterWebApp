@@ -25,6 +25,7 @@ export interface IClient {
     age: number;
     created: string;
     avatar: string;
+    grp: string;
 }
 
 export interface IClientDto {
@@ -34,6 +35,7 @@ export interface IClientDto {
     address: string;
     city: string;
     age: number;
+    grp: string;
     created: string;
     avatar: string;
 }

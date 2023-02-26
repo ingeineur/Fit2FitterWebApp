@@ -623,7 +623,7 @@ class MacroGuide extends React.Component<LoginProps, IState> {
                     <Grid centered>
                         <Grid.Row>
                             <Grid.Column width={16}>
-                                <AppsMenu activeItem='New Meal' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                                <AppsMenu activeParentItem='Nutritions' activeItem='New Meal' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                             </Grid.Column>
                             <Grid.Column width={16} verticalAlign='middle'>
                                 <Segment attached='top'>

@@ -4,7 +4,7 @@
     build: number;
 }
 
-export const CurrentVersion: IVersion = { major: 2, minor: 9, build: 0 };
+export const CurrentVersion: IVersion = { major: 3, minor: 0, build: 8 };
 
 export const UpdateVersionText: string = 'New Version Detected: Please Re-Open App and Refresh in a New Web Browser';
 

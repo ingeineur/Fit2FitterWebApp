@@ -42,147 +42,102 @@ export function calcBodyFatPercent(height: number, neck: number, waist: number, 
     return ((waist + hip) -  neck) * 0.5;
 }
 
-export function getBodyFatIndicator (age: number, bodyFat: number) {
-    if (age <= 20) {
-        if (11.3 <= bodyFat && bodyFat <= 15.7) {
-            return 'LEAN';
-        }
-        if (15.7 < bodyFat && bodyFat <= 21.5) {
-            return 'IDEAL';
-        }
-        if (21.5 < bodyFat && bodyFat <= 29.0) {
-            return 'AVERAGE';
-        }
-        if (29.0 < bodyFat && bodyFat <= 34.6) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (21 <= age && age <= 25) {
-        if (11.9 <= bodyFat && bodyFat <= 18.4) {
-            return 'LEAN';
-        }
-        if (18.4 < bodyFat && bodyFat <= 23.8) {
-            return 'IDEAL';
-        }
-        if (23.8 < bodyFat && bodyFat <= 29.6) {
-            return 'AVERAGE';
-        }
-        if (29.6 < bodyFat && bodyFat <= 35.2) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (26 <= age && age <= 30) {
-        if (12.5 <= bodyFat && bodyFat <= 19.0) {
-            return 'LEAN';
-        }
-        if (19.0 < bodyFat && bodyFat <= 24.5) {
-            return 'IDEAL';
-        }
-        if (24.5 < bodyFat && bodyFat <= 31.5) {
-            return 'AVERAGE';
-        }
-        if (31.5 < bodyFat && bodyFat <= 35.8) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (31 <= age && age <= 35) {
-        if (13.2 <= bodyFat && bodyFat <= 19.6) {
-            return 'LEAN';
-        }
-        if (19.6 < bodyFat && bodyFat <= 25.1) {
-            return 'IDEAL';
-        }
-        if (25.1 < bodyFat && bodyFat <= 32.1) {
-            return 'AVERAGE';
-        }
-        if (32.1 < bodyFat && bodyFat <= 36.4) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (36 <= age && age <= 40) {
-        if (13.8 <= bodyFat && bodyFat <= 22.2) {
-            return 'LEAN';
-        }
-        if (22.2 < bodyFat && bodyFat <= 27.3) {
-            return 'IDEAL';
-        }
-        if (27.3 < bodyFat && bodyFat <= 32.7) {
-            return 'AVERAGE';
-        }
-        if (32.7 < bodyFat && bodyFat <= 37.0) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (41 <= age && age <= 45) {
-        if (14.4 <= bodyFat && bodyFat <= 22.8) {
-            return 'LEAN';
-        }
-        if (22.8 < bodyFat && bodyFat <= 27.9) {
-            return 'IDEAL';
-        }
-        if (27.9 < bodyFat && bodyFat <= 34.4) {
-            return 'AVERAGE';
-        }
-        if (34.4 < bodyFat && bodyFat <= 37.7) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (46 <= age && age <= 50) {
-        if (15.0 <= bodyFat && bodyFat <= 23.4) {
-            return 'LEAN';
-        }
-        if (23.4 < bodyFat && bodyFat <= 28.6) {
-            return 'IDEAL';
-        }
-        if (28.6 < bodyFat && bodyFat <= 35.0) {
-            return 'AVERAGE';
-        }
-        if (35.0 < bodyFat && bodyFat <= 38.3) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (51 <= age && age <= 55) {
-        if (15.6 <= bodyFat && bodyFat <= 24.0) {
-            return 'LEAN';
-        }
-        if (24.0 < bodyFat && bodyFat <= 29.2) {
-            return 'IDEAL';
-        }
-        if (29.2 < bodyFat && bodyFat <= 35.6) {
-            return 'AVERAGE';
-        }
-        if (35.6 < bodyFat && bodyFat <= 38.9) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-    if (56 <= age) {
-        if (16.3 <= bodyFat && bodyFat <= 24.6) {
-            return 'LEAN';
-        }
-        if (24.6 < bodyFat && bodyFat <= 29.8) {
-            return 'IDEAL';
-        }
-        if (29.8 < bodyFat && bodyFat <= 37.2) {
-            return 'AVERAGE';
-        }
-        if (37.2 < bodyFat && bodyFat <= 39.5) {
-            return 'ABOVE AVERAGE';
-        }
-    }
-
-    return 'AVERAGE';
+export function calcBmi(height: number, weight: number) {
+    var heightMeter = height / 100.0;
+    return weight / (heightMeter * heightMeter);
 }
 
-export function getColour (level: string) {
-    if (level === 'LEAN') {
+export function getBmiClassification(bmi: number) {
+    if (bmi < 18.5) {
+        return 'UNDER WEIGHT';
+    }
+    if (bmi <= 24.9) {
+        return 'NORMAL';
+    }
+    if (bmi <= 29.9) {
+        return 'OVERWEIGHT';
+    }
+    if (bmi <= 34.9) {
+        return 'OBESE CLASS I';
+    }
+    if (bmi <= 39.9) {
+        return 'OBESE CLASS II';
+    }
+
+    return 'OBESE CLASS III';
+}
+
+export function getBmiColour(level: string) {
+    if (level === 'UNDER WEIGHT') {
         return 'blue';
     }
 
-    if (level === 'IDEAL') {
+    if (level === 'NORMAL') {
         return 'green';
     }
 
-    if (level === 'AVERAGE') {
+    if (level === 'OVERWEIGHT') {
+        return 'yellow';
+    }
+
+    return 'red';
+}
+
+export function getBodyFatIndicator (age: number, bodyFat: number) {
+    if (age <= 39) {
+        if (bodyFat <= 21) {
+            return 'LOW';
+        }
+        else if (bodyFat <= 33) {
+            return 'HEALTHY';
+        }
+        else if (bodyFat <= 39) {
+            return 'OVERWEIGHT';
+        }
+        else {
+            return 'OBESE';
+        }
+    }
+    else if (age <= 59) {
+        if (bodyFat <= 23) {
+            return 'LOW';
+        }
+        else if (bodyFat <= 35) {
+            return 'HEALTHY';
+        }
+        else if (bodyFat <= 40) {
+            return 'OVERWEIGHT';
+        }
+        else {
+            return 'OBESE';
+        }
+    }
+    else {
+        if (bodyFat <= 24) {
+            return 'LOW';
+        }
+        else if (bodyFat <= 36) {
+            return 'HEALTHY';
+        }
+        else if (bodyFat <= 42) {
+            return 'OVERWEIGHT';
+        }
+        else {
+            return 'OBESE';
+        }
+    }
+}
+
+export function getColour (level: string) {
+    if (level === 'LOW') {
+        return 'blue';
+    }
+
+    if (level === 'HEALTHY') {
+        return 'green';
+    }
+
+    if (level === 'OVERWEIGHT') {
         return 'yellow';
     }
 
@@ -190,7 +145,7 @@ export function getColour (level: string) {
 }
 
 export function getBodyfatForeColour (level: string) {
-    if (level === 'AVERAGE') {
+    if (level === 'OVERWEIGHT') {
         return 'black';
     }
 

@@ -5,6 +5,7 @@ import ChartistGraph from 'react-chartist';
 import MeasurementsChat from './MeasurementsChat';
 import SemanticDatepicker from 'react-semantic-ui-datepickers';
 import { IMeasurements, IMeasurementDto, IGraphMeasurements, calcBodyFatPercent, getBodyFatIndicator, getColour, getBodyfatForeColour } from '../models/measurement';
+import { AreaChart, LineChart } from "@tremor/react";
 
 interface IProps {
     update: boolean;
@@ -20,7 +21,6 @@ interface IState {
     clientId: number;
     updated: boolean;
     graphs: IGraphMeasurements;
-    graphsData: [IMeta[]];
     weightLabel: string[];
     measurements: IMeasurements;
     measurementDtos: IMeasurementDto[];
@@ -56,7 +56,6 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                 weight: [],
                 bodyFat:[]
             },
-            graphsData: [[]],
             weightLabel: [],
             measurements: { neck: 0.0, upperArm: 0.0, waist: 0.0, hips: 0.0, thigh: 0.0, chest: 0.0, weight: 0.0 },
             measurementDtos: [],
@@ -92,42 +91,62 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
     }
 
     getGraphData = (measureType: string) => {
+        var chartData: any[] = [];
+        var index: number = 0
+        
         if (measureType === 'Neck') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.neck] };
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Neck: this.state.graphs.neck[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'UpperArm') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, UpperArm: this.state.graphs.upperArm[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'Waist') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Waist: this.state.graphs.waist[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'Thigh') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Thigh: this.state.graphs.thigh[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'Hips') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Hips: this.state.graphs.hips[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'Chest') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Chest: this.state.graphs.chest[index] });
+                index++;
+            });
+        }
+        else if (measureType === 'BodyFat') {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, BodyFat: this.state.graphs.bodyFat[index] });
+                index++;
+            });
+        }
+        else {
+            this.state.weightLabel.forEach(m => {
+                chartData.push({ date: m, Weight: this.state.graphs.weight[index] });
+                index++;
+            });
         }
 
-        if (measureType === 'UpperArm') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.upperArm] };
-        }
-
-        if (measureType === 'Waist') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.waist] };
-        }
-
-        if (measureType === 'Thigh') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.thigh] };
-        }
-
-        if (measureType === 'Hips') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.hips] };
-        }
-
-        if (measureType === 'Chest') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.chest] };
-        }
-
-        if (measureType === 'BodyFat') {
-            return { labels: this.state.weightLabel, series: [this.state.graphs.bodyFat] };
-        }
-
-        return { labels: this.state.weightLabel, series: [this.state.graphs.neck] };
+        return chartData;
     }
 
     setGraphValues = () => {
-        while (this.state.graphsData.length > 0) {
-            this.state.graphsData.pop()
-        }
-
         while (this.state.weightLabel.length > 0) {
             this.state.weightLabel.pop()
         }
@@ -148,36 +167,22 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
         });
 
         arr.forEach(m => {
-            var values: IMeta[] = [];
-            if (index === 0 || index === arr.length - 1) {
-                this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
-            }
-            else {
-                this.state.weightLabel.push('');
-            }
+            this.state.weightLabel.push((new Date(m.created)).toLocaleDateString().slice(0, 5));
             
             this.state.graphs.chest.push(m.chest);
-            values.push({ 'meta': 'chest', 'value': m.chest });
             this.state.graphs.neck.push(m.neck);
-            values.push({ 'meta': 'chest', 'value': m.chest });
             this.state.graphs.upperArm.push(m.upperArm);
-            values.push({ 'meta': 'upperArm', 'value': m.upperArm });
             this.state.graphs.waist.push(m.waist);
-            values.push({ 'meta': 'waist', 'value': m.waist });
             this.state.graphs.hips.push(m.hips);
-            values.push({ 'meta': 'hips', 'value': m.hips });
             this.state.graphs.thigh.push(m.thigh);
-            values.push({ 'meta': 'thigh', 'value': m.thigh });
             this.state.graphs.weight.push(m.weight);
 
             const bodyFatPercent = (m.waist + m.hips - m.neck) / 2;
             this.state.graphs.bodyFat.push(bodyFatPercent);
-
-            this.state.graphsData.push(values);
             index++;
         });
 
-        this.setState({ graphs: this.state.graphs, graphsData: this.state.graphsData, weightLabel: this.state.weightLabel });
+        this.setState({ graphs: this.state.graphs, weightLabel: this.state.weightLabel });
     }
 
     setValuesFromDto = () => {
@@ -308,35 +313,91 @@ class MeasurementsReviewModal extends React.Component<IProps, IState> {
                     <Grid.Column>
                         {this.getWeightProgress(this.state.graphs.weight[0], this.state.measurements.weight)}
                         <div>
-                            <ChartistGraph data={data2} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Weight')}
+                                categories={["Weight"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["red"]}
+                                marginTop="mt-4"
+                            />
                         </div>
-                        <a>Body Type: </a><a style={divLabelStyle1}>{level}</a>
+                        <a>Body Rating: </a><a style={divLabelStyle1}>{level}</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('BodyFat')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('BodyFat')}
+                                categories={["BodyFat"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["purple"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>Neck (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Neck')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Neck')}
+                                categories={["Neck"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["amber"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>Waist (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Waist')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Waist')}
+                                categories={["Waist"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["fuchsia"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>Hips (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Hips')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Hips')}
+                                categories={["Hips"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["emerald"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>Chest (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Chest')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Chest')}
+                                categories={["Chest"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["indigo"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>UpperArm (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('UpperArm')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('UpperArm')}
+                                categories={["UpperArm"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["lime"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                         <a>Thigh (in)</a>
                         <div>
-                            <ChartistGraph data={this.getGraphData('Thigh')} type={type} options={lineChartOptions} />
+                            <AreaChart
+                                data={this.getGraphData('Thigh')}
+                                categories={["Thigh"]}
+                                dataKey="date"
+                                height="h-72"
+                                colors={["red"]}
+                                marginTop="mt-4"
+                            />
                         </div>
                     </Grid.Column>
                 </Grid.Row>

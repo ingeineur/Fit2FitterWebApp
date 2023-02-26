@@ -117,13 +117,13 @@ class MacroGuideTable extends React.Component<IProps, IState> {
                         <a className="text-table-row" key={this.props.mealType + index + 5}>{this.getTotalCal(item).toFixed(0)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_carb'} key={this.props.mealType + index + 2} width={2}>
-                        <a className="text-table-row" key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 2}>{parseFloat(item.carb.toString()).toFixed(1)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_protein'} key={this.props.mealType + index + 3} width={2}>
-                        <a className="text-table-row" key={this.props.mealType + index + 3}>{parseFloat(item.protein.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 3}>{parseFloat(item.protein.toString()).toFixed(1)}</a>
                     </Grid.Column>
                     <Grid.Column className={'col_fat'} key={this.props.mealType + index + 4} width={2}>
-                        <a className="text-table-row" key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(2)}</a>
+                        <a className="text-table-row" key={this.props.mealType + index + 4}>{parseFloat(item.fat.toString()).toFixed(1)}</a>
                     </Grid.Column>
                 </Grid.Row>
             ));

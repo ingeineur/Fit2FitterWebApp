@@ -972,7 +972,7 @@ class MacroGuideRecipes extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='CreateRecipes' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <AppsMenu activeParentItem='Nutritions' activeItem='CreateRecipes' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <h5>Step 1. Create/View Your Recipe</h5>

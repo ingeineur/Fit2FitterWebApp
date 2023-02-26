@@ -21,7 +21,7 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                                         <h3 className="text-app">Nutrition & Fitness Centre</h3>
                                     </div>
                                     <div id='text' className="byida">
-                                        <a>By IDA</a>
+                                        By IDA
                                     </div>
                                 </Grid.Column>
                             </Grid>

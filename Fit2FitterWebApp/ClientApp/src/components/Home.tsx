@@ -111,7 +111,7 @@ class Home extends React.Component<LoginProps, IState > {
     }
 
     public displayUpdate = () => {
-        if (requireVersionUpdate(this.state.version)) {
+        if (requireVersionUpdate(this.state.version) && this.state.version.major > 0) {
             return (<div style={DivRequireUpdateLabelStyle}>
                 <a>{UpdateVersionText}</a>
             </div>)
@@ -217,7 +217,7 @@ class Home extends React.Component<LoginProps, IState > {
         if (this.state.apiVersionUpdate === true) {
             this.setState({ version: this.state.versionDto, apiVersionUpdate: false });
         }
-        else if ((this.state.apiVersionUpdate == false && this.state.version.major == 0)) {
+        else if ((this.state.apiVersionUpdate === false && this.state.version.major === 0)) {
             return (<div style={divLoaderStyle}>
                 <Dimmer active inverted>
                     <Loader content='Loading' />
@@ -231,54 +231,61 @@ class Home extends React.Component<LoginProps, IState > {
             }
         }
 
-        if (this.props.logins.length > 0 && this.props.logins[0].username !== 'admin2') {
-            if (!this.state.fetchAllData) {
-                this.fetchAllData();
-                this.setState({ fetchAllData: true });
+        if (this.props.logins.length > 0 && this.props.logins[0].active !== true) {
+            if (this.state.error !== 'Your account is not active, Please contact admin') {
+                this.setState({ error: 'Your account is not active, Please contact admin' });
             }
-            if (!this.state.clientUpdated) {
-                return (<div style={divLoaderStyle}>
-                    <Dimmer active inverted>
-                        <Loader content='Loading' />
-                    </Dimmer>
-                </div>);
+        }
+        else {
+            if (this.props.logins.length > 0 && this.props.logins[0].username !== 'admin2') {
+                if (!this.state.fetchAllData) {
+                    this.fetchAllData();
+                    this.setState({ fetchAllData: true });
+                }
+                if (!this.state.clientUpdated) {
+                    return (<div style={divLoaderStyle}>
+                        <Dimmer active inverted>
+                            <Loader content='Loading' />
+                        </Dimmer>
+                    </div>);
+                }
+                else {
+                    if (this.state.error !== 'Login is Successfull') {
+                        this.setState({ error: 'Login is Successfull' });
+                    }
+
+                    return (<Redirect to="/dashboarddaily" />);
+                };
             }
-            else {
-                if (this.state.error !== 'Login is Successfull') {
-                    this.setState({ error: 'Login is Successfull' });
+            else if (this.props.logins.length > 0 && this.props.logins[0].username === 'admin2') {
+                if (!this.state.fetchAllData) {
+                    this.fetchAllData();
+                    this.setState({ fetchAllData: true });
                 }
 
-                return (<Redirect to="/dashboarddaily" />);
-            };
-        }
-        else if (this.props.logins.length > 0 && this.props.logins[0].username === 'admin2') {
-            if (!this.state.fetchAllData) {
-                this.fetchAllData();
-                this.setState({ fetchAllData: true });
-            }
+                if (!this.state.clientUpdated) {
+                    return (<div style={divLoaderStyle}>
+                        <Dimmer active inverted>
+                            <Loader content='Loading' />
+                        </Dimmer>
+                    </div>);
+                }
 
-            if (!this.state.clientUpdated) {
-                return (<div style={divLoaderStyle}>
-                    <Dimmer active inverted>
-                        <Loader content='Loading' />
-                    </Dimmer>
-                </div>);
-            }
-
-            return (
-                <div>
-                    <div style={divLabelStyle2}>
-                        <h1>My Health & Fitness Tracker</h1>
-                    </div>
-                    <a>Select Client:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
-                    <Form size="small">
-                        <div>
-                            <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
-                            <a>{this.state.error}</a>
+                return (
+                    <div>
+                        <div style={divLabelStyle2}>
+                            <h1>My Health & Fitness Tracker</h1>
                         </div>
-                    </Form>
-                </div>
-            );
+                        <a>Select Client:</a><Dropdown id='toClient' value={this.state.toClientId} search selection options={this.state.clientList} onChange={this.setToClient} />
+                        <Form size="small">
+                            <div>
+                                <Button type='submit' primary onClick={this.getLoginCredentials}>Login</Button>
+                                <a>{this.state.error}</a>
+                            </div>
+                        </Form>
+                    </div>
+                );
+            }
         }
 
         return (

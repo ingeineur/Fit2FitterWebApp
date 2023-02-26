@@ -571,7 +571,7 @@ class MacroGuideSearch extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='Nutrients Lookup' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <AppsMenu activeParentItem='Nutritions' activeItem='Nutrients Lookup' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                             <Divider />
                         </Grid.Column>
                         <Grid.Column width={16}>

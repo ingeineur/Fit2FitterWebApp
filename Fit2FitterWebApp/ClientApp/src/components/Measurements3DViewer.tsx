@@ -151,17 +151,11 @@ class Measurements3DViewer extends React.Component<IProps, IState> {
         return (
             <Grid centered>
                 {this.showProgress(showProgress)}
-                <Grid.Row columns={2} stretched>
-                    <Grid.Column width={8}>
-                        <a>{this.state.date}</a>
-                    </Grid.Column>
-                    <Grid.Column width={8}>
+                <Grid.Row stretched>
+                    <Grid.Column width={16}>
                         <a>{date.toDateString()} - Today</a>
                     </Grid.Column>
-                    <Grid.Column width={8}>
-                        <iframe src={url} className="Viewer" />
-                    </Grid.Column>
-                    <Grid.Column width={8}>
+                    <Grid.Column width={16}>
                         <iframe src={currentUrl} className="Viewer" />
                     </Grid.Column>
                 </Grid.Row>

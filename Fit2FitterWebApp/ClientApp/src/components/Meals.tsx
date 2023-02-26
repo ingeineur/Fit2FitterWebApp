@@ -187,13 +187,13 @@ class Meals extends React.Component<LoginProps, IState> {
 
     getMealType = (type:string) =>
     {
-        if (type == 'Lunch') {
+        if (type === 'Lunch') {
             return 1;
         }
-        if (type == 'Dinner') {
+        if (type === 'Dinner') {
             return 2;
         }
-        if (type == 'Snack') {
+        if (type === 'Snack') {
             return 3;
         }
 
@@ -215,23 +215,23 @@ class Meals extends React.Component<LoginProps, IState> {
     }
 
     getActivityLevel = (activityLevel: string) => {
-        if (activityLevel == 'Sedentary') {
+        if (activityLevel === 'Sedentary') {
             return 1.2;
         }
 
-        if (activityLevel == 'Lightly Active') {
+        if (activityLevel === 'Lightly Active') {
             return 1.375;
         }
 
-        if (activityLevel == 'Moderately Active') {
+        if (activityLevel === 'Moderately Active') {
             return 1.55;
         }
 
-        if (activityLevel == 'Very Active') {
+        if (activityLevel === 'Very Active') {
             return 1.725;
         }
 
-        if (activityLevel == 'Extra Active') {
+        if (activityLevel === 'Extra Active') {
             return 1.9;
         }
 
@@ -535,30 +535,30 @@ class Meals extends React.Component<LoginProps, IState> {
                 vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 1) {
-                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalPro / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
                 vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else if (i === 2) {
-                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalPro / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);
                 vegMacros.push((totalVeg / totalV) * 100.0);
             }
             else {
-                var totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
-                var totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalCarb = this.state.meals[i].carb.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalPro = this.state.meals[i].protein.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalFat = this.state.meals[i].fat.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
+                totalVeg = this.state.meals[i].fruits.reduce(function (a, b) { return a + parseFloat(b.macro.toString()); }, 0);
                 carbMacros.push((totalCarb / totalC) * 100.0);
                 proMacros.push((totalPro / totalP) * 100.0);
                 fatMacros.push((totalFat / totalF) * 100.0);

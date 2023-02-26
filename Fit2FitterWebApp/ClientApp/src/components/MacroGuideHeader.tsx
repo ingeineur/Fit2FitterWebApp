@@ -1,14 +1,29 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Grid } from 'semantic-ui-react'
+import { Grid, Icon } from 'semantic-ui-react'
 import { IMacroGuides, IMeals } from '../models/meals';
 import { IActivity } from '../models/activities'
+import {
+    Card,
+    Metric,
+    Text,
+    Flex,
+    BadgeDelta,
+    DeltaType,
+    ColGrid,
+} from '@tremor/react';
 
 interface IProps {
     meals: IMeals;
     guides: IMacroGuides;
     activities: IActivity[]
     update: boolean;
+}
+
+interface IMacroRow {
+    title: string;
+    metric: number;
+    metricStr: string;
 }
 
 interface IState {
@@ -51,13 +66,13 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
     }
 
     getMealTypeIndex = (type: number) => {
-        if (type == 1) {
+        if (type === 1) {
             return 1;
         }
-        if (type == 2) {
+        if (type === 2) {
             return 2;
         }
-        if (type == 3) {
+        if (type === 3) {
             return 3;
         }
 
@@ -76,17 +91,57 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         return 'green';
     }
 
+    getMacroIndicatorIcon2 = (value: number) => {
+        if (value < 10.0) {
+            return (<div><Icon name='arrow down' size='large' color='orange' /><div>Low</div></div>)
+        }
+
+        if (value < 80.0) {
+            return (<div><Icon name='thumbs up' size='large' color='green' /><div>Good</div></div>)
+        }
+
+        if (value > 80.0 && value < 100.0) {
+            return (<div><Icon name='exclamation triangle' size='large' color='orange' /><div>Cautious</div></div >)
+        }
+
+        if (value >= 100.0) {
+            return (<div><Icon name='exclamation triangle' size='large' color='red' /><div>High</div></div>)
+        }
+    }
+
+    getMacroIndicatorIconForVeg = (value: number) => {
+        if (value < 20.0) {
+            return (<div><Icon name='arrow down' size='large' color='orange' /><div>Low</div></div>)
+        }
+
+        return (<div><Icon name='thumbs up' size='large' color='green' /><div>Good</div></div>)
+    }
+
+    GetMacroRow = (row: IMacroRow) => {
+        return (
+            <Card key={row.title}>
+                <Flex alignItems="items-start">
+                    <Text>{row.title}</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                >
+                    <Metric truncate={true}>{row.metricStr}</Metric>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                >
+                    {row.title.toLowerCase() === 'veg %' ? this.getMacroIndicatorIconForVeg(row.metric) : this.getMacroIndicatorIcon2(row.metric)}
+                </Flex>
+            </Card>
+        );
+    }
+
     render() {
 
         var divLabelStyle1 = {
-            color: 'black'
-        };
-
-        var divLabelStyle2 = {
-            color: 'black'
-        };
-
-        var divLabelStyle3 = {
             color: 'black'
         };
 
@@ -104,6 +159,7 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         var totalCarb: number = 0.0;
         var totalProtein: number = 0.0;
         var totalFat: number = 0.0;
+        var totalVeg: number = 0;
         var totalPortion: number = 0.0;
 
         for (let i = 0; i < 4; i++) {
@@ -111,6 +167,7 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
             totalCarb += (meals.reduce(function (a, b) { return a + parseFloat(b.carb.toString()) }, 0));
             totalProtein += (meals.reduce(function (a, b) { return a + parseFloat(b.protein.toString()) }, 0));
             totalFat += (meals.reduce(function (a, b) { return a + parseFloat(b.fat.toString()) }, 0));
+            totalVeg += (meals.reduce(function (a, b) { return a + parseFloat(b.fv.toString()) }, 0));
             totalPortion += (meals.reduce(function (a, b) { return a + parseFloat(b.portion.toString()) }, 0));
         }
 
@@ -129,44 +186,72 @@ class MacroGuideHeader extends React.Component<IProps, IState> {
         const totalGuidePalm = Math.round(this.props.guides.protein / 30);
         const totalGuideThumb = Math.round(this.props.guides.fat / 12);
 
+        const totalCarbPercent = (totalCarb / this.props.guides.carb) * 100.0;
+        const totalProteinPercent = (totalProtein / this.props.guides.protein) * 100.0;
+        const totalFatPercent = (totalFat / this.props.guides.fat) * 100.0;
+        const totalVegPercent = (totalVeg / this.props.guides.fruits) * 100.0;
+
         const totalMacro = this.props.guides.carb*4 + this.props.guides.protein*4 + this.props.guides.fat*9;
         const deficit = totalMacro - totalCal + totalBurntCalories;
         const deficitPercentage = (deficit / totalMacro) * 100.00;
 
         return (
             <Grid centered>
-                <Grid.Row columns={3} stretched textAlign='center'>
-                    <Grid.Column textAlign='center'>
-                        <div style={foodPortionStyle}>
-                            <img style={foodPortionStyle} src={'cup.PNG'} width='50' height='50' />
-                        </div>
-                        <div><a>Carb</a></div>
-                        <div style={divLabelStyle1}>{totalCup.toFixed(0)}/{totalGuideCup.toFixed(0)}</div>
+                <Grid.Row textAlign='center'>
+                    <Grid.Column width={16}>
+                        <h5 className="text-handportion">USED MACRO PORTIONS</h5>
                     </Grid.Column>
-                    <Grid.Column textAlign='center'>
-                        <div style={foodPortionStyle}>
-                            <img style={foodPortionStyle} src={'palm.PNG'} width='50' height='50' />
-                        </div>
-                        <div><a>Protein</a></div>
-                        <div style={divLabelStyle1}>{totalPalm.toFixed(0)}/{totalGuidePalm.toFixed(0)}</div>
+                    <Grid.Column width={16}>
+                        <Grid centered>
+                            <Grid.Row columns={4} stretched textAlign='center'>
+                                <Grid.Column textAlign='center'>
+                                    <div style={foodPortionStyle}>
+                                        <img style={foodPortionStyle} src={'cup.PNG'} width='50' height='50' />
+                                    </div>
+                                    <div><a>Carb</a></div>
+                                    <div style={divLabelStyle1}>{totalCup.toFixed(0)}/{totalGuideCup.toFixed(0)}</div>
+                                </Grid.Column>
+                                <Grid.Column textAlign='center'>
+                                    <div style={foodPortionStyle}>
+                                        <img style={foodPortionStyle} src={'palm.PNG'} width='50' height='50' />
+                                    </div>
+                                    <div><a>Protein</a></div>
+                                    <div style={divLabelStyle1}>{totalPalm.toFixed(0)}/{totalGuidePalm.toFixed(0)}</div>
+                                </Grid.Column>
+                                <Grid.Column textAlign='center'>
+                                    <div style={foodPortionStyle}>
+                                        <img style={foodPortionStyle} src={'thumb.PNG'} width='50' height='50' />
+                                    </div>
+                                    <div><a>Fat</a></div>
+                                    <div style={divLabelStyle1}>{totalThumb.toFixed(0)}/{totalGuideThumb.toFixed(0)}</div>
+                                </Grid.Column>
+                                <Grid.Column textAlign='center'>
+                                    <div style={foodPortionStyle}>
+                                        <img style={foodPortionStyle} src={'fist.PNG'} width='50' height='50' />
+                                    </div>
+                                    <div><a>Veg</a></div>
+                                    <div style={divLabelStyle1}>{totalVeg.toFixed(0)}/{this.props.guides.fruits}</div>
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
-                    <Grid.Column textAlign='center'>
-                        <div style={foodPortionStyle}>
-                            <img style={foodPortionStyle} src={'thumb.PNG'} width='50' height='50' />
-                        </div>
-                        <div><a>Fat</a></div>
-                        <div style={divLabelStyle1}>{totalThumb.toFixed(0)}/{totalGuideThumb.toFixed(0)}</div>
-                    </Grid.Column>
-                </Grid.Row>
-                <Grid.Row columns={3} stretched textAlign='center'>
-                    <Grid.Column color={this.getColour(totalCarb / this.props.guides.carb)} textAlign='center'>
-                        <div style={divLabelStyle1}><a>{totalRemCarb.toFixed(2)}g</a></div>
-                    </Grid.Column>
-                    <Grid.Column color={this.getColour(totalProtein / this.props.guides.protein)} textAlign='center'>
-                        <div style={divLabelStyle2}><a>{totalRemProtein.toFixed(2)}g</a></div>
-                    </Grid.Column>
-                    <Grid.Column color={this.getColour(totalFat / this.props.guides.fat)} textAlign='center'>
-                        <div style={divLabelStyle3}><a>{totalRemFat.toFixed(2)}g</a></div>
+                    <Grid.Column width={16}>
+                        <Grid centered>
+                            <Grid.Row stretched={true} textAlign='center' columns={4}>
+                                <Grid.Column stretched={true}  textAlign='center'>
+                                    {this.GetMacroRow({ title: 'CARB %', metric: totalCarbPercent, metricStr: totalCarbPercent.toFixed(0) })}
+                                </Grid.Column>
+                                <Grid.Column stretched={true}  textAlign='center'>
+                                    {this.GetMacroRow({ title: 'PROTEIN %', metric: totalProteinPercent, metricStr: totalProteinPercent.toFixed(0) })}
+                                </Grid.Column>
+                                <Grid.Column stretched={true}  textAlign='center'>
+                                    {this.GetMacroRow({ title: 'FAT %', metric: totalFatPercent, metricStr: totalFatPercent.toFixed(0) })}
+                                </Grid.Column>
+                                <Grid.Column stretched={true} textAlign='center'>
+                                    {this.GetMacroRow({ title: 'VEG %', metric: totalVegPercent, metricStr: totalVegPercent.toFixed(0) })}
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>);

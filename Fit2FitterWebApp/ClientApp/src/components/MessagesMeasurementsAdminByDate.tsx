@@ -59,6 +59,7 @@ interface IClientDto {
     age: number;
     created: string;
     avatar: string;
+    grp: string;
 }
 
 interface IMessage {
@@ -420,7 +421,7 @@ class MessagesMeasurementsAdminByDate extends React.Component<LoginProps, IState
                 <Grid centered>
                     <Grid.Row textAlign='left'>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='Measurements Logger Admin' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <AppsMenu activeParentItem='MessagesMain' activeItem='Measurements Logger Admin' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                             <Divider />
                         </Grid.Column>
                         <Grid.Column verticalAlign='middle' width={16} textAlign='left' floated='left'>

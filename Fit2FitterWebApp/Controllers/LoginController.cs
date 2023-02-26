@@ -38,7 +38,7 @@ namespace Fit2FitterWebApp.Controllers
 
         [HttpPut]
         public async Task<IActionResult> Put([FromBody, Required]LoginDto login)
-        {
+        {   
             var result = await this.clientService.AddLogin(login).ConfigureAwait(false);
             return this.Ok(result);
         }

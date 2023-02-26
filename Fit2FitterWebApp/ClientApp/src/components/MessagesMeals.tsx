@@ -80,6 +80,7 @@ interface IClientDto {
     age: number;
     created: string;
     avatar: string;
+    grp: string;
 }
 
 interface IMessage {
@@ -509,7 +510,7 @@ class MessagesMeals extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='Meals Logger' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <AppsMenu activeParentItem='MessagesMain' activeItem='Meals Logger' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                             <Divider />
                         </Grid.Column>
                         <Grid.Column width={16}>

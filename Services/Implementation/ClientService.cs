@@ -74,11 +74,11 @@ namespace Fit2Fitter.Services.Implementation
             });
         }
 
-        public async Task<bool> AddClient(ClientDto client)
+        public async Task<int> AddClient(ClientDto client)
         {
             try
             {
-                await this.clientRepository.AddClient(new Client
+                var clientId = await this.clientRepository.AddClient(new Client
                 {
                     Id = client.Id,
                     FirstName = client.FirstName,
@@ -91,11 +91,11 @@ namespace Fit2Fitter.Services.Implementation
                     Created = DateTime.Now
                 }).ConfigureAwait(false);
 
-                return true;
+                return clientId;
             }
             catch (Exception e)
             {
-                return false;
+                return -1;
             }
         }
 
@@ -107,7 +107,7 @@ namespace Fit2Fitter.Services.Implementation
                 {
                     Username = login.Username,
                     Password = login.Password,
-                    Active = true,
+                    Active = login.Active,
                     LastLogin = DateTime.Now,
                     ClientId = login.ClientId
                 }).ConfigureAwait(false);

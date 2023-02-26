@@ -7,6 +7,23 @@
     font-size: 30px;
 }
 
+.text-handportion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: gray;
+    font-family: 'Arial Rounded MT';
+    font-size: 20px;
+}
+
+.text-workouts {
+    display: flex;
+    align-items: center;
+    color: gray;
+    font-family: 'Arial Rounded MT';
+    font-size: 20px;
+}
+
 .text-ida {
     display: flex;
     justify-content: center;

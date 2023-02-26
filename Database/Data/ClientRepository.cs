@@ -74,7 +74,7 @@ namespace Fit2Fitter.Database.Data
                 x.ClientId == clientId).ToArrayAsync().ConfigureAwait(false);
         }
 
-        public async Task AddClient(Client client)
+        public async Task<int> AddClient(Client client)
         {
             var result = await this.databaseContext.Clients.SingleOrDefaultAsync(x =>
                 x.Id == client.Id).ConfigureAwait(false);
@@ -87,13 +87,21 @@ namespace Fit2Fitter.Database.Data
                 result.Address = client.Address;
                 result.City = client.City;
                 result.Avatar = client.Avatar;
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+                return result.Id;
             }
             else
             {
                 await this.databaseContext.Clients.AddAsync(client).ConfigureAwait(false);
+                await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
+                var last = await this.databaseContext.Clients.Where(x => x.FirstName.Contains(client.FirstName)).ToArrayAsync().ConfigureAwait(false);
+                
+                if (last != null)
+                {
+                    return last[0].Id;
+                }
+                return -1;
             }
-
-            await this.databaseContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async Task AddLogin(Login login)
@@ -104,7 +112,9 @@ namespace Fit2Fitter.Database.Data
                 var result = await this.databaseContext.Logins.Where(x => x.ClientId == login.ClientId).SingleOrDefaultAsync().ConfigureAwait(false);
                 if (result != null)
                 {
+                    result.Username = login.Username;
                     result.Password = login.Password;
+                    result.Active = login.Active;
                 }
                 else
                 {

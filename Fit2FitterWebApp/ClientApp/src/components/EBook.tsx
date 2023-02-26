@@ -76,7 +76,7 @@ class EBook extends React.Component<LoginProps, IState> {
                     <Grid centered>
                         <Grid.Row>
                             <Grid.Column width={16}>
-                                <AppsMenu activeItem='EBook' logins={this.props.logins} clientDtos={this.state.clients} />
+                                <AppsMenu activeParentItem='EBook' activeItem='EBook' logins={this.props.logins} clientDtos={this.state.clients} />
                             </Grid.Column>
                             <Grid.Column width={16}>
                                 <div style={divLabelStyle}>

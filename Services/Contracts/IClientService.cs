@@ -13,7 +13,7 @@ namespace Fit2Fitter.Services.Contracts
         Task<IEnumerable<ClientDto>> FindClient(int clientId);
         Task<IEnumerable<ClientDto>> FindAllClients();
 
-        Task <bool> AddClient(ClientDto client);
+        Task <int> AddClient(ClientDto client);
 
         Task<bool> AddLogin(LoginDto login);
 

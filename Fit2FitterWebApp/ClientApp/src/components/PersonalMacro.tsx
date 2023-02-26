@@ -6,7 +6,7 @@ import { Button, Segment, Grid, Menu, Label, Progress, Icon, Dimmer, Divider } f
 import { ApplicationState } from '../store';
 import * as LoginStore from '../store/Login';
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css';
-import PersonalTable from './PersonalTable'
+import PersonalMacroTable from './PersonalMacroTable'
 import PersonalHeader from './PersonalHeader'
 import { IClient, IPersonal } from '../models/clients'
 import { IMacroGuides, IMacrosPlan } from '../models/macros'
@@ -16,7 +16,6 @@ interface IProps {
 }
 
 interface IState {
-    selectedDate: Date;
     macroGuides: IMacroGuides;
     personal: IPersonal;
     clients: IClient[];
@@ -33,12 +32,11 @@ type LoginProps =
     & typeof LoginStore.actionCreators // ... plus action creators we've requested
     & RouteComponentProps<{ username: string, password: string }>; // ... plus incoming routing parameters
 
-class Personal extends React.Component<LoginProps, IState> {
+class PersonalMacro extends React.Component<LoginProps, IState> {
 
     public componentDidMount() {
         this.props.getLogin();
-        this.setState({ selectedDate: new Date() });
-
+        
         if (this.props.logins.length > 0) {
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClient[]>)
@@ -192,7 +190,7 @@ class Personal extends React.Component<LoginProps, IState> {
     }
 
     getComponent = () => {
-        return (<PersonalTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
+        return (<PersonalMacroTable type='Macro' personal={this.state.personal} updatePersonal={this.updatePersonal} update={this.state.updated} />);
     }
 
     updatePersonal = (input: IPersonal) => {
@@ -210,7 +208,6 @@ class Personal extends React.Component<LoginProps, IState> {
         super(props);
         this.updatePersonal = this.updatePersonal.bind(this);
         this.state = {
-            selectedDate: new Date(),
             macroGuides: { carb: 0, protein: 0, fat: 0, veg: 0, bodyFat: 0 },
             personal: {
                 avatar: '', name: '', age: 0, height: 0.0, weight: 0.0, targetWeight: 0.0, activityLevel: 0,
@@ -261,6 +258,14 @@ class Personal extends React.Component<LoginProps, IState> {
         return 'red';
     }
 
+    getMacroPercentColor = (percent: number) => {
+        if (percent < 100.00) {
+            return 'red';
+        }
+
+        return 'green';
+    }
+
     showProgressBar = () => {
         if (this.state.savingStatus == 'Saving in progress') {
             return (<Progress inverted color='green' percent={100} active={this.state.savingStatus === 'Saving in progress'} />);
@@ -276,6 +281,15 @@ class Personal extends React.Component<LoginProps, IState> {
             backgroundColor: this.getColour()
         };
 
+        const totalMacros = this.state.personal.carbPercent + this.state.personal.proteinPercent + this.state.personal.fatPercent;
+        var divStatusLabelStyle = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fffafa',
+            backgroundColor: this.getMacroPercentColor(totalMacros)
+        };
+
         if (this.props.logins.length > 0) {
             if (this.state.apiUpdate === true) {
                 this.setValuesFromDto();
@@ -285,15 +299,23 @@ class Personal extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeParentItem='User' activeItem='Personal Info' logins={this.props.logins} clientDtos={this.state.clients} />
+                            <AppsMenu activeParentItem='User' activeItem='Macros Setup' logins={this.props.logins} clientDtos={this.state.clients} />
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <div style={divLabelStyle}>
-                                {this.state.savingStatus}
+                                <a>{this.state.savingStatus}</a>
                             </div>
+                            <Segment textAlign='center' attached='bottom'>
+                                <PersonalHeader guides={this.state.macroGuides} personal={this.state.personal} update={this.state.updated} />
+                            </Segment>
                         </Grid.Column>
                         <Grid.Column width={16}>
                             {this.getComponent()}
+                        </Grid.Column>
+                        <Grid.Column width={16}>
+                            <div style={divStatusLabelStyle}>
+                                <a>Total Macros Calculation: {totalMacros} %</a>
+                            </div>
                         </Grid.Column>
                         <Grid.Column width={16}>
                             <Button.Group floated='left' fluid>
@@ -314,4 +336,4 @@ class Personal extends React.Component<LoginProps, IState> {
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props
-)(Personal as any);
+)(PersonalMacro as any);

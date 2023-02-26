@@ -61,7 +61,7 @@ namespace Fit2Fitter.Database.Contracts
         /// </summary>
         /// <param name="client"></param>
         /// <returns></returns>
-        Task AddClient(Client client);
+        Task<int> AddClient(Client client);
 
         /// <summary>
         /// Add a new login for a client.

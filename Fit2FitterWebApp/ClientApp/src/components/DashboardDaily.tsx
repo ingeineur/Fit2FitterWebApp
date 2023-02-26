@@ -8,10 +8,22 @@ import * as LoginStore from '../store/Login';
 import { IMacroGuides, IMacrosPlanDto, IMealDto, IMeals } from '../models/meals';
 import { IActivityGuides, IActivityDto, getStepIndicatorColour, getIndicatorColour, getMaxHrColour, IActivity } from '../models/activities'
 import { getActivityLevel } from '../models/activities';
+import { IMeasurements, IMeasurementDto, IGraphMeasurements, calcBodyFatPercent, getBodyFatIndicator, getColour, getBodyfatForeColour } from '../models/measurement';
 import CaloriesRemainingHeader from './CaloriesRemainingHeader'
 import ChartistGraph from 'react-chartist';
 import AppsMenu from './AppMenus';
 import { isNull, isNullOrUndefined } from 'util';
+import {
+    Card,
+    Metric,
+    Text,
+    Flex,
+    BadgeDelta,
+    ColGrid,
+} from '@tremor/react';
+import { AreaChart } from "@tremor/react";
+import { Datepicker } from "@tremor/react";
+import './signin.css';
 
 interface IProps {
 }
@@ -38,13 +50,23 @@ interface IState {
     activity2Dtos: IActivityDto[];
     activity2DtosUpdated: boolean;
     activity2DtosDownloaded: boolean;
-    fromDate: Date;
+    latestMeasurementDtos: IMeasurementDto[];
+    latestMeasurementDtosUpdated: boolean;
+    latestMeasurementDtosDownloaded: boolean;
+    measurementDtos: IMeasurementDto[];
+    measurementDtosUpdated: boolean;
+    measurementDtosDownloaded: boolean;
     weightLabel: string[];
     activityLabel: string[];
     graphActivityValues: IGraphActivity;
     queryStatus: string;
     toClientId: number;
     updateAllInfo: boolean;
+    startDate: Date;
+    endDate: Date;
+    weightChartData: any[];
+    bodyFatChartData: any[];
+    dateChanged: boolean;
 }
 
 interface IClientDto {
@@ -68,6 +90,12 @@ interface IGraphActivity {
     carbs: number[];
     protein: number[];
     fat: number[];
+}
+
+interface IMacroRow {
+    title: string;
+    metric: number;
+    metricStr: string;
 }
 
 var bar = 'Bar';
@@ -94,6 +122,10 @@ var divFat = {
     backgroundColor: 'yellow'
 };
 
+const dataFormatter = (number: number) => {
+    return Intl.NumberFormat("us").format(number).toString() + ' kg';
+};
+
 // At runtime, Redux will merge together...
 type LoginProps =
     IProps
@@ -108,10 +140,14 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         today.setHours(0, 0, 0, 0);
         this.setState({ selectedDate: today });
 
-        var fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() - 15);
-        fromDate.setHours(0, 0, 0, 0);
-        this.setState({ fromDate: fromDate });
+        var startDate = new Date();
+        startDate.setDate(startDate.getDate() - 15);
+        startDate.setHours(0, 0, 0, 0);
+        this.setState({ startDate: startDate });
+
+        var endDate = new Date();
+        endDate.setHours(0, 0, 0, 0);
+        this.setState({ endDate: endDate });
         
         if (this.props.logins.length > 0) {
             var clientId = this.props.logins[0].clientId;
@@ -120,30 +156,54 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             fetch('api/client?clientId=' + this.props.logins[0].clientId)
                 .then(response => response.json() as Promise<IClientDto[]>)
                 .then(data => this.setState({
-                    clientDtos: data, apiUpdate: true
+                    clientDtos: data, apiUpdate: true, updateAllInfo: false
                 })).catch(error => console.log(error));
 
             //get all activities
             fetch('api/tracker/' + clientId + '/activity/slice?fromDate=' + today.toISOString() + '&toDate=' + today.toISOString())
                 .then(response => response.json() as Promise<IActivityDto[]>)
                 .then(data => this.setState({
-                    activity2Dtos: data, activity2DtosUpdated: true
+                    activity2Dtos: data, activity2DtosUpdated: true, updateAllInfo: false
                 })).catch(error => console.log(error));
 
             //get macros plan
             fetch('api/client/' + clientId + '/macrosplan')
                 .then(response => response.json() as Promise<IMacrosPlanDto[]>)
                 .then(data => this.setState({
-                    macrosPlanDtos: data, macrosPlanDtosUpdated: true
+                    macrosPlanDtos: data, macrosPlanDtosUpdated: true, updateAllInfo: false
                 })).catch(error => console.log(error));
 
             //get all meals
             fetch('api/tracker/' + clientId + '/macrosguide/slice?fromDate=' + today.toISOString() + '&toDate=' + today.toISOString())
                 .then(response => response.json() as Promise<IMealDto[]>)
                 .then(data => this.setState({
-                    mealDtos: data, mealDtosUpdated: true
+                    mealDtos: data, mealDtosUpdated: true, updateAllInfo: false
                 })).catch(error => console.log(error));
+
+            // get latest measurements
+            fetch('api/client/' + this.props.logins[0].clientId + '/measurements/closest?date=' + today.toISOString())
+                .then(response => response.json() as Promise<IMeasurementDto[]>)
+                .then(data => this.setState({
+                    latestMeasurementDtos: data, latestMeasurementDtosUpdated: true, updateAllInfo: false
+                })).catch(error => console.log(error));
+
+            // get measurements
+            fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?fromDate=' + startDate.toISOString() + '&date=' + endDate.toISOString())
+                .then(response => response.json() as Promise<IMeasurementDto[]>)
+                .then(data => this.setState({
+                    measurementDtos: data, measurementDtosUpdated: true, updateAllInfo: false
+                })).catch(error => console.log(error));
+
+            this.setMeasurementsGraphValues();
         }
+    }
+
+    getAllMeasurements = () => {
+        fetch('api/client/' + this.props.logins[0].clientId + '/all/measurements?fromDate=' + this.state.startDate.toISOString() + '&date=' + this.state.endDate.toISOString())
+            .then(response => response.json() as Promise<IMeasurementDto[]>)
+            .then(data => this.setState({
+                measurementDtos: data, measurementDtosUpdated: true, updateAllInfo: false
+            })).catch(error => console.log(error));
     }
 
     onSubmit = () => {
@@ -181,43 +241,194 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             activity2Dtos: [],
             activity2DtosUpdated: false,
             activity2DtosDownloaded: false,
-            fromDate: new Date(),
             weightLabel: [],
             activityLabel: [],
             graphActivityValues: { steps: [], calories: [], maxHr: [], weights: [], bodyFats: [], fat: [], carbs: [], protein: [] },
             queryStatus: 'no error',
             toClientId: 3,
-            updateAllInfo: false
+            updateAllInfo: false,
+            startDate: new Date(),
+            endDate: new Date(),
+            measurementDtos: [],
+            measurementDtosDownloaded: false,
+            measurementDtosUpdated: false,
+            latestMeasurementDtos: [],
+            latestMeasurementDtosDownloaded: false,
+            latestMeasurementDtosUpdated: false,
+            weightChartData: [],
+            bodyFatChartData: [],
+            dateChanged: false
         };
     }
 
-    getData = () => {
-        if (!this.state.activity2DtosUpdated) {
-            //get all activities
-            fetch('api/tracker/' + this.state.toClientId + '/activity/slice?fromDate=' + this.state.fromDate.toISOString() + '&toDate=' + this.state.selectedDate.toISOString())
-                .then(response => response.json() as Promise<IActivityDto[]>)
-                .then(data => this.setState({
-                    activity2Dtos: data, activity2DtosUpdated: true
-                })).catch(error => console.log(error));
+    GetWeightGraph = () => (
+        <AreaChart
+            data={this.state.weightChartData}
+            categories={["weight"]}
+            dataKey="date"
+            height="h-72"
+            colors={["indigo"]}
+            marginTop="mt-4"
+            valueFormatter={dataFormatter}
+        />
+    );
+
+    GetBodyFatGraph = () => (
+        <AreaChart
+            data={this.state.bodyFatChartData}
+            categories={["bodyFat"]}
+            dataKey="date"
+            height="h-72"
+            colors={["red"]}
+            marginTop="mt-4"
+        />
+    );
+
+    GetMacroDashboard = () => {
+        var categories: IMacroRow[] = [];
+        categories.push({ title: 'CARBS', metric: this.getFirstValue(this.state.graphActivityValues.carbs), metricStr: this.getFirstValue(this.state.graphActivityValues.carbs).toFixed(0) + '%' });
+        categories.push({ title: 'PROTEIN', metric: this.getFirstValue(this.state.graphActivityValues.protein), metricStr: this.getFirstValue(this.state.graphActivityValues.protein).toFixed(0) + '%' });
+        categories.push({ title: 'FAT', metric: this.getFirstValue(this.state.graphActivityValues.fat), metricStr: this.getFirstValue(this.state.graphActivityValues.fat).toFixed(0) + '%' });
+
+        return (
+            <ColGrid numColsSm={2} numColsLg={3} gapX="gap-x-6" gapY="gap-y-6">
+                {categories.map((item) => (
+                    <Card key={item.title}>
+                        <Flex alignItems="items-start">
+                            <Text>{item.title}</Text>
+                            {this.getMacroIndicatorIcon2(item.metric)}
+                        </Flex>
+                        <Flex
+                            justifyContent="justify-start"
+                            alignItems="items-baseline"
+                            spaceX="space-x-3"
+                            truncate={true}
+                        >
+                            <Metric>{item.metricStr}</Metric>
+                        </Flex>
+                    </Card>
+                ))}
+            </ColGrid>
+        );
+    }
+
+    GetMacroRow = (row: IMacroRow) => {
+        return (
+            <Card key={row.title}>
+                <Flex alignItems="items-center">
+                    <Text>{row.title}</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric>{row.metricStr}</Metric>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    {this.getMacroIndicatorIcon2(row.metric)}
+                </Flex>
+            </Card>
+        );
+    }
+
+    getWeightDelta = () => {
+        var delta = this.state.macrosPlanDtos[0].weight - this.state.latestMeasurementDtos[0].weight;
+        return delta.toPrecision(2);
+    }
+
+    getWeightDeltaType = () => {
+        var delta = this.state.macrosPlanDtos[0].weight - this.state.latestMeasurementDtos[0].weight;
+
+        if (delta > 0.0) {
+            return 'moderateIncrease'
         }
 
-        if (!this.state.macrosPlanDtosUpdated) {
-            //get macros plan
-            fetch('api/client/' + this.state.toClientId + '/macrosplan')
-                .then(response => response.json() as Promise<IMacrosPlanDto[]>)
-                .then(data => this.setState({
-                    macrosPlanDtos: data, macrosPlanDtosUpdated: true
-                })).catch(error => console.log(error));
-        }
+        return 'moderateDecrease'
+    }
 
-        if (!this.state.mealDtosUpdated) {
-            //get all meals
-            fetch('api/tracker/' + this.state.toClientId + '/macrosguide/slice?fromDate=' + this.state.fromDate.toISOString() + '&toDate=' + this.state.selectedDate.toISOString())
-                .then(response => response.json() as Promise<IMealDto[]>)
-                .then(data => this.setState({
-                    mealDtos: data, mealDtosUpdated: true
-                })).catch(error => console.log(error));
-        }
+    GetWeightMetric = () => {
+        return (
+            <Card key="Weight">
+                <Flex alignItems="items-start">
+                    <Text>WEIGHT</Text>
+                    <BadgeDelta deltaType={this.getWeightDeltaType()} text={this.getWeightDelta()} />
+                </Flex>
+                <Flex
+                    justifyContent="justify-start"
+                    alignItems="items-baseline"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric>{this.state.latestMeasurementDtos[0].weight}</Metric>
+                    <Text truncate={true}>
+                        from
+                        {' '}
+                        {this.state.macrosPlanDtos[0].weight}
+                    </Text>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetStepMetric = () => {
+        return (
+            <Card key="Steps">
+                <Flex alignItems="items-center">
+                    <Text>STEPS</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getStepIndicatorColour(this.state.graphActivityValues.steps[0] / this.state.guides.steps)}>{this.state.graphActivityValues.steps[0]}</Metric>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetCaloriesMetric = () => {
+        return (
+            <Card key="Calories">
+                <Flex alignItems="items-center">
+                    <Text>CALORIES</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getIndicatorColour(this.state.graphActivityValues.calories[0] / this.state.guides.calories)}>{this.state.graphActivityValues.calories[0]}</Metric>
+                </Flex>
+            </Card>
+        );
+    }
+
+    GetMaxHrMetric = () => {
+        return (
+            <Card key="MAXHR">
+                <Flex alignItems="items-center">
+                    <Text>MAX HR</Text>
+                </Flex>
+                <Flex
+                    justifyContent="justify-center"
+                    alignItems="items-center"
+                    spaceX="space-x-3"
+                    truncate={true}
+                >
+                    <Metric color={getMaxHrColour(this.state.graphActivityValues.maxHr[0], this.state.clientDtos[0].age)}>{this.state.graphActivityValues.maxHr[0]}</Metric>
+                </Flex>
+            </Card>
+        );
     }
 
     getFlag = (country: string) => {
@@ -243,6 +454,10 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
 
         if (country === 'bn') {
             return (<Flag name='bn' />)
+        }
+
+        if (country === 'sg') {
+            return (<Flag name='sg' />)
         }
 
         return (<Flag name='au' />)
@@ -277,7 +492,8 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
 
     isLoadingData = () => {
         return (this.state.activity2DtosDownloaded == false || this.state.mealDtosDownloaded == false ||
-            this.state.clientDownloaded == false || this.state.macrosPlanDtosDownloaded == false) 
+            this.state.clientDownloaded == false || this.state.macrosPlanDtosDownloaded == false ||
+            this.state.measurementDtosDownloaded == false || this.state.latestMeasurementDtosDownloaded == false) 
     }
 
     getGraphData = (measureType: string) => {
@@ -468,13 +684,22 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         }
     }
 
-    getProteinIndicatorIcon = (values: number[]) => {
-        var value = this.getFirstValue(values);
-        if (value < 50.0) {
-            return (<Icon name='arrow down' size='large' color='orange' />)
+    getMacroIndicatorIcon2 = (value: number) => {
+        if (value < 10.0) {
+            return (<div><Icon name='arrow down' size='large' color='orange' /><div>Too Low</div></div>)
         }
 
-        return (<Icon name='thumbs up' size='large' color='green' />)
+        if (value < 80.0) {
+            return (<div><Icon name='thumbs up' size='large' color='green' /><div>Good</div></div>)
+        }
+
+        if (value > 80.0 && value < 100.0) {
+            return (<div><Icon name='exclamation triangle' size='large' color='orange' /><div>Cautious</div></div >)
+        }
+
+        if (value > 100.0) {
+            return (<div><Icon name='exclamation triangle' size='large' color='red' /><div>Too High</div></div>)
+        }
     }
 
     getGraph = () => {
@@ -563,6 +788,32 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         }
     }
 
+    setMeasurementsGraphValues = () => {
+        var weightChartData:any[] = [];
+        var bodyFatChartData:any[] = [];
+        var index: number = 0;
+        var arr = this.state.measurementDtos.sort((a: IMeasurementDto, b: IMeasurementDto) => {
+            return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+
+        });
+
+        arr.forEach(m => {
+            var date = new Date(m.created);
+            date.setHours(date.getHours() + 24);
+            var label = date.toLocaleDateString().slice(0, 5);
+            weightChartData.push({ date: label, weight: m.weight });
+            const bodyFatPercent = (m.waist + m.hips - m.neck) / 2;
+            bodyFatChartData.push({ date: label, bodyFat: bodyFatPercent });
+            index++;
+        });
+
+        this.setState({ weightChartData: weightChartData, bodyFatChartData: bodyFatChartData });
+    }
+
+    handleDateChange = (start: any, end: any) => {
+        this.setState({ dateChanged: true, startDate: start, endDate: end });
+    }
+
     render() {
         var divLoaderStyle = {
             display: 'flex',
@@ -571,6 +822,11 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
         };
 
         if (this.props.logins.length > 0) {
+            if (this.state.dateChanged === true) {
+                this.setState({ dateChanged: false, measurementDtosUpdated: false, updateAllInfo: true });
+                this.getAllMeasurements();
+            }
+
             if (this.state.apiUpdate === true) {
                 this.setState({ apiUpdate: false, clientDownloaded: true});
             }
@@ -583,9 +839,17 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                 this.setState({ mealDtosDownloaded: true, mealDtosUpdated: false });
             }
 
+            if (this.state.latestMeasurementDtosUpdated === true) {
+                this.setState({ latestMeasurementDtosDownloaded: true, latestMeasurementDtosUpdated: false });
+            }
+
             if (this.state.macrosPlanDtosUpdated === true && this.state.clientDownloaded === true) {
                 this.setState({ macrosPlanDtosUpdated: false, macrosPlanDtosDownloaded: true });
                 this.setMacroGuides();
+            }
+
+            if (this.state.measurementDtosUpdated === true) {
+                this.setState({ measurementDtosDownloaded: true, measurementDtosUpdated: false });
             }
 
             if (this.isLoadingData()) {
@@ -599,6 +863,7 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
             if (!this.state.updateAllInfo) {
                 this.setMeals();
                 this.setActivities();
+                this.setMeasurementsGraphValues();
                 this.setState({ updateAllInfo: true });
             }
             
@@ -609,7 +874,7 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                 <Grid centered>
                     <Grid.Row>
                         <Grid.Column width={16}>
-                            <AppsMenu activeItem='home' logins={this.props.logins} clientDtos={this.state.clientDtos} />
+                            <AppsMenu activeParentItem='home' activeItem='home' logins={this.props.logins} clientDtos={this.state.clientDtos} />
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='left'>
                             <Image avatar src={this.getPhotoProfile()} />
@@ -619,52 +884,63 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
                     </Grid.Row>
                     <Grid.Row textAlign='center'>
                         <Grid.Column width={16} textAlign='center'>
-                            <h2>Today's Progress...</h2>
+                            <h2 className="text-signin">DAILY PROGRESS</h2>
                         </Grid.Column>
                         <Grid.Column width={16} textAlign='center'>
-                            <Segment attached='top'>
-                                <div style={divLoaderStyle}>
-                                    {this.getStatistics()}
-                                </div>
-                            </Segment>
+                            <Grid centered>
+                                <Grid.Row textAlign='center' columns={3}>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetStepMetric()}
+                                    </Grid.Column>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetCaloriesMetric()}
+                                    </Grid.Column>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetMaxHrMetric()}
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
                         </Grid.Column>
-                        <Grid.Column width={16} textAlign='center'>
-                            <CaloriesRemainingHeader meals={this.state.meals} guides={this.state.macroGuides} activities={this.state.activities} update={this.state.updated} />
-                        </Grid.Column>
-                        <Grid.Column width={16} textAlign='center'>
-                            {this.getGraph()}
-                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row textAlign='center'>
                         <Grid.Column width={16}>
-                            <Segment textAlign='center'>
-                                <span style={divLoaderStyle}>
-                                    <div>
-                                        <Icon name='thumbs up' size='large' color='green' /><a>Good</a>
-                                    </div>
-                                    <div>
-                                        <Icon name='arrow down' size='large' color='orange' /><a>Too Low</a>
-                                    </div>
-                                    <div>
-                                        <Icon name='exclamation triangle' size='large' color='red' /><a>Too High</a>
-                                    </div>
-                                </span>
-                                <Divider />
-                                <Grid divided centered>
-                                    <Grid.Row textAlign='center' columns={3}>
-                                        <Grid.Column textAlign='center'>
-                                            <Statistic size='tiny' label='Carbs' value={this.getFirstValue(this.state.graphActivityValues.carbs).toFixed(0) + '%'} />
-                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.carbs)}</div>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <Statistic size='tiny' label='Protein' value={this.getFirstValue(this.state.graphActivityValues.protein).toFixed(0) + '%'} />
-                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.protein)}</div>
-                                        </Grid.Column>
-                                        <Grid.Column textAlign='center'>
-                                            <Statistic size='tiny' label='Fat' value={this.getFirstValue(this.state.graphActivityValues.fat).toFixed(0) + '%'} />
-                                            <div>{this.getMacroIndicatorIcon(this.state.graphActivityValues.fat)}</div>
-                                        </Grid.Column>
-                                    </Grid.Row>
-                                </Grid>
-                            </Segment>
+                            <Grid centered>
+                                <Grid.Row textAlign='center' columns={3}>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetMacroRow({ title: 'CARB', metric: this.getFirstValue(this.state.graphActivityValues.carbs), metricStr: this.getFirstValue(this.state.graphActivityValues.carbs).toFixed(0) + '%' })}
+                                    </Grid.Column>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetMacroRow({ title: 'PROTEIN', metric: this.getFirstValue(this.state.graphActivityValues.protein), metricStr: this.getFirstValue(this.state.graphActivityValues.protein).toFixed(0) + '%' })}
+                                    </Grid.Column>
+                                    <Grid.Column textAlign='center'>
+                                        {this.GetMacroRow({ title: 'FAT', metric: this.getFirstValue(this.state.graphActivityValues.fat), metricStr: this.getFirstValue(this.state.graphActivityValues.fat).toFixed(0) + '%' })}
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row textAlign='center'>
+                        <Grid.Column width={16}>
+                            <Datepicker
+                                placeholder="Select..."
+                                enableRelativeDates={false}
+                                enableYearPagination={false}
+                                handleSelect={this.handleDateChange}
+                                defaultStartDate={this.state.startDate}
+                                defaultEndDate={this.state.endDate}
+                                defaultRelativeFilterOption={null}
+                                minDate={null}
+                                maxDate={null}
+                                color="blue"
+                                maxWidth="max-w-none"
+                                marginTop="mt-0"
+                            />
+                        </Grid.Column>
+                        <Grid.Column width={8}>
+                            {this.GetWeightGraph()}
+                        </Grid.Column>
+                        <Grid.Column width={8}>
+                            {this.GetBodyFatGraph()}
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
@@ -674,7 +950,6 @@ class DashboardDaily extends React.Component<LoginProps, IState> {
     }
 }
 
-//export default connect()(Home);
 export default connect(
     (state: ApplicationState) => state.logins, // Selects which state properties are merged into the component's props
     LoginStore.actionCreators // Selects which action creators are merged into the component's props
